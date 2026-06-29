@@ -21,8 +21,8 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_DB: equitab
-      POSTGRES_USER: equitab_user
-      POSTGRES_PASSWORD: secret
+      POSTGRES_USER: equitab
+      POSTGRES_PASSWORD: "Equitab123!@#"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
