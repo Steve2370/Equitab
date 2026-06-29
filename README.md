@@ -510,4 +510,4 @@ Propriétaire — tous droits réservés © 2026 Equitab Inc.
 
 ---
 
-*Construit avec ❤️ pour le marché canadien*
+*Construit pour le marché canadien*
