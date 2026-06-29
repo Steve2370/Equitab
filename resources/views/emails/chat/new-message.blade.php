@@ -147,7 +147,7 @@
                   
       <div
          style="font-family:Montserrat, Arial, sans-serif;font-size:28px;font-weight:700;line-height:1.6;text-align:center;color:#0B1929;"
-      >Remboursement effectué</div>
+      >Nouveau message</div>
     
                 </td>
               </tr>
@@ -159,7 +159,7 @@
                   
       <div
          style="font-family:Montserrat, Arial, sans-serif;font-size:15px;line-height:1.6;text-align:center;color:#6B7280;"
-      >Bonjour <strong>{{ $userName }}</strong>, vous avez été remboursé automatiquement.</div>
+      >Bonjour <strong>{{ $recipientName }}</strong>, vous avez reçu un message sur Equitab.</div>
     
                 </td>
               </tr>
@@ -180,7 +180,7 @@
       
       <!--[if mso | IE]></td></tr></table><![endif]-->
     
-    <!-- Explication -->
+    <!-- Message -->
       
       <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#FFFFFF" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
     
@@ -206,7 +206,7 @@
       >
         <tbody>
           <tr>
-            <td  style="background-color:#F0FDF4;border-radius:12px;vertical-align:top;border-collapse:separate;padding:24px;">
+            <td  style="background-color:#F8FAFC;border-left:4px solid #10B981;border-radius:12px;vertical-align:top;border-collapse:separate;padding:24px;">
               
       <table
          border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%"
@@ -219,8 +219,8 @@
                 >
                   
       <div
-         style="font-family:Montserrat, Arial, sans-serif;font-size:15px;font-weight:600;line-height:1.6;text-align:left;color:#0B1929;"
-      >Pourquoi ce remboursement ?</div>
+         style="font-family:Montserrat, Arial, sans-serif;font-size:13px;line-height:1.6;text-align:left;color:#6B7280;"
+      ><strong>{{ $senderName }}</strong> dans le groupe <strong>{{ $groupName }}</strong></div>
     
                 </td>
               </tr>
@@ -231,169 +231,8 @@
                 >
                   
       <div
-         style="font-family:Montserrat, Arial, sans-serif;font-size:14px;line-height:1.6;text-align:left;color:#374151;"
-      >Le propriétaire du groupe <strong>{{ $groupName }}</strong> n'a pas fourni les identifiants d'accès dans les 48 heures suivant votre paiement. Conformément à notre politique de protection des membres, votre paiement a été remboursé automatiquement.</div>
-    
-                </td>
-              </tr>
-            
-        </tbody>
-      </table>
-    
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    
-      </div>
-    
-          <!--[if mso | IE]></td></tr></table><![endif]-->
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        
-      </div>
-    
-      
-      <!--[if mso | IE]></td></tr></table><![endif]-->
-    
-    <!-- Détails remboursement -->
-      
-      <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#FFFFFF" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
-    
-      
-      <div  style="background:#FFFFFF;background-color:#FFFFFF;margin:0px auto;max-width:600px;">
-        
-        <table
-           align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#FFFFFF;background-color:#FFFFFF;width:100%;"
-        >
-          <tbody>
-            <tr>
-              <td
-                 style="direction:ltr;font-size:0px;padding:0 32px 24px;text-align:center;"
-              >
-                <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]-->
-            
-      <div
-         class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;"
-      >
-        
-      <table
-         border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%" style="border-collapse:separate;"
-      >
-        <tbody>
-          <tr>
-            <td  style="background-color:#F9FAFB;border-radius:12px;vertical-align:top;border-collapse:separate;padding:24px;">
-              
-      <table
-         border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%"
-      >
-        <tbody>
-          
-              <tr>
-                <td
-                   align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;"
-                >
-                  
-      <table
-         cellpadding="0" cellspacing="0" width="100%" border="0" style="color:#000000;font-family:Montserrat, Arial, sans-serif;font-size:13px;line-height:22px;table-layout:auto;width:100%;border:none;"
-      >
-        <tr>
-            <td style="padding: 6px 0; color: #6B7280; font-size: 14px;">Service</td>
-            <td style="padding: 6px 0; color: #0B1929; font-weight: 600; text-align: right;">{{ $subscriptionName }}</td>
-          </tr>
-          <tr>
-            <td style="padding: 6px 0; color: #6B7280; font-size: 14px;">Groupe</td>
-            <td style="padding: 6px 0; color: #0B1929; font-weight: 600; text-align: right;">{{ $groupName }}</td>
-          </tr>
-          <tr>
-            <td style="padding: 6px 0; color: #6B7280; font-size: 14px;">Montant remboursé</td>
-            <td style="padding: 6px 0; color: #10B981; font-weight: 700; text-align: right;">{{ $amount }} $ CAD</td>
-          </tr>
-          <tr>
-            <td style="padding: 6px 0; color: #6B7280; font-size: 14px;">Délai de réception</td>
-            <td style="padding: 6px 0; color: #0B1929; font-weight: 600; text-align: right;">5 à 10 jours ouvrables</td>
-          </tr>
-      </table>
-    
-                </td>
-              </tr>
-            
-        </tbody>
-      </table>
-    
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    
-      </div>
-    
-          <!--[if mso | IE]></td></tr></table><![endif]-->
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        
-      </div>
-    
-      
-      <!--[if mso | IE]></td></tr></table><![endif]-->
-    
-    <!-- Suggestion -->
-      
-      <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#FFFFFF" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
-    
-      
-      <div  style="background:#FFFFFF;background-color:#FFFFFF;margin:0px auto;max-width:600px;">
-        
-        <table
-           align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#FFFFFF;background-color:#FFFFFF;width:100%;"
-        >
-          <tbody>
-            <tr>
-              <td
-                 style="direction:ltr;font-size:0px;padding:0 32px 24px;text-align:center;"
-              >
-                <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]-->
-            
-      <div
-         class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;"
-      >
-        
-      <table
-         border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%" style="border-collapse:separate;"
-      >
-        <tbody>
-          <tr>
-            <td  style="background-color:#EFF6FF;border-radius:12px;vertical-align:top;border-collapse:separate;padding:20px;">
-              
-      <table
-         border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%"
-      >
-        <tbody>
-          
-              <tr>
-                <td
-                   align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;"
-                >
-                  
-      <div
-         style="font-family:Montserrat, Arial, sans-serif;font-size:14px;font-weight:600;line-height:1.6;text-align:left;color:#1D4ED8;"
-      >💡 Trouvez un autre groupe</div>
-    
-                </td>
-              </tr>
-            
-              <tr>
-                <td
-                   align="left" style="font-size:0px;padding:10px 25px;padding-top:4px;word-break:break-word;"
-                >
-                  
-      <div
-         style="font-family:Montserrat, Arial, sans-serif;font-size:14px;line-height:1.6;text-align:left;color:#1E40AF;"
-      >D'autres groupes {{ $subscriptionName }} sont disponibles sur Equitab. Rejoignez un groupe dont le propriétaire a déjà fourni les identifiants.</div>
+         style="font-family:Montserrat, Arial, sans-serif;font-size:15px;font-style:italic;line-height:1.6;text-align:left;color:#374151;"
+      >"{{ $messagePreview }}"</div>
     
                 </td>
               </tr>
@@ -432,7 +271,7 @@
           <tbody>
             <tr>
               <td
-                 style="direction:ltr;font-size:0px;padding:0 32px 16px;text-align:center;"
+                 style="direction:ltr;font-size:0px;padding:0 32px 40px;text-align:center;"
               >
                 <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]-->
             
@@ -459,64 +298,14 @@
                align="center" bgcolor="#10B981" role="presentation" style="border:none;border-radius:8px;cursor:auto;mso-padding-alt:14px 48px;background:#10B981;" valign="middle"
             >
               <a
-                 href="{{ $dashboardUrl }}" style="display:inline-block;background:#10B981;color:#FFFFFF;font-family:Montserrat, Arial, sans-serif;font-size:15px;font-weight:600;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:14px 48px;mso-padding-alt:0px;border-radius:8px;" target="_blank"
+                 href="{{ $chatUrl }}" style="display:inline-block;background:#10B981;color:#FFFFFF;font-family:Montserrat, Arial, sans-serif;font-size:15px;font-weight:600;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:14px 48px;mso-padding-alt:0px;border-radius:8px;" target="_blank"
               >
-                Voir mes paiements
+                Répondre au message
               </a>
             </td>
           </tr>
         </tbody>
       </table>
-    
-                </td>
-              </tr>
-            
-        </tbody>
-      </table>
-    
-      </div>
-    
-          <!--[if mso | IE]></td></tr></table><![endif]-->
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        
-      </div>
-    
-      
-      <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#FFFFFF" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
-    
-      
-      <div  style="background:#FFFFFF;background-color:#FFFFFF;margin:0px auto;max-width:600px;">
-        
-        <table
-           align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#FFFFFF;background-color:#FFFFFF;width:100%;"
-        >
-          <tbody>
-            <tr>
-              <td
-                 style="direction:ltr;font-size:0px;padding:0 32px 40px;text-align:center;"
-              >
-                <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]-->
-            
-      <div
-         class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;"
-      >
-        
-      <table
-         border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%"
-      >
-        <tbody>
-          
-              <tr>
-                <td
-                   align="center" style="font-size:0px;padding:10px 25px;word-break:break-word;"
-                >
-                  
-      <div
-         style="font-family:Montserrat, Arial, sans-serif;font-size:13px;line-height:1.6;text-align:center;color:#6B7280;"
-      >Des questions sur ce remboursement ? <a href="{{ $supportUrl }}" style="color: #10B981;">Contactez notre support</a></div>
     
                 </td>
               </tr>
@@ -582,7 +371,8 @@
                   
       <div
          style="font-family:Montserrat, Arial, sans-serif;font-size:12px;line-height:1.6;text-align:center;color:#9CA3AF;"
-      >Des questions ? <a href="mailto:support@equitab.ca" style="color: #10B981;">support@equitab.ca</a></div>
+      >Vous recevez cet email car vous avez activé les notifications de messages.
+          <a href="{{ config('app.url') }}/dashboard/preferences" style="color: #10B981;">Gérer mes préférences</a></div>
     
                 </td>
               </tr>

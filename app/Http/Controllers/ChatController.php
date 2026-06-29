@@ -4,11 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Events\MessageSent;
 use App\Models\Group;
+use App\Models\User;
 use App\Models\Message;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Mail\NewMessage;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class ChatController extends Controller
 {
@@ -104,6 +108,18 @@ class ChatController extends Controller
         $message->load('sender');
 
         broadcast(new MessageSent($message));
+
+        $receiver = User::find($receiverId);
+        if ($receiver && ($receiver->allow_direct_contact ?? true)) {
+            Mail::to($receiver->email)
+                ->send(new NewMessage(
+                    recipient: $receiver,
+                    sender: $user,
+                    groupName: $group->name,
+                    messagePreview: Str::limit($request->body, 100),
+                    groupId: $group->id,
+                ));
+        }
 
         return response()->json([
             'id' => $message->id,

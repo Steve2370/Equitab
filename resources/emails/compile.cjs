@@ -27,6 +27,10 @@ const templates = [
         input: 'resources/emails/mjml/auto-refund.mjml',
         output: 'resources/views/emails/payment/refund.blade.php',
     },
+    {
+        input: 'resources/emails/mjml/new-message.mjml',
+        output: 'resources/views/emails/chat/new-message.blade.php',
+    },
 ];
 
 async function compile() {
