@@ -4,6 +4,9 @@ namespace App\Jobs;
 
 use App\Models\Group;
 use App\Models\Payment;
+use App\Models\User;
+use App\Mail\AutoRefundProcessed;
+use Illuminate\Support\Facades\Mail;
 use App\Services\Payment\Contracts\PaymentGatewayInterface;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -32,8 +35,9 @@ class CheckCredentialsProvided implements ShouldQueue
     {
         $payment = Payment::find($this->paymentId);
         $group = Group::find($this->groupId);
+        $user = User::find($this->userId);
 
-        if (! $payment || ! $group) return;
+        if (! $payment || ! $group || ! $user) return;
         if ($payment->status === 'refunded') return;
         if ($group->credential_email || $group->credential_password) return;
 
@@ -50,7 +54,13 @@ class CheckCredentialsProvided implements ShouldQueue
 
             $group->owner->increment('disputed_payments_count');
 
-            Log::info("Remboursement automatique: paiement #{$this->paymentId} — identifiants non fournis après 48h.");
+            Mail::to($user->email)
+                ->send(new AutoRefundProcessed(
+                    $payment->load('group.subscription'),
+                    $user
+                ));
+
+            Log::info("Remboursement automatique — paiement #{$this->paymentId}");
 
         } catch (\Exception $e) {
             Log::error("Échec remboursement automatique #{$this->paymentId}: " . $e->getMessage());

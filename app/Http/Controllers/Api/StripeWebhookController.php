@@ -7,6 +7,8 @@ use App\Models\GroupMember;
 use App\Models\StripeEvent;
 use App\Models\User;
 use App\Models\Payment;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\PaymentFailed;
 use App\Jobs\CheckCredentialsProvided;
 use App\Services\Payment\Contracts\PaymentGatewayInterface;
 use App\Services\Payment\PaymentService;
@@ -27,12 +29,14 @@ class StripeWebhookController extends Controller
         $payload = $request->getContent();
         $sigHeader = $request->header('Stripe-Signature');
 
+        $isConnectWebhook = $request->header('Stripe-Account') !== null;
+
+        $secret = $isConnectWebhook
+            ? config('services.stripe.connect_webhook_secret')
+            : config('services.stripe.webhook_secret');
+
         try {
-            $event = Webhook::constructEvent(
-                $payload,
-                $sigHeader,
-                config('services.stripe.webhook_secret')
-            );
+            $event = Webhook::constructEvent($payload, $sigHeader, $secret);
         } catch (\Exception $e) {
             Log::error('Webhook signature invalide: ' . $e->getMessage());
             return response()->json(['error' => 'Webhook invalide.'], 400);
@@ -161,6 +165,9 @@ class StripeWebhookController extends Controller
             'subscription_status' => 'past_due',
         ]);
 
+        if ($member->user->notif_payment_failed) {
+            Mail::to($member->user->email)->send(new PaymentFailed($member->load('group.subscription')));
+        }
         Log::warning('Invoice payment failed for member #' . $member->user_id);
     }
 

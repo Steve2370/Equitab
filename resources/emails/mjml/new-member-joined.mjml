@@ -1,0 +1,96 @@
+<mjml>
+  <mj-head>
+    <mj-font name="Montserrat" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" />
+    <mj-attributes>
+      <mj-all font-family="Montserrat, Arial, sans-serif" />
+      <mj-text font-size="15px" line-height="1.6" color="#374151" />
+    </mj-attributes>
+  </mj-head>
+
+  <mj-body background-color="#F9FAFB">
+
+    <!-- Header -->
+    <mj-section background-color="#0B1929" padding="24px 32px">
+      <mj-column>
+        <mj-text font-size="22px" font-weight="700" color="#FFFFFF" align="center">
+          Equitab
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Hero -->
+    <mj-section background-color="#FFFFFF" padding="40px 32px 24px">
+      <mj-column>
+        <mj-text font-size="28px" font-weight="700" color="#0B1929" align="center">
+          Nouveau membre
+        </mj-text>
+        <mj-text align="center" color="#6B7280" padding-top="8px">
+          Bonjour <strong>{{ $ownerName }}</strong>, quelqu'un vient de rejoindre votre groupe.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Détails -->
+    <mj-section background-color="#FFFFFF" padding="0 32px 24px">
+      <mj-column background-color="#F0FDF4" border-radius="12px" padding="24px">
+        <mj-table>
+          <tr>
+            <td style="padding: 6px 0; color: #6B7280; font-size: 14px;">Nouveau membre</td>
+            <td style="padding: 6px 0; color: #0B1929; font-weight: 600; text-align: right;">{{ $memberName }}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0; color: #6B7280; font-size: 14px;">Groupe</td>
+            <td style="padding: 6px 0; color: #0B1929; font-weight: 600; text-align: right;">{{ $groupName }}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0; color: #6B7280; font-size: 14px;">Service</td>
+            <td style="padding: 6px 0; color: #0B1929; font-weight: 600; text-align: right;">{{ $subscriptionName }}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0; color: #6B7280; font-size: 14px;">Montant reçu</td>
+            <td style="padding: 6px 0; color: #10B981; font-weight: 700; text-align: right;">{{ $pricePerMember }} $ CAD / mois</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0; color: #6B7280; font-size: 14px;">Places restantes</td>
+            <td style="padding: 6px 0; color: #0B1929; font-weight: 600; text-align: right;">{{ $spotsLeft }}</td>
+          </tr>
+        </mj-table>
+      </mj-column>
+    </mj-section>
+
+    <!-- Rappel identifiants -->
+    <mj-section background-color="#FFFFFF" padding="0 32px 24px">
+      <mj-column background-color="#FFF7ED" border-radius="12px" padding="20px">
+        <mj-text font-size="14px" color="#C2410C" font-weight="600">
+          ⚠️ Action requise
+        </mj-text>
+        <mj-text font-size="14px" color="#9A3412" padding-top="4px">
+          Assurez-vous que les identifiants de connexion sont renseignés dans votre groupe. Le membre doit y avoir accès dans les 48h suivant son paiement.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- CTA -->
+    <mj-section background-color="#FFFFFF" padding="0 32px 40px">
+      <mj-column>
+        <mj-button href="{{ $dashboardUrl }}" background-color="#0B1929" color="#FFFFFF" font-size="15px" font-weight="600" border-radius="8px" padding="14px 0" inner-padding="14px 48px" width="100%">
+          Gérer mon groupe
+        </mj-button>
+      </mj-column>
+    </mj-section>
+
+    <!-- Footer -->
+    <mj-section background-color="#F3F4F6" padding="24px 32px">
+      <mj-column>
+        <mj-text font-size="12px" color="#9CA3AF" align="center">
+          © 2026 Equitab Inc. — Plateforme de partage d'abonnements
+        </mj-text>
+        <mj-text font-size="12px" color="#9CA3AF" align="center" padding-top="4px">
+          Des questions ? Contactez-nous à
+          <a href="mailto:support@equitab.ca" style="color: #10B981;">support@equitab.ca</a>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+  </mj-body>
+</mjml>

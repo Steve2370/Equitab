@@ -1,0 +1,111 @@
+<mjml>
+  <mj-head>
+    <mj-font name="Montserrat" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" />
+    <mj-attributes>
+      <mj-all font-family="Montserrat, Arial, sans-serif" />
+      <mj-text font-size="15px" line-height="1.6" color="#374151" />
+    </mj-attributes>
+  </mj-head>
+
+  <mj-body background-color="#F9FAFB">
+
+    <!-- Header -->
+    <mj-section background-color="#0B1929" padding="24px 32px">
+      <mj-column>
+        <mj-text font-size="22px" font-weight="700" color="#FFFFFF" align="center">
+          Equitab
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Hero -->
+    <mj-section background-color="#FFFFFF" padding="40px 32px 24px">
+      <mj-column>
+        <mj-text font-size="28px" font-weight="700" color="#0B1929" align="center">
+          Remboursement effectué
+        </mj-text>
+        <mj-text align="center" color="#6B7280" padding-top="8px">
+          Bonjour <strong>{{ $userName }}</strong>, vous avez été remboursé automatiquement.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Explication -->
+    <mj-section background-color="#FFFFFF" padding="0 32px 24px">
+      <mj-column background-color="#F0FDF4" border-radius="12px" padding="24px">
+        <mj-text font-size="15px" font-weight="600" color="#0B1929" padding-bottom="8px">
+          Pourquoi ce remboursement ?
+        </mj-text>
+        <mj-text font-size="14px" color="#374151">
+          Le propriétaire du groupe <strong>{{ $groupName }}</strong> n'a pas fourni les identifiants d'accès dans les 48 heures suivant votre paiement. Conformément à notre politique de protection des membres, votre paiement a été remboursé automatiquement.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Détails remboursement -->
+    <mj-section background-color="#FFFFFF" padding="0 32px 24px">
+      <mj-column background-color="#F9FAFB" border-radius="12px" padding="24px">
+        <mj-table>
+          <tr>
+            <td style="padding: 6px 0; color: #6B7280; font-size: 14px;">Service</td>
+            <td style="padding: 6px 0; color: #0B1929; font-weight: 600; text-align: right;">{{ $subscriptionName }}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0; color: #6B7280; font-size: 14px;">Groupe</td>
+            <td style="padding: 6px 0; color: #0B1929; font-weight: 600; text-align: right;">{{ $groupName }}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0; color: #6B7280; font-size: 14px;">Montant remboursé</td>
+            <td style="padding: 6px 0; color: #10B981; font-weight: 700; text-align: right;">{{ $amount }} $ CAD</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0; color: #6B7280; font-size: 14px;">Délai de réception</td>
+            <td style="padding: 6px 0; color: #0B1929; font-weight: 600; text-align: right;">5 à 10 jours ouvrables</td>
+          </tr>
+        </mj-table>
+      </mj-column>
+    </mj-section>
+
+    <!-- Suggestion -->
+    <mj-section background-color="#FFFFFF" padding="0 32px 24px">
+      <mj-column background-color="#EFF6FF" border-radius="12px" padding="20px">
+        <mj-text font-size="14px" color="#1D4ED8" font-weight="600">
+          💡 Trouvez un autre groupe
+        </mj-text>
+        <mj-text font-size="14px" color="#1E40AF" padding-top="4px">
+          D'autres groupes {{ $subscriptionName }} sont disponibles sur Equitab. Rejoignez un groupe dont le propriétaire a déjà fourni les identifiants.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- CTA -->
+    <mj-section background-color="#FFFFFF" padding="0 32px 16px">
+      <mj-column>
+        <mj-button href="{{ $dashboardUrl }}" background-color="#10B981" color="#FFFFFF" font-size="15px" font-weight="600" border-radius="8px" padding="14px 0" inner-padding="14px 48px" width="100%">
+          Voir mes paiements
+        </mj-button>
+      </mj-column>
+    </mj-section>
+
+    <mj-section background-color="#FFFFFF" padding="0 32px 40px">
+      <mj-column>
+        <mj-text font-size="13px" color="#6B7280" align="center">
+          Des questions sur ce remboursement ? <a href="{{ $supportUrl }}" style="color: #10B981;">Contactez notre support</a>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Footer -->
+    <mj-section background-color="#F3F4F6" padding="24px 32px">
+      <mj-column>
+        <mj-text font-size="12px" color="#9CA3AF" align="center">
+          © 2026 Equitab Inc. — Plateforme de partage d'abonnements
+        </mj-text>
+        <mj-text font-size="12px" color="#9CA3AF" align="center" padding-top="4px">
+          Des questions ? <a href="mailto:support@equitab.ca" style="color: #10B981;">support@equitab.ca</a>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+  </mj-body>
+</mjml>

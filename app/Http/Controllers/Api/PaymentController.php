@@ -5,11 +5,16 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Group;
 use App\Models\Dispute;
+use App\Models\Payment;
+use App\Models\GroupMember;
 use App\Services\Payment\PaymentService;
 use App\Services\Payment\Contracts\PaymentGatewayInterface;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\PaymentConfirmed;
+use App\Mail\NewMemberJoined;
 use Inertia\Response;
 use Inertia\Inertia;
 use Exception;
@@ -70,11 +75,11 @@ class PaymentController extends Controller
                 paymentMethodId: $request->payment_method_id,
             );
 
-            \Illuminate\Support\Facades\Log::info('Subscribe result', $result);  // ← ajoute ça
+            Log::info('Subscribe result', $result);  
 
             return response()->json($result);
         } catch (Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Subscribe error: ' . $e->getMessage());
+            Log::error('Subscribe error: ' . $e->getMessage());
             return response()->json(['message' => $e->getMessage()], 422);
         }
     }
@@ -111,7 +116,7 @@ class PaymentController extends Controller
     public function dispute(Request $request, \App\Models\Payment $payment): JsonResponse
     {
         $request->validate([
-            'reason'      => ['required', 'in:no_access,invalid_credentials,service_down,other'],
+            'reason' => ['required', 'in:no_access,invalid_credentials,service_down,other'],
             'description' => ['required', 'string', 'max:1000'],
         ]);
 
@@ -149,7 +154,7 @@ class PaymentController extends Controller
             'subscription_id' => ['required', 'string'],
         ]);
 
-        $member = \App\Models\GroupMember::where('stripe_subscription_id', $request->subscription_id)
+        $member = GroupMember::where('stripe_subscription_id', $request->subscription_id)
             ->where('user_id', $request->user()->id)
             ->first();
 
@@ -157,7 +162,6 @@ class PaymentController extends Controller
             return response()->json(['message' => 'Abonnement introuvable.'], 404);
         }
 
-        // Vérifier le statut réel via Stripe
         $stripe = new \Stripe\StripeClient(config('services.stripe.secret'));
         $subscription = $stripe->subscriptions->retrieve($request->subscription_id, [
             'expand' => ['latest_invoice.payment_intent'],
@@ -172,29 +176,34 @@ class PaymentController extends Controller
         }
 
         $member->update([
-            'status'              => 'active',
+            'status' => 'active',
             'subscription_status' => 'active',
-            'last_payment_at'     => now(),
-            'next_payment_at'     => now()->addMonth()->startOfMonth(),
+            'last_payment_at' => now(),
+            'next_payment_at' => now()->addMonth()->startOfMonth(),
         ]);
 
         $member->user->increment('completed_payments_count');
 
-        \App\Models\Payment::firstOrCreate(
+        $payment = Payment::firstOrCreate(
             ['stripe_payment_intent_id' => $invoice?->payment_intent?->id],
             [
-                'group_id'            => $member->group_id,
-                'user_id'             => $member->user_id,
-                'amount'              => $invoice?->amount_paid ?? 0,
-                'currency'            => strtoupper($subscription->currency),
-                'status'              => 'completed',
-                'paid_at'             => now(),
-                'due_date'            => now(),
-                'period_start'        => now()->startOfMonth(),
-                'period_end'          => now()->endOfMonth(),
+                'group_id' => $member->group_id,
+                'user_id' => $member->user_id,
+                'amount' => $invoice?->amount_paid ?? 0,
+                'currency' => strtoupper($subscription->currency),
+                'status' => 'completed',
+                'paid_at' => now(),
+                'due_date' => now(),
+                'period_start' => now()->startOfMonth(),
+                'period_end' => now()->endOfMonth(),
                 'platform_fee_amount' => (int) round(($invoice?->amount_paid ?? 0) * 0.05),
             ]
         );
+        Mail::to($member->user->email)
+            ->send(new PaymentConfirmed($payment, $member));
+
+        Mail::to($member->group->owner->email)
+            ->send(new NewMemberJoined($member->group->load('subscription', 'owner'), $member->user));
 
         return response()->json(['message' => 'Abonnement activé.']);
     }
