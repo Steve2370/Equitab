@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+@theme {
+    --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+
+    --color-equitab-navy: #0B1929;
+    --color-equitab-navy-light: #16263B;
+    --color-equitab-emerald: #10B981;
+    --color-equitab-emerald-dark: #059669;
+}

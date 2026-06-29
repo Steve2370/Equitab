@@ -1,0 +1,105 @@
+<?php
+
+// use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
+use App\Models\Subscription;
+use App\Models\Group;
+use App\Http\Controllers\Api\GroupController;
+use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ChatController;
+use App\Http\Controllers\Api\StripeWebhookController;
+
+Route::get('/', function () {
+    return Inertia::render('Welcome', [
+        'canLogin' => Route::has('login'),
+        'canRegister' => Route::has('register'),
+    ]);
+});
+
+Route::post('/webhooks/stripe', StripeWebhookController::class);
+
+Route::get('/dashboard', function () {
+    return Inertia::render('Dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware('auth')->group(function () {
+    // Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    // Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    // Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard/chat', [ChatController::class, 'index']);
+});
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard/preferences', [DashboardController::class, 'preferences']);
+    Route::patch('/dashboard/preferences', [DashboardController::class, 'updatePreferences']);
+    Route::post('/dashboard/preferences/avatar', [DashboardController::class, 'updateAvatar']);
+    Route::delete('/dashboard/preferences/account', [DashboardController::class, 'deleteAccount']);
+});
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/subscriptions', [DashboardController::class, 'subscriptions']);
+    Route::get('/dashboard/payments', [DashboardController::class, 'payments']);
+    Route::get('/dashboard/profile', [DashboardController::class, 'profile']);
+});
+
+Route::get('/groups/service/{slug}', [GroupController::class, 'byService'])
+    ->name('groups.by-service');
+
+require __DIR__.'/auth.php';
+
+Route::get('/', function () {
+    $catalogServices = Subscription::where('is_active', true)
+        ->get()
+        ->map(fn ($sub) => [
+            'name' => $sub->name,
+            'slug' => str($sub->name)->slug(),
+            'pricePerMember' => $sub->price_in_dollars,
+            'discountPercent' => 50,
+        ]);
+
+    $openGroups = Group::with('subscription')
+        ->where('status', 'open')
+        ->where('visibility', 'public')
+        ->limit(10)
+        ->get()
+        ->map(fn ($group) => [
+            'id' => $group->id,
+            'subscriptionName' => $group->subscription->name,
+            'subscriptionSlug' => str($group->subscription->name)->slug(),
+            'pricePerMember' => $group->price_in_dollars,
+            'currentMembers' => $group->current_members,
+            'maxMembers' => $group->max_members,
+        ]);
+
+    return Inertia::render('Welcome', [
+        'canLogin' => Route::has('login'),
+        'canRegister' => Route::has('register'),
+        'isAuthenticated' => Auth::check(),
+        'catalogServices' => $catalogServices,
+        'openGroups' => $openGroups,
+    ]);
+});
+
+Route::get('/payment/success', [PaymentController::class, 'success'])
+    ->middleware(['auth', 'verified'])
+    ->name('payment.success');
+
+Route::get('/dashboard/groups/create', [GroupController::class, 'create'])
+    ->middleware(['auth', 'verified']);
+
+Route::patch('/dashboard/profile', [DashboardController::class, 'updateProfile']);
+
+Route::get('/dashboard/subscriptions', [DashboardController::class, 'subscriptions'])
+    ->name('dashboard.subscriptions');
+
+Route::post('/groups', [GroupController::class, 'store'])
+    ->middleware(['auth', 'verified'])
+    ->name('groups.store');
+
