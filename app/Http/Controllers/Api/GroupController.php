@@ -30,11 +30,20 @@ class GroupController extends Controller
         return response()->json($groups);
     }
 
-    public function create(): Response
+    public function create(Request $request): \Inertia\Response
     {
-        $this->authorize('create', Group::class);
+        $user = $request->user();
 
-        $subscriptions = Subscription::where('is_active', true)
+        if ($user->identity_status !== 'verified' || $user->stripe_connect_status !== 'active') {
+            return Inertia::render('Dashboard/Groups/Create', [
+                'subscriptions' => [],
+                'verificationError' => true,
+                'identityVerified' => $user->identity_status === 'verified',
+                'connectActive' => $user->stripe_connect_status === 'active',
+            ]);
+        }
+
+        $subscriptions = \App\Models\Subscription::where('is_active', true)
             ->with('category')
             ->get()
             ->map(fn($s) => [
@@ -48,6 +57,7 @@ class GroupController extends Controller
 
         return Inertia::render('Dashboard/Groups/Create', [
             'subscriptions' => $subscriptions,
+            'verificationError' => false,
         ]);
     }
 

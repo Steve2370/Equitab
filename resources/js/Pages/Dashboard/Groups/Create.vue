@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, Link } from '@inertiajs/vue3';
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
 import { getBrandGradient } from '@/config/brandGradients';
 import {
     Users, ChevronRight, Eye, EyeOff,
-    TrendingDown, Shield, Lock, Globe, Link2, UserCheck
+    TrendingDown, Shield, Lock, Globe, Link2, UserCheck,
+    ShieldAlert, CheckCircle, Circle,
 } from 'lucide-vue-next';
 
 interface Subscription {
@@ -19,6 +20,9 @@ interface Subscription {
 
 interface Props {
     subscriptions: Subscription[];
+    verificationError?: boolean;
+    identityVerified?: boolean;
+    connectActive?: boolean;
 }
 
 const props = defineProps<Props>();
@@ -135,7 +139,49 @@ const visibilityOptions = [
     <Head title="Partager un abonnement — Equitab" />
 
     <DashboardLayout>
-        <div class="mx-auto max-w-2xl">
+        <div v-if="verificationError" class="mx-auto max-w-lg text-center py-16">
+            <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50">
+                <ShieldAlert class="h-8 w-8 text-amber-500" />
+            </div>
+            <h1 class="mt-6 text-2xl font-semibold text-equitab-navy">
+                Vérification requise
+            </h1>
+            <p class="mt-3 text-gray-500">
+                Pour des raisons de sécurité, vous devez vérifier votre identité et configurer votre compte bancaire avant de pouvoir partager un abonnement.
+            </p>
+
+            <div class="mt-8 space-y-3 text-left">
+                <div class="flex items-center gap-3 rounded-xl border border-gray-100 bg-white p-4">
+                    <component
+                        :is="identityVerified ? CheckCircle : Circle"
+                        class="h-5 w-5 shrink-0"
+                        :class="identityVerified ? 'text-equitab-emerald' : 'text-gray-300'"
+                    />
+                    <span class="text-sm" :class="identityVerified ? 'text-gray-700' : 'text-gray-400'">
+                        Identité vérifiée
+                    </span>
+                </div>
+                <div class="flex items-center gap-3 rounded-xl border border-gray-100 bg-white p-4">
+                    <component
+                        :is="connectActive ? CheckCircle : Circle"
+                        class="h-5 w-5 shrink-0"
+                        :class="connectActive ? 'text-equitab-emerald' : 'text-gray-300'"
+                    />
+                    <span class="text-sm" :class="connectActive ? 'text-gray-700' : 'text-gray-400'">
+                        Compte bancaire configuré
+                    </span>
+                </div>
+            </div>
+
+            <Link
+                href="/dashboard/profile"
+                class="mt-8 inline-flex items-center gap-2 rounded-lg bg-equitab-navy px-6 py-3 text-sm font-medium text-white hover:bg-equitab-navy-light"
+            >
+                Compléter ma vérification
+            </Link>
+        </div>
+
+        <div v-else class="mx-auto max-w-2xl">
             <div class="mb-8">
                 <h1 class="text-2xl font-semibold text-equitab-navy">Partager un abonnement</h1>
                 <p class="mt-1 text-sm text-gray-500">Créez un groupe et invitez des membres à partager vos frais.</p>
@@ -166,7 +212,6 @@ const visibilityOptions = [
                 </template>
             </div>
 
-            <!-- Étape 1 : Choisir le service -->
             <div v-if="step === 1">
                 <div class="grid gap-3 sm:grid-cols-2">
                     <button
