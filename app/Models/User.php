@@ -71,4 +71,56 @@ class User extends Authenticatable
     {
         return $this->hasMany(Invitation::class, 'invited_by');
     }
+
+    public function calculateTrustScore(): float
+    {
+        $score = 0;
+
+        if ($this->identity_status === 'verified') {
+            $score += 30;
+        }
+
+        if ($this->stripe_connect_status === 'active') {
+            $score += 20;
+        }
+
+        $paymentsReceived = Payment::whereHas('group', fn($q) => $q->where('owner_id', $this->id))
+            ->where('status', 'completed')
+            ->count();
+
+        if ($paymentsReceived > 0) {
+            $score += 20;
+        }
+
+        $disputes = Dispute::whereHas('group', fn($q) => $q->where('owner_id', $this->id))
+            ->where('status', 'resolved_refund')
+            ->count();
+
+        if ($disputes === 0) {
+            $score += 15;
+        }
+
+        if ($this->created_at->diffInDays(now()) >= 30) {
+            $score += 10;
+        }
+
+        if ($this->avatar) {
+            $score += 5;
+        }
+
+        $score -= ($disputes * 20);
+
+        $autoRefunds = Payment::whereHas('group', fn($q) => $q->where('owner_id', $this->id))
+            ->where('refund_reason', 'auto_no_credentials')
+            ->count();
+
+        $score -= ($autoRefunds * 10);
+
+        return max(0, min(100, $score));
+    }
+
+    public function getTrustScoreAttribute(): float
+    {
+        return $this->calculateTrustScore();
+    }
 }

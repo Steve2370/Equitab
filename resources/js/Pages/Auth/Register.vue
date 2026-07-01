@@ -41,7 +41,7 @@ function submit(): void {
                 <div class="mt-10 grid grid-cols-2 gap-4">
                     <div
                         v-for="stat in [
-                            { value: '5%', label: 'Commission seulement' },
+                            { value: 'Secure', label: 'Paiements sécurisés' },
                             { value: 'CAD', label: 'Devise canadienne' },
                             { value: '100%', label: 'Sécurisé par Stripe' },
                             { value: '0$', label: 'Frais d\'inscription' },

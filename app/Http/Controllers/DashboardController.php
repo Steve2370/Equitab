@@ -19,6 +19,7 @@ class DashboardController extends Controller
         $activeGroups = $user->groupMembers()
             ->with('group.subscription')
             ->where('status', 'active')
+            ->whereHas('group', fn($q) => $q->whereNotIn('status', ['closed']))
             ->get();
 
         $totalSavings = $activeGroups->sum(function ($member) {
@@ -61,6 +62,7 @@ class DashboardController extends Controller
             ->with(['group.subscription', 'group.owner'])
             ->where('role', 'member')
             ->whereIn('status', ['active', 'pending_payment'])
+            ->whereHas('group', fn($q) => $q->whereNotIn('status', ['closed']))
             ->get()
             ->map(fn($m) => [
                 'id' => $m->group->id,
@@ -82,8 +84,10 @@ class DashboardController extends Controller
                 'subscriptionName' => $g->subscription->name,
                 'membersCount' => $g->current_members,
                 'maxMembers' => $g->max_members,
-                'pricePerMember' => $g->price_per_member,
+                'pricePerMember' => $g->calculateCurrentPricePerMember(),
+                'totalPrice' => $g->total_price,
                 'status' => $g->status,
+                'inviteLink' => $g->invite_token ? config('app.url') . '/invite/' . $g->invite_token : null,
                 'renewalDate' => $g->renewal_date?->format('d M Y'),
             ]);
 

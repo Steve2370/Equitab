@@ -5,9 +5,11 @@ import OwnerGroupCard from '@/Components/OwnerGroupCard.vue';
 
 interface OwnerGroup {
     id: number;
+    subscriptionName: string;
     ownerName: string;
     ownerIdentityStatus: string;
     ownerActiveGroupsCount: number;
+    ownerTrustScore: number;
     tier: 'standard' | 'premium' | 'famille';
     pricePerMember: number;
     spotsAvailable: number;
@@ -53,9 +55,11 @@ defineProps<Props>();
                     v-for="group in groups"
                     :key="group.id"
                     :group-id="group.id"
+                    :subscription-name="group.subscriptionName"
                     :owner-name="group.ownerName"
                     :owner-identity-status="group.ownerIdentityStatus"
                     :owner-active-groups-count="group.ownerActiveGroupsCount"
+                    :owner-trust-score="group.ownerTrustScore"
                     :tier="group.tier"
                     :price-per-member="group.pricePerMember"
                     :spots-available="group.spotsAvailable"

@@ -48,7 +48,7 @@ function submit(): void {
                         v-for="item in [
                             { title: 'Paiements sécurisés par Stripe', desc: 'Votre argent ne transite jamais par Equitab' },
                             { title: 'Identifiants chiffrés', desc: 'Accessibles uniquement aux membres actifs' },
-                            { title: 'Commission de 5% seulement', desc: 'Le tarif le plus bas du marché canadien' },
+                            { title: 'Paiements 100% sécurisés', desc: 'Vos transactions sont protégées par Stripe' },
                         ]"
                         :key="item.title"
                         class="flex items-start gap-3"

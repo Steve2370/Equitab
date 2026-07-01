@@ -7,6 +7,7 @@ import NavbarWithSearch from '@/Components/NavbarWithSearch.vue';
 import SearchBar from '@/Components/SearchBar.vue';
 import HowItWorksColumn from '@/Components/HowItWorksColumn.vue';
 import VideoPlaceholder from '@/Components/VideoPlaceholder.vue';
+import { Link } from '@inertiajs/vue3';
 import { UserPlus, Send, CreditCard, PartyPopper, Plus, Share2, Wallet, BadgeDollarSign } from 'lucide-vue-next';
 
 interface CatalogService {
@@ -90,13 +91,21 @@ const ownSteps = [
             <h2 class="mb-4 px-6 text-xl font-semibold text-equitab-navy lg:px-12">
                 Services populaires
             </h2>
-            <ScrollingCarousel :duration-seconds="35">
+            <ScrollingCarousel :duration-seconds="60">
                 <ServiceCard
                     v-for="service in catalogServices"
                     :key="service.slug"
                     v-bind="service"
                 />
             </ScrollingCarousel>
+            <div class="mt-8 flex justify-center">
+                <Link
+                    href="/services"
+                    class="rounded-xl bg-equitab-navy px-6 py-3 text-sm font-medium text-white hover:bg-equitab-navy-light"
+                >
+                    Voir tous les services
+                </Link>
+            </div>
         </section>
 
         <section class="px-6 py-16 lg:px-12">

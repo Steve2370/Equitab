@@ -16,6 +16,11 @@ interface PaymentGatewayInterface
 
     public function refundPayment(string $paymentIntentId, ?int $amountInCents = null): array;
 
+    public function createMonthlyPrice(Group $group, int $amountInCents): string;
+
+    public function createProduct(Group $group): array;
+
+    public function updateSubscriptionItemPrice(string $itemId, string $newPriceId): void;
 
     public function createPaymentIntent(
         User $payer,

@@ -7,9 +7,11 @@ use Inertia\Inertia;
 use App\Models\Subscription;
 use App\Models\Group;
 use App\Http\Controllers\Api\GroupController;
+use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Api\StripeWebhookController;
 
 Route::get('/', function () {
@@ -17,6 +19,17 @@ Route::get('/', function () {
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
     ]);
+});
+
+Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
+    Route::get('/', [AdminController::class, 'index'])->name('admin.index');
+    Route::get('/users', [AdminController::class, 'users'])->name('admin.users');
+    Route::get('/groups', [AdminController::class, 'groups'])->name('admin.groups');
+    Route::get('/payments', [AdminController::class, 'payments'])->name('admin.payments');
+    Route::get('/disputes', [AdminController::class, 'disputes'])->name('admin.disputes');
+    Route::patch('/disputes/{dispute}/resolve', [AdminController::class, 'resolveDispute'])->name('admin.disputes.resolve');
+    Route::get('/messages', [AdminController::class, 'messages'])->name('admin.messages');
+    Route::post('/messages/send', [AdminController::class, 'sendMessage'])->name('admin.messages.send');
 });
 
 Route::post('/webhooks/stripe', StripeWebhookController::class);
@@ -51,6 +64,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::get('/groups/service/{slug}', [GroupController::class, 'byService'])
     ->name('groups.by-service');
+
+Route::get('/services', [SubscriptionController::class, 'index'])->name('services.index');
 
 require __DIR__.'/auth.php';
 
@@ -102,4 +117,10 @@ Route::get('/dashboard/subscriptions', [DashboardController::class, 'subscriptio
 Route::post('/groups', [GroupController::class, 'store'])
     ->middleware(['auth', 'verified'])
     ->name('groups.store');
+
+Route::patch('/groups/{group}/close', [GroupController::class, 'close'])
+    ->middleware(['auth', 'verified']);
+
+Route::get('/invite/{token}', [GroupController::class, 'showInvite'])->name('invite.show');
+
 

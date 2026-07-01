@@ -3,7 +3,8 @@ import { ref } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
 import CredentialsModal from '@/Components/CredentialsModal.vue';
-import { Users, Calendar, Plus, ChevronRight, CheckCircle, Clock, Key } from 'lucide-vue-next';
+import { router } from '@inertiajs/vue3';
+import { Users, Calendar, Plus, ChevronRight, Clock, Key } from 'lucide-vue-next';
 
 interface JoinedSubscription {
     id: number;
@@ -24,6 +25,7 @@ interface OwnedSubscription {
     pricePerMember: number;
     status: string;
     renewalDate: string;
+    inviteLink: string | null;
 }
 
 interface Props {
@@ -41,6 +43,11 @@ const selectedGroup = ref<{ id: number; name: string } | null>(null);
 function openCredentials(groupId: number, subscriptionName: string): void {
     selectedGroup.value = { id: groupId, name: subscriptionName };
     showCredentials.value = true;
+}
+
+function closeGroup(groupId: number): void {
+    if (!confirm('Êtes-vous sûr de vouloir fermer ce groupe ? Tous les membres seront désabonnés.')) return;
+    router.patch(`/groups/${groupId}/close`);
 }
 
 function formatPrice(cents: number): string {
@@ -73,6 +80,15 @@ function statusClass(status: string): string {
     };
     return classes[status] ?? 'bg-gray-100 text-gray-500';
 }
+
+const copiedLink = ref<number | null>(null);
+
+async function copyInviteLink(groupId: number, link: string): Promise<void> {
+    await navigator.clipboard.writeText(link);
+    copiedLink.value = groupId;
+    setTimeout(() => copiedLink.value = null, 2000);
+}
+
 </script>
 
 <template>
@@ -264,6 +280,23 @@ function statusClass(status: string): string {
                             {{ sub.maxMembers - sub.membersCount }} place{{ sub.maxMembers - sub.membersCount > 1 ? 's' : '' }} libre{{ sub.maxMembers - sub.membersCount > 1 ? 's' : '' }}
                         </p>
                     </div>
+
+                    <button
+                        v-if="sub.inviteLink"
+                        @click="copyInviteLink(sub.id, sub.inviteLink)"
+                        class="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:border-equitab-emerald hover:text-equitab-emerald"
+                    >
+                        <Link2 class="h-3.5 w-3.5" />
+                        {{ copiedLink === sub.id ? 'Copié !' : 'Copier le lien' }}
+                    </button>
+
+                    <button
+                        v-if="sub.status === 'open'"
+                        @click="closeGroup(sub.id)"
+                        class="rounded-lg border border-red-100 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50"
+                    >
+                        Fermer le groupe
+                    </button>
                 </div>
             </div>
         </div>

@@ -8,6 +8,7 @@ use App\Models\StripePrice;
 use App\Repositories\Contracts\GroupRepositoryInterface;
 use App\Services\Payment\Contracts\PaymentGatewayInterface;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Exception;
 
 class GroupService
@@ -25,17 +26,18 @@ class GroupService
                 'owner_id' => $owner->id,
                 'current_members' => 1,
                 'status' => 'open',
+                'uuid' => Str::uuid(),
             ]);
 
             $group->load('subscription');
 
-            $stripeData = $this->gateway->createProductAndPrice($group);
+            $stripeData = $this->gateway->createProduct($group);
 
             StripePrice::create([
                 'group_id' => $group->id,
-                'stripe_price_id' => $stripeData['price_id'],
+                'stripe_price_id' => null,
                 'stripe_product_id' => $stripeData['product_id'],
-                'unit_amount' => $group->price_per_member,
+                'unit_amount' => $group->total_price,
                 'currency' => $group->subscription->currency,
             ]);
 
@@ -43,9 +45,15 @@ class GroupService
                 'user_id' => $owner->id,
                 'role' => 'owner',
                 'status' => 'active',
-                'share_amount' => $group->price_per_member,
+                'share_amount' => $group->calculateCurrentPricePerMember(),
                 'joined_at' => now(),
             ]);
+
+            if (in_array($data['visibility'] ?? 'public', ['invite_only', 'private'])) {
+                $token = bin2hex(random_bytes(16));
+                \Illuminate\Support\Facades\Log::info('Generating invite token', ['visibility' => $data['visibility'], 'token' => $token]);
+                $group->update(['invite_token' => $token]);
+            }
 
             return $group;
         });

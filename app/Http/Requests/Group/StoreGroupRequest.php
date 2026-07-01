@@ -23,20 +23,20 @@ class StoreGroupRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'subscription_id' => ['required', 'exists:subscriptions,id'],
-            'name' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string', 'max:1000'],
-            'tier' => ['required', 'in:standard,premium,famille'],
-            'max_members' => ['required', 'integer', 'min:2', 'max:10'],
-            'price_per_member' => ['required', 'integer', 'min:100'],
-            'split_type' => ['required', 'in:equal,custom,usage_based'],
-            'visibility' => ['required', 'in:public,private,invite_only'],
-            'renewal_date' => ['required', 'date', 'after:today'],
-            'auto_renew' => ['boolean'],
-            'credential_email' => ['nullable', 'email'],
-            'credential_password' => ['nullable', 'string', 'max:255'],
-            'credential_notes' => ['nullable', 'string', 'max:1000'],
-        ];
+        'subscription_id' => ['required', 'exists:subscriptions,id'],
+        'name' => ['required', 'string', 'max:255'],
+        'description' => ['nullable', 'string', 'max:1000'],
+        'tier' => ['required', 'in:standard,premium,famille'],
+        'max_members' => ['required', 'integer', 'min:2', 'max:10'],
+        'total_price' => ['required', 'integer', 'min:100'],
+        'split_type' => ['required', 'in:equal,custom,usage_based'],
+        'visibility' => ['required', 'in:public,private,invite_only'],
+        'renewal_date' => ['required', 'date', 'after:today'],
+        'auto_renew' => ['boolean'],
+        'credential_email' => ['nullable', 'email'],
+        'credential_password' => ['nullable', 'string', 'max:255'],
+        'credential_notes' => ['nullable', 'string', 'max:1000'],
+    ];
     }
 
     public function messages(): array

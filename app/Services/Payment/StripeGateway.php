@@ -144,6 +144,7 @@ class StripeGateway implements PaymentGatewayInterface
 
         return [
             'subscription_id' => $subscription->id,
+            'subscription_item_id' => $subscription->items->data[0]->id ?? null,
             'status' => $subscription->status,
             'client_secret' => $paymentIntent?->client_secret ?? null,
             'amount_today' => $invoice?->amount_due ?? 0,
@@ -154,6 +155,35 @@ class StripeGateway implements PaymentGatewayInterface
     public function cancelSubscription(string $stripeSubscriptionId): void
     {
         $this->stripe->subscriptions->cancel($stripeSubscriptionId);
+    }
+
+    public function createProduct(Group $group): array
+    {
+        $product = $this->stripe->products->create([
+            'name' => $group->name . ' — Equitab',
+        ]);
+
+        return ['product_id' => $product->id];
+    }
+
+    public function createMonthlyPrice(Group $group, int $amountInCents): string
+    {
+        $price = $this->stripe->prices->create([
+            'unit_amount' => $amountInCents,
+            'currency' => 'cad',
+            'recurring' => ['interval' => 'month'],
+            'product' => $group->stripePrice->stripe_product_id,
+        ]);
+
+        return $price->id;
+    }
+
+    public function updateSubscriptionItemPrice(string $itemId, string $newPriceId): void
+    {
+        $this->stripe->subscriptionItems->update($itemId, [
+            'price' => $newPriceId,
+            'proration_behavior' => 'none',
+        ]);
     }
 
     public function isAccountActive(User $user): bool

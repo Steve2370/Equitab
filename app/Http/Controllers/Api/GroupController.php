@@ -12,6 +12,8 @@ use App\Services\Group\GroupService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use App\Services\Payment\Contracts\PaymentGatewayInterface;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Response;
 use Inertia\Inertia;
@@ -21,6 +23,7 @@ class GroupController extends Controller
     public function __construct(
         private readonly GroupRepositoryInterface $groupRepository,
         private readonly GroupService $groupService,
+        private readonly PaymentGatewayInterface $gateway,
     ) {}
 
     public function index(): JsonResponse
@@ -74,6 +77,29 @@ class GroupController extends Controller
         return response()->json(
             $group->load(['subscription', 'owner', 'activeMembers'])
         );
+    }
+
+    public function showInvite(string $token): Response
+    {
+        $group = Group::where('invite_token', $token)
+            ->where('status', 'open')
+            ->whereIn('visibility', ['invite_only', 'private'])
+            ->with(['owner', 'subscription'])
+            ->firstOrFail();
+
+        return Inertia::render('InvitePage', [
+            'group' => [
+                'id' => $group->id,
+                'name' => $group->name,
+                'subscriptionName' => $group->subscription->name,
+                'subscriptionSlug' => $group->subscription->slug,
+                'ownerName' => $group->owner->name,
+                'ownerTrustScore' => $group->owner->calculateTrustScore(),
+                'pricePerMember' => $group->calculateCurrentPricePerMember(),
+                'spotsAvailable' => $group->max_members - $group->current_members,
+                'maxMembers' => $group->max_members,
+            ],
+        ]);
     }
 
     public function update(UpdateGroupRequest $request, Group $group): JsonResponse
@@ -139,13 +165,13 @@ class GroupController extends Controller
 
     public function byService(string $slug): Response
     {
-        $subscription = Subscription::where('slug', $slug)->firstOrFail();
+        $subscription = Subscription::where('slug', $slug)->where('is_active', true)->firstOrFail();
 
         $groups = Group::with(['owner', 'subscription'])
-            ->where('subscription_id', $subscription->id)
             ->where('status', 'open')
             ->where('visibility', 'public')
-            ->whereColumn('current_members', '<', 'max_members')
+            ->where('current_members', '<', DB::raw('max_members'))
+            ->with(['owner', 'subscription'])
             ->get()
             ->map(fn ($group) => [
                 'id' => $group->id,
@@ -153,8 +179,10 @@ class GroupController extends Controller
                 'ownerName' => $group->owner->name,
                 'ownerIdentityStatus' => $group->owner->identity_status,
                 'ownerActiveGroupsCount' => $group->owner->ownedGroups()->where('status', '!=', 'closed')->count(),
-                'tier' => $group->subscription->tier,
-                'pricePerMember' => $group->price_per_member,
+                'ownerTrustScore' => $group->owner->calculateTrustScore(),
+                'tier' => $group->subscription->tier ?? 'standard',
+                'pricePerMember' => $group->calculateCurrentPricePerMember(),
+                'totalPrice' => $group->total_price,
                 'spotsAvailable' => $group->max_members - $group->current_members,
                 'maxMembers' => $group->max_members,
                 'createdAt' => $group->created_at->format('d M Y'),
@@ -170,5 +198,26 @@ class GroupController extends Controller
             'canRegister' => true,
             'isAuthenticated' => Auth::check(),
         ]);
+    }
+
+    public function close(Group $group): RedirectResponse
+    {
+        $this->authorize('update', $group);
+
+        if ($group->owner_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $group->update(['status' => 'closed']);
+        $activeMembers = $group->members()->where('status', 'active')->where('role', 'member')->get();
+
+        foreach ($activeMembers as $member) {
+            if ($member->stripe_subscription_id) {
+                $this->gateway->cancelSubscription($member->stripe_subscription_id);
+            }
+            $member->update(['status' => 'left', 'subscription_status' => 'canceled']);
+        }
+
+        return back()->with('success', 'Le groupe a été fermé.');
     }
 }

@@ -404,17 +404,17 @@ const canadianProvinces = [
                                     cx="18" cy="18" r="15.9" fill="none"
                                     stroke="#10B981" stroke-width="2.5"
                                     stroke-dasharray="100"
-                                    :stroke-dashoffset="100 - (user.trust_score ?? 0) * 100"
+                                    :stroke-dashoffset="100 - (user.trust_score ?? 0)"
                                     stroke-linecap="round"
                                 />
                             </svg>
                             <span class="absolute inset-0 flex items-center justify-center text-sm font-semibold text-equitab-navy">
-                                {{ user.trust_score ? Math.round(user.trust_score * 100) : 0 }}%
+                                {{ user.trust_score ? Math.round(user.trust_score) : 0 }}%
                             </span>
                         </div>
                         <div>
                             <p class="font-medium text-equitab-navy">
-                                {{ (user.trust_score ?? 0) >= 0.8 ? 'Excellent' : (user.trust_score ?? 0) >= 0.5 ? 'Bon' : 'En construction' }}
+                                {{ (user.trust_score ?? 0) >= 80 ? 'Excellent' : (user.trust_score ?? 0) >= 50 ? 'Bon' : 'En construction' }}
                             </p>
                             <p class="text-xs text-gray-400">{{ user.completed_payments }} paiements</p>
                         </div>

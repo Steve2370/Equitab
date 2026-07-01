@@ -4,7 +4,11 @@ import { Head, Link } from '@inertiajs/vue3';
 import { Home, ArrowLeft, AlertTriangle, ServerCrash, ShieldOff } from 'lucide-vue-next';
 
 function goBack(): void {
-    window.history.back();
+    if (window.history.length > 1) {
+        window.history.back();
+    } else {
+        window.location.href = '/';
+    }
 }
 
 interface Props {

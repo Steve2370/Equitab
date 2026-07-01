@@ -3,7 +3,7 @@ import { ref, computed } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import {
     LayoutDashboard, CreditCard, MessageSquare,
-    Wallet, ShieldCheck, Settings, Menu, X,
+    Wallet, ShieldCheck, Settings, Menu, X, ShieldAlert,
     LogOut
 } from 'lucide-vue-next';
 
@@ -18,7 +18,10 @@ const page = usePage<{
             avatar: string | null;
         } | null;
     };
+    isAdmin: boolean;
 }>();
+
+const isAdmin = computed(() => page.props.isAdmin);
 
 const user = computed(() => page.props.auth?.user);
 
@@ -75,6 +78,20 @@ function isActive(href: string): boolean {
                     >
                         <component :is="item.icon" class="h-4 w-4 shrink-0" />
                         {{ item.label }}
+                    </Link>
+
+                    <div v-if="isAdmin" class="mx-4 my-2 border-t border-white/10" />
+
+                    <Link
+                        v-if="isAdmin"
+                        href="/admin"
+                        class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors"
+                        :class="$page.url.startsWith('/admin')
+                            ? 'bg-red-500/20 text-red-300'
+                            : 'text-white/60 hover:bg-white/5 hover:text-white'"
+                    >
+                        <ShieldAlert class="h-5 w-5 shrink-0" />
+                        <span>Panel admin</span>
                     </Link>
                 </nav>
             </div>

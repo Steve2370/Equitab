@@ -16,10 +16,10 @@ class Group extends Model
     protected $fillable = [
         'uuid', 'subscription_id', 'owner_id', 'name',
         'description', 'max_members', 'current_members',
-        'price_per_member', 'split_type', 'status',
+        'price_per_member', 'total_price', 'split_type', 'status',
         'visibility', 'renewal_date', 'auto_renew', 'settings',
         'credential_email', 'credential_password', 'credential_notes',
-        'tier',
+        'tier', 'invite_token',
     ];
 
     protected function casts(): array
@@ -85,5 +85,24 @@ class Group extends Model
     public function stripePrice(): HasOne
     {
         return $this->hasOne(StripePrice::class);
+    }
+
+    public function calculateCurrentPricePerMember(): int
+    {
+        $activeMembers = $this->members()->where('status', 'active')->count();
+
+        if ($activeMembers === 0) {
+            return $this->total_price;
+        }
+
+        return (int) round($this->total_price / $activeMembers);
+    }
+
+    public function calculateOwnerNetEarnings(): int
+    {
+        $pricePerMember = $this->calculateCurrentPricePerMember();
+        $payingMembers = $this->members()->where('status', 'active')->where('role', 'member')->count();
+
+        return $pricePerMember * $payingMembers;
     }
 }

@@ -10,6 +10,7 @@ interface Props {
     ownerName: string;
     ownerIdentityStatus: string;
     ownerActiveGroupsCount: number;
+    ownerTrustScore: number;
     tier: 'standard' | 'premium' | 'famille';
     pricePerMember: number;
     spotsAvailable: number;
@@ -62,6 +63,28 @@ function onSuccess(_subscriptionId: string): void {
                 <div class="mt-1 flex items-center gap-2">
                     <VerifiedBadge :is-verified="isVerified" />
                     <TierBadge :tier="tier" />
+                </div>
+                <div class="mt-3 flex items-center gap-2">
+                    <div class="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden">
+                        <div
+                            class="h-full rounded-full transition-all"
+                            :class="{
+                                'bg-equitab-emerald': ownerTrustScore >= 70,
+                                'bg-amber-400': ownerTrustScore >= 40 && ownerTrustScore < 70,
+                                'bg-red-400': ownerTrustScore < 40,
+                            }"
+                            :style="{ width: ownerTrustScore + '%' }"
+                        />
+                    </div>
+                    <span class="text-xs font-medium shrink-0"
+                        :class="{
+                            'text-equitab-emerald': ownerTrustScore >= 70,
+                            'text-amber-500': ownerTrustScore >= 40 && ownerTrustScore < 70,
+                            'text-red-500': ownerTrustScore < 40,
+                        }"
+                    >
+                        {{ ownerTrustScore }}% confiance
+                    </span>
                 </div>
             </div>
         </div>

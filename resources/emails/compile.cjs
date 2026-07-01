@@ -31,6 +31,22 @@ const templates = [
         input: 'resources/emails/mjml/new-message.mjml',
         output: 'resources/views/emails/chat/new-message.blade.php',
     },
+    {
+        input: 'resources/emails/mjml/price-changed.mjml',
+        output: 'resources/views/emails/subscription/price-changed.blade.php',
+    },
+    {
+        input: 'resources/emails/mjml/identity-verified.mjml',
+        output: 'resources/views/emails/auth/identity-verified.blade.php',
+    },
+    {
+        input: 'resources/emails/mjml/connect-activated.mjml',
+        output: 'resources/views/emails/auth/connect-activated.blade.php',
+    },
+    {
+        input: 'resources/emails/mjml/admin-message.mjml',
+        output: 'resources/views/emails/admin/message.blade.php',
+    },
 ];
 
 async function compile() {

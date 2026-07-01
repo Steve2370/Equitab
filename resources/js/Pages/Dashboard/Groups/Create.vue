@@ -4,8 +4,8 @@ import { Head, router, Link } from '@inertiajs/vue3';
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
 import { getBrandGradient } from '@/config/brandGradients';
 import {
-    Users, ChevronRight, Eye, EyeOff,
-    TrendingDown, Shield, Lock, Globe, Link2, UserCheck,
+    Users, Eye, EyeOff,
+    TrendingDown, Lock, Globe, Link2, UserCheck,
     ShieldAlert, CheckCircle, Circle,
 } from 'lucide-vue-next';
 
@@ -39,7 +39,7 @@ const form = ref({
     description: '',
     tier: 'standard' as 'standard' | 'premium' | 'famille',
     max_members: 2,
-    price_per_member: 0,
+    total_price: 0,
     split_type: 'equal' as 'equal',
     visibility: 'public' as 'public' | 'private' | 'invite_only',
     renewal_date: '',
@@ -53,29 +53,35 @@ const selectedSubscription = computed(() =>
     props.subscriptions.find(s => s.id === form.value.subscription_id)
 );
 
-const suggestedPrice = computed(() => {
-    if (!selectedSubscription.value) return 0;
-    return Math.round(selectedSubscription.value.monthly_price / form.value.max_members);
+const currentPricePerMember = computed(() => {
+    if (!form.value.total_price || form.value.max_members < 1) return 0;
+    return Math.round(form.value.total_price / form.value.max_members);
 });
 
 const monthlyEarnings = computed(() =>
-    form.value.price_per_member * (form.value.max_members - 1)
+    currentPricePerMember.value * (form.value.max_members - 1)
 );
 
 const annualSavings = computed(() => {
     if (!selectedSubscription.value) return 0;
-    const ownerShare = selectedSubscription.value.monthly_price - monthlyEarnings.value;
-    return (selectedSubscription.value.monthly_price - ownerShare) * 12;
+    return monthlyEarnings.value * 12;
 });
 
 const netCostAfterSharing = computed(() => {
-    if (!selectedSubscription.value) return 0;
-    return selectedSubscription.value.monthly_price - monthlyEarnings.value;
+    if (!form.value.total_price) return 0;
+    return form.value.total_price - monthlyEarnings.value;
 });
 
 const gradient = computed(() => {
     if (!selectedSubscription.value) return { from: '#0B1929', to: '#10B981' };
     return getBrandGradient(selectedSubscription.value.slug);
+});
+
+const totalPriceDollars = computed({
+    get: () => form.value.total_price ? form.value.total_price / 100 : 0,
+    set: (value: number) => {
+        form.value.total_price = Math.round(value * 100);
+    },
 });
 
 function formatPrice(cents: number): string {
@@ -85,7 +91,7 @@ function formatPrice(cents: number): string {
 function selectSubscription(sub: Subscription): void {
     form.value.subscription_id = sub.id;
     form.value.name = `Groupe ${sub.name}`;
-    form.value.price_per_member = Math.round(sub.monthly_price / 2);
+    form.value.total_price = sub.monthly_price; 
     step.value = 2;
 }
 
@@ -284,36 +290,32 @@ const visibilityOptions = [
                         </div>
 
                         <div>
-                            <label class="text-sm font-medium text-gray-700">Prix par membre / mois</label>
-                            <div class="mt-2 flex items-center gap-3">
-                                <div class="relative flex-1">
-                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">$</span>
-                                    <input
-                                        v-model.number="form.price_per_member"
-                                        type="number"
-                                        min="100"
-                                        step="50"
-                                        class="w-full rounded-lg border border-gray-200 pl-7 pr-3 py-2.5 text-sm focus:border-equitab-emerald focus:outline-none"
-                                    />
-                                </div>
-                                <button
-                                    @click="form.price_per_member = suggestedPrice"
-                                    class="rounded-lg border border-dashed border-equitab-emerald px-3 py-2.5 text-xs font-medium text-equitab-emerald hover:bg-equitab-emerald/5"
-                                >
-                                    Prix suggéré
-                                </button>
+                            <label class="text-sm font-medium text-gray-700">Prix total de l'abonnement / mois</label>
+                            <div class="relative mt-2">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">$</span>
+                                <input
+                                    v-model.number="totalPriceDollars"
+                                    type="number"
+                                    min="1"
+                                    step="0.01"
+                                    placeholder="19.99"
+                                    class="w-full rounded-lg border border-gray-200 pl-7 pr-3 py-2.5 text-sm focus:border-equitab-emerald focus:outline-none"
+                                />
                             </div>
+                            <p class="mt-1 text-xs text-gray-400">
+                                Le prix total facturé par {{ selectedSubscription.name }} (ex: 19.99 pour 19,99$)
+                            </p>
                         </div>
 
                         <div class="rounded-xl bg-equitab-emerald/5 p-4">
                             <p class="text-sm text-gray-600">
-                                Chaque personne vous paie
-                                <strong class="text-equitab-navy">{{ formatPrice(form.price_per_member) }} / mois</strong>
+                                Avec {{ form.max_members - 1 }} membre(s), chaque personne paie
+                                <strong class="text-equitab-navy">{{ formatPrice(currentPricePerMember) }} / mois</strong>
                             </p>
                             <p class="mt-1 text-base font-semibold text-equitab-navy">
                                 Vous recevrez
                                 <span class="text-equitab-emerald">{{ formatPrice(monthlyEarnings) }} / mois</span>
-                                au total
+                                des autres membres
                             </p>
                             <div class="mt-3 border-t border-equitab-emerald/20 pt-3">
                                 <p class="text-sm text-gray-600">
@@ -325,6 +327,9 @@ const visibilityOptions = [
                                     Vous économisez {{ formatPrice(annualSavings) }} par an grâce au partage
                                 </p>
                             </div>
+                            <div class="mt-3 rounded-lg bg-blue-50 p-3 text-xs text-blue-700">
+                                💡 Ce prix est dynamique — il baisse automatiquement à chaque nouveau membre, et chaque membre actif voit son prix recalculé à son prochain renouvellement.
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -335,7 +340,7 @@ const visibilityOptions = [
                     </button>
                     <button
                         @click="step = 3"
-                        :disabled="!form.price_per_member"
+                        :disabled="!form.total_price"
                         class="flex-1 rounded-lg bg-equitab-navy px-4 py-2.5 text-sm font-medium text-white hover:bg-equitab-navy-light disabled:opacity-50"
                     >
                         Continuer
@@ -462,7 +467,7 @@ const visibilityOptions = [
                         </div>
                         <div class="flex justify-between">
                             <span class="text-gray-500">Prix par membre</span>
-                            <span class="font-medium">{{ formatPrice(form.price_per_member) }} / mois</span>
+                            <span class="font-medium">{{ formatPrice(form.total_price) }} / mois</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-gray-500">Visibilité</span>

@@ -28,21 +28,21 @@ class PaymentService
             throw new Exception('Le propriétaire n\'a pas configuré ses paiements.');
         }
 
-        $stripePrice = $group->stripePrice;
+        $currentActiveMembers = $group->members()->where('status', 'active')->count();
+        $futureActiveMembers = $currentActiveMembers + 1;
+        $currentPricePerMember = (int) round($group->total_price / $futureActiveMembers);
 
-        if (! $stripePrice) {
-            throw new Exception('Ce groupe n\'a pas encore de tarif Stripe configuré.');
-        }
-
-        $platformFee = (int) round($group->price_per_member * self::PLATFORM_FEE_PERCENTAGE);
+        $platformFee = (int) round($currentPricePerMember * self::PLATFORM_FEE_PERCENTAGE);
+        $stripePriceId = $this->gateway->createMonthlyPrice($group, $currentPricePerMember);
 
         $result = $this->gateway->createSubscription(
             payer: $payer,
-            stripePriceId: $stripePrice->stripe_price_id,
+            stripePriceId: $stripePriceId,
             stripeConnectAccountId: $group->owner->stripe_connect_account_id,
             platformFeeInCents: $platformFee,
             paymentMethodId: $paymentMethodId,
         );
+
         $isNewMember = ! $group->members()->where('user_id', $payer->id)->exists();
 
         $member = $group->members()->updateOrCreate(
@@ -50,17 +50,20 @@ class PaymentService
             [
                 'role' => 'member',
                 'status' => 'pending_payment',
-                'share_amount' => $group->price_per_member,
+                'share_amount' => $currentPricePerMember,
                 'joined_at' => now(),
                 'stripe_subscription_id' => $result['subscription_id'],
+                'stripe_subscription_item_id' => $result['subscription_item_id'] ?? null,
                 'stripe_customer_id' => $payer->fresh()->stripe_customer_id,
                 'subscription_status' => $result['status'],
                 'current_period_end' => now()->addMonth()->startOfMonth(),
             ]
         );
+
         if ($isNewMember) {
             $group->increment('current_members');
         }
+
         return $result;
     }
 

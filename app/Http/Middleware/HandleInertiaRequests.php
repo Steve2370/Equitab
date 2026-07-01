@@ -38,6 +38,10 @@ class HandleInertiaRequests extends Middleware
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
             ],
+            'isAdmin' => $request->user() && in_array($request->user()->email, [
+                'briceyouatchui@gmail.com',
+                'bricesteve02@gmail.com',
+            ]),
         ];
     }
 }

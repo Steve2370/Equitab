@@ -2,12 +2,16 @@
 import { Link } from '@inertiajs/vue3';
 
 interface Props {
-    canLogin: boolean;
-    canRegister: boolean;
-    isAuthenticated: boolean;
+    canLogin?: boolean;
+    canRegister?: boolean;
+    isAuthenticated?: boolean;
 }
 
-defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+    canLogin: true,
+    canRegister: true,
+    isAuthenticated: false,
+});
 </script>
 
 <template>
@@ -40,6 +44,9 @@ defineProps<Props>();
                     S'inscrire
                 </Link>
             </template>
+            <Link href="/services" class="text-sm font-medium text-gray-600 hover:text-equitab-navy">
+                Services
+            </Link>
         </div>
     </nav>
 </template>

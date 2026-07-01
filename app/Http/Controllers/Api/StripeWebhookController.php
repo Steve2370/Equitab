@@ -7,7 +7,9 @@ use App\Models\GroupMember;
 use App\Models\StripeEvent;
 use App\Models\User;
 use App\Models\Payment;
+use App\Mail\IdentityVerified;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\ConnectAccountActivated;
 use App\Mail\PaymentFailed;
 use App\Jobs\CheckCredentialsProvided;
 use App\Services\Payment\Contracts\PaymentGatewayInterface;
@@ -188,19 +190,23 @@ class StripeWebhookController extends Controller
     private function handleAccountUpdated(object $account): void
     {
         $user = User::where('stripe_connect_account_id', $account->id)->first();
+        if (! $user) return;
 
-        if (! $user) {
-            Log::warning('account.updated: no user found for account ' . $account->id);
-            return;
-        }
+        $wasActive = $user->stripe_connect_status === 'active';
 
         $status = match(true) {
-            $account->charges_enabled && $account->details_submitted => 'active',
-            $account->details_submitted && ! $account->charges_enabled => 'pending',
+            $account->charges_enabled => 'active',
+            $account->details_submitted => 'pending',
             default => 'restricted',
         };
 
         $user->update(['stripe_connect_status' => $status]);
+
+        if (! $wasActive && $status === 'active') {
+            Mail::to($user->email)
+                ->send(new ConnectAccountActivated($user));
+        }
+
         Log::info('Stripe Connect status updated for user #' . $user->id . ': ' . $status);
     }
 
@@ -221,6 +227,7 @@ class StripeWebhookController extends Controller
         }
 
         $user->update(['identity_status' => 'verified']);
+        Mail::to($user->email)->send(new IdentityVerified($user));
         Log::info('Identity verified for user #' . $user->id);
     }
 
