@@ -11,7 +11,7 @@ services:
       - .:/var/www
     ports:
       - "9000:9000"
-      - "8080:8080"
+      - "6001:6001"
     networks:
       - equitab_network
 
