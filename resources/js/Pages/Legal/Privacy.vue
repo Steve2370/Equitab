@@ -81,10 +81,10 @@ import Footer from '@/Components/Footer.vue';
                         Conformément à la Loi sur la protection des renseignements personnels et les documents électroniques (PIPEDA), vous disposez des droits suivants :
                     </p>
                     <ul class="space-y-2 text-gray-600">
-                        <li class="flex items-start gap-2"><span class="text-equitab-emerald font-bold mt-0.5">•</span> <strong>Accès</strong> — consulter les données que nous détenons sur vous</li>
-                        <li class="flex items-start gap-2"><span class="text-equitab-emerald font-bold mt-0.5">•</span> <strong>Rectification</strong> — corriger des informations inexactes</li>
-                        <li class="flex items-start gap-2"><span class="text-equitab-emerald font-bold mt-0.5">•</span> <strong>Suppression</strong> — demander l'effacement de vos données</li>
-                        <li class="flex items-start gap-2"><span class="text-equitab-emerald font-bold mt-0.5">•</span> <strong>Portabilité</strong> — recevoir vos données dans un format lisible</li>
+                        <li class="flex items-start gap-2"><span class="text-equitab-emerald font-bold mt-0.5">•</span> <strong>Accès</strong>: consulter les données que nous détenons sur vous</li>
+                        <li class="flex items-start gap-2"><span class="text-equitab-emerald font-bold mt-0.5">•</span> <strong>Rectification</strong>: corriger des informations inexactes</li>
+                        <li class="flex items-start gap-2"><span class="text-equitab-emerald font-bold mt-0.5">•</span> <strong>Suppression</strong>: demander l'effacement de vos données</li>
+                        <li class="flex items-start gap-2"><span class="text-equitab-emerald font-bold mt-0.5">•</span> <strong>Portabilité</strong>: recevoir vos données dans un format lisible</li>
                     </ul>
                     <p class="text-gray-600 leading-relaxed mt-3">
                         Pour exercer ces droits, contactez-nous à <a href="mailto:privacy@equitab.ca" class="text-equitab-emerald hover:underline">privacy@equitab.ca</a>.

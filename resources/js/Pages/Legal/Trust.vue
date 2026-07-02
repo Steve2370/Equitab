@@ -20,7 +20,9 @@ import Footer from '@/Components/Footer.vue';
 
                 <section>
                     <div class="flex items-center gap-3 mb-5">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-equitab-navy text-white text-lg">🏠</div>
+                        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-equitab-navy">
+                            <Home class="h-5 w-5 text-white" />
+                        </div>
                         <h2 class="text-xl font-semibold text-equitab-navy">Les propriétaires s'engagent à</h2>
                     </div>
                     <div class="rounded-xl border border-gray-100 bg-white p-6 space-y-3">
@@ -49,7 +51,9 @@ import Footer from '@/Components/Footer.vue';
 
                 <section>
                     <div class="flex items-center gap-3 mb-5">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-equitab-emerald text-white text-lg">👥</div>
+                        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-equitab-emerald">
+                            <Users class="h-5 w-5 text-white" />
+                        </div>
                         <h2 class="text-xl font-semibold text-equitab-navy">Les membres s'engagent à</h2>
                     </div>
                     <div class="rounded-xl border border-gray-100 bg-white p-6 space-y-3">
@@ -78,7 +82,9 @@ import Footer from '@/Components/Footer.vue';
 
                 <section>
                     <div class="flex items-center gap-3 mb-5">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500 text-white text-lg">⚖️</div>
+                        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500">
+                            <Scale class="h-5 w-5 text-white" />
+                        </div>
                         <h2 class="text-xl font-semibold text-equitab-navy">Equitab s'engage à</h2>
                     </div>
                     <div class="rounded-xl border border-gray-100 bg-white p-6 space-y-3">

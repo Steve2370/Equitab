@@ -29,12 +29,16 @@ import Footer from '@/Components/Footer.vue';
                 </section>
 
                 <section>
-                    <h2 class="text-xl font-semibold text-equitab-navy mb-3">2. Est-ce légal de partager un abonnement ?</h2>
+                    <h2 class="text-xl font-semibold text-equitab-navy mb-3">
+                        2. Le partage d'abonnement est-il autorisé ?
+                    </h2>
+
                     <p class="text-gray-600 leading-relaxed">
-                        Le partage d'abonnement est légal lorsqu'il respecte les conditions d'utilisation du fournisseur concerné. De nombreux services proposent des offres multi-utilisateurs précisément pour permettre ce type de partage.
+                        Le partage d'un abonnement est possible lorsque le fournisseur concerné l'autorise dans ses conditions d'utilisation. De nombreux services proposent des offres multi-utilisateurs ou familiales conçues pour être utilisées par plusieurs personnes.
                     </p>
+
                     <p class="text-gray-600 leading-relaxed mt-3">
-                        <strong>Chaque propriétaire est seul responsable</strong> de s'assurer que son plan d'abonnement autorise le partage envisagé avant de créer un groupe sur Equitab. Toute violation des conditions d'un fournisseur tiers est exclusivement imputable à l'utilisateur concerné. Equitab ne peut être tenu responsable des violations des conditions d'utilisation de services tiers.
+                        Avant de créer un groupe, nous invitons chaque propriétaire à vérifier que son abonnement permet le type de partage qu'il souhaite proposer. Equitab agit comme une plateforme de mise en relation et de gestion des paiements entre utilisateurs, sans être affiliée aux fournisseurs d'abonnements proposés sur la plateforme.
                     </p>
                 </section>
 
@@ -67,7 +71,7 @@ import Footer from '@/Components/Footer.vue';
                         Pour créer un groupe et partager un abonnement, une vérification d'identité est obligatoire. Cette vérification est réalisée par <strong>Stripe Identity</strong>, un service tiers certifié. Equitab ne stocke aucun document d'identité sur ses serveurs.
                     </p>
                     <p class="text-gray-600 leading-relaxed mt-3">
-                        Nous recommandons aux membres de privilégier les groupes dont le propriétaire possède le <strong>badge Vérifié</strong> — c'est votre garantie que l'identité du propriétaire a été confirmée.
+                        Nous recommandons aux membres de privilégier les groupes dont le propriétaire possède le <strong>badge Vérifié</strong> c'est votre garantie que l'identité du propriétaire a été confirmée.
                     </p>
                 </section>
 

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
-
+import { ref } from 'vue';
+import { Link, router } from '@inertiajs/vue3';
+import { Search } from 'lucide-vue-next';
 
 interface Props {
     canLogin?: boolean;
@@ -13,6 +14,13 @@ const props = withDefaults(defineProps<Props>(), {
     canRegister: true,
     isAuthenticated: false,
 });
+
+const searchQuery = ref('');
+
+function handleSearch(): void {
+    if (!searchQuery.value.trim()) return;
+    router.get('/services', { search: searchQuery.value }, { preserveState: false });
+}
 </script>
 
 <template>
@@ -21,7 +29,20 @@ const props = withDefaults(defineProps<Props>(), {
             Equitab
         </Link>
 
+        <form @submit.prevent="handleSearch" class="relative hidden md:flex items-center">
+            <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+            <input
+                v-model="searchQuery"
+                type="text"
+                placeholder="Rechercher un service..."
+                class="rounded-xl border border-white/10 bg-white/10 py-2 pl-9 pr-4 text-sm text-white placeholder-white/40 focus:border-equitab-emerald focus:outline-none w-56"
+            />
+        </form>
+
         <div class="flex items-center gap-4">
+            <Link href="/services" class="text-sm font-medium text-white/70 hover:text-white">
+                Services
+            </Link>
             <Link
                 v-if="isAuthenticated"
                 href="/dashboard"
@@ -45,9 +66,6 @@ const props = withDefaults(defineProps<Props>(), {
                     S'inscrire
                 </Link>
             </template>
-            <Link href="/services" class="text-sm font-medium text-gray-600 hover:text-equitab-navy">
-                Services
-            </Link>
         </div>
     </nav>
 </template>
