@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ShieldCheck, CreditCard, UserCheck, MessageSquare, Flag, RefreshCw, Lock, MapPin } from 'lucide-vue-next';
+import { Home, Users, Scale, ShieldCheck, CreditCard, UserCheck, MessageSquare, Flag, RefreshCw, Lock, MapPin } from 'lucide-vue-next';
+import { Head } from '@inertiajs/vue3';
 import NavbarWithSearch from '@/Components/NavbarWithSearch.vue';
 import Footer from '@/Components/Footer.vue';
 </script>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-
+import { Search } from 'lucide-vue-next';
 
 const searchQuery = ref('');
 
@@ -12,14 +12,19 @@ function handleSearch(): void {
 </script>
 
 <template>
-    <form @submit.prevent="handleSearch" class="relative hidden md:block">
-        <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+    <form @submit.prevent="handleSearch" class="relative mx-auto max-w-md">
+        <Search class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
         <input
             v-model="searchQuery"
             type="text"
-            placeholder="Rechercher un service..."
-            class="rounded-xl border border-white/10 bg-white/10 py-2 pl-9 pr-4 text-sm text-white placeholder-white/40 focus:border-equitab-emerald focus:outline-none w-56"
-            @keyup.enter="handleSearch"
+            placeholder="Rechercher un service... ex: Netflix, Spotify"
+            class="w-full rounded-2xl border border-gray-200 bg-white py-3.5 pl-12 pr-4 text-sm text-gray-700 placeholder-gray-400 shadow-sm focus:border-equitab-emerald focus:outline-none focus:ring-1 focus:ring-equitab-emerald"
         />
+        <button
+            type="submit"
+            class="absolute right-3 top-1/2 -translate-y-1/2 rounded-xl bg-equitab-emerald px-4 py-1.5 text-sm font-medium text-white hover:bg-equitab-emerald-dark"
+        >
+            Rechercher
+        </button>
     </form>
 </template>
