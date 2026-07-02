@@ -32,7 +32,7 @@ function submit(): void {
 
             <div>
                 <h1 class="text-4xl font-semibold leading-tight text-white">
-                    Rejoignez des milliers de Canadiens qui partagent leurs abonnements
+                    Rejoignez des milliers d'utilisateurs qui partagent leurs abonnements
                 </h1>
                 <p class="mt-4 text-lg text-white/60">
                     Créez un compte gratuit et commencez à économiser dès aujourd'hui.
