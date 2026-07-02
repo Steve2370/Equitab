@@ -17,7 +17,7 @@ function handleSearch(): void {
         <input
             v-model="searchQuery"
             type="text"
-            placeholder="Rechercher un service... ex: Netflix, Spotify"
+            placeholder="Rechercher un service..."
             class="w-full rounded-2xl border border-gray-200 bg-white py-3.5 pl-12 pr-4 text-sm text-gray-700 placeholder-gray-400 shadow-sm focus:border-equitab-emerald focus:outline-none focus:ring-1 focus:ring-equitab-emerald"
         />
         <button

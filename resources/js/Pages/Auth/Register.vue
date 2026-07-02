@@ -107,7 +107,7 @@ function submit(): void {
                                 type="email"
                                 autocomplete="email"
                                 required
-                                placeholder="vous@exemple.com"
+                                placeholder="zlatanibra@equitab.ca"
                                 class="w-full rounded-lg border border-gray-200 py-2.5 pl-10 pr-4 text-sm focus:border-equitab-emerald focus:outline-none"
                                 :class="{ 'border-red-400': form.errors.email }"
                             />
