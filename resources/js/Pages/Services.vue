@@ -3,6 +3,7 @@ import { Head, Link } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import { Search } from 'lucide-vue-next';
 import { getBrandGradient } from '@/config/brandGradients';
+import Footer from '@/Components/Footer.vue';
 import NavbarWithSearch from '@/Components/NavbarWithSearch.vue';
 
 interface Subscription {
@@ -25,8 +26,9 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const search = ref('');
 const activeCategory = ref<number | null>(null);
+const urlParams = new URLSearchParams(window.location.search);
+const search = ref(urlParams.get('search') ?? '');
 
 const filteredCategories = computed(() => {
     return props.categories
@@ -154,4 +156,5 @@ function formatPrice(cents: number): string {
             </div>
         </div>
     </div>
+    <Footer />
 </template>

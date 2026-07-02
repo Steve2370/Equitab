@@ -7,6 +7,7 @@ import NavbarWithSearch from '@/Components/NavbarWithSearch.vue';
 import SearchBar from '@/Components/SearchBar.vue';
 import HowItWorksColumn from '@/Components/HowItWorksColumn.vue';
 import VideoPlaceholder from '@/Components/VideoPlaceholder.vue';
+import Footer from '@/Components/Footer.vue';
 import { Link } from '@inertiajs/vue3';
 import { UserPlus, Send, CreditCard, PartyPopper, Plus, Share2, Wallet, BadgeDollarSign } from 'lucide-vue-next';
 
@@ -140,4 +141,5 @@ const ownSteps = [
             </div>
         </section>
     </div>
+    <Footer />
 </template>

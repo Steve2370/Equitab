@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 
+
 interface Props {
     canLogin?: boolean;
     canRegister?: boolean;

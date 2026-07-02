@@ -2,27 +2,24 @@
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 
-const searchQuery = ref<string>('');
+
+const searchQuery = ref('');
 
 function handleSearch(): void {
-    if (searchQuery.value.trim().length === 0) return;
-    router.get('/groups', { search: searchQuery.value });
+    if (!searchQuery.value.trim()) return;
+    router.get('/services', { search: searchQuery.value }, { preserveState: false });
 }
 </script>
 
 <template>
-    <form @submit.prevent="handleSearch" class="mx-auto flex w-full max-w-xl items-center gap-2">
+    <form @submit.prevent="handleSearch" class="relative hidden md:block">
+        <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
         <input
             v-model="searchQuery"
             type="text"
-            placeholder="Netflix, Apple TV, Prime Video..."
-            class="w-full rounded-full border border-gray-200 px-5 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-equitab-emerald focus:outline-none"
+            placeholder="Rechercher un service..."
+            class="rounded-xl border border-white/10 bg-white/10 py-2 pl-9 pr-4 text-sm text-white placeholder-white/40 focus:border-equitab-emerald focus:outline-none w-56"
+            @keyup.enter="handleSearch"
         />
-        <button
-            type="submit"
-            class="shrink-0 rounded-full bg-equitab-navy px-6 py-3 text-sm font-medium text-white hover:bg-equitab-navy-light"
-        >
-            Rechercher
-        </button>
     </form>
 </template>
