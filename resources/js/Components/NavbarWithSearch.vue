@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { Link, router } from '@inertiajs/vue3';
-import { Search } from 'lucide-vue-next';
+import { Link } from '@inertiajs/vue3';
 
 interface Props {
     canLogin?: boolean;
