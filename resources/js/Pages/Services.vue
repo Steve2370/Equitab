@@ -54,7 +54,7 @@ function formatPrice(cents: number): string {
 </script>
 
 <template>
-    <Head title="Tous les services — Equitab" />
+    <Head title="Tous les services - Equitab" />
 
     <div class="min-h-screen bg-gray-50">
         <NavbarWithSearch />
@@ -78,7 +78,6 @@ function formatPrice(cents: number): string {
 
         <div class="mx-auto max-w-6xl px-6 py-10">
 
-            <!-- Filtres catégories -->
             <div class="flex flex-wrap gap-2 mb-8">
                 <button
                     @click="activeCategory = null"
@@ -102,7 +101,6 @@ function formatPrice(cents: number): string {
                 </button>
             </div>
 
-            <!-- Catégories et services -->
             <div class="space-y-10">
                 <div v-for="cat in filteredCategories" :key="cat.id">
                     <h2 class="text-lg font-semibold text-equitab-navy mb-4">{{ cat.name }}</h2>
@@ -113,7 +111,6 @@ function formatPrice(cents: number): string {
                             :href="`/groups/service/${sub.slug}`"
                             class="group rounded-xl overflow-hidden border border-gray-100 bg-white hover:shadow-md transition-all hover:-translate-y-0.5"
                         >
-                            <!-- Bande couleur -->
                             <div
                                 class="h-2 w-full"
                                 :style="{ background: `linear-gradient(135deg, ${getBrandGradient(sub.slug).from}, ${getBrandGradient(sub.slug).to})` }"

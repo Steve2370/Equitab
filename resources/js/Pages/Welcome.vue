@@ -40,7 +40,6 @@ defineProps<Props>();
 const heroWords: string[] = [
     'fiable',
     'sécurisé',
-    'pas cher',
     'simple',
     'transparent',
 ];

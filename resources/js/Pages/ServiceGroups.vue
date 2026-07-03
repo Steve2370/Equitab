@@ -29,7 +29,7 @@ defineProps<Props>();
 </script>
 
 <template>
-    <Head :title="`Partager ${subscription.name} — Equitab`" />
+    <Head :title="`Partager ${subscription.name} - Equitab`" />
 
     <div class="min-h-screen bg-white">
         <NavbarWithSearch

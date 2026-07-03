@@ -14,7 +14,7 @@ import Footer from '@/Components/Footer.vue';
             <h1 class="text-3xl font-bold text-equitab-navy mb-2">Charte de confiance</h1>
             <p class="text-gray-400 text-sm mb-2">En vigueur depuis le 1er juillet 2026</p>
             <p class="text-gray-500 text-sm mb-10 leading-relaxed">
-                La confiance est au cœur d'Equitab. Cette charte définit les engagements mutuels entre les propriétaires, les membres, et Equitab — pour que chaque expérience sur notre plateforme soit sécurisée, équitable et agréable.
+                La confiance est au cœur d'Equitab. Cette charte définit les engagements mutuels entre les propriétaires, les membres, et Equitab; pour que chaque expérience sur notre plateforme soit sécurisée, équitable et agréable.
             </p>
 
             <div class="space-y-10">
@@ -95,7 +95,7 @@ import Footer from '@/Components/Footer.vue';
                         </div>
                         <div class="flex items-start gap-3">
                             <span class="text-equitab-emerald font-bold mt-0.5">✓</span>
-                            <p class="text-gray-600">Sécuriser tous les paiements via Stripe — vos informations bancaires ne transitent jamais par nos serveurs.</p>
+                            <p class="text-gray-600">Sécuriser tous les paiements via Stripe; vos informations bancaires ne transitent jamais par nos serveurs.</p>
                         </div>
                         <div class="flex items-start gap-3">
                             <span class="text-equitab-emerald font-bold mt-0.5">✓</span>

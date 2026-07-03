@@ -168,6 +168,7 @@ class GroupController extends Controller
         $subscription = Subscription::where('slug', $slug)->where('is_active', true)->firstOrFail();
 
         $groups = Group::with(['owner', 'subscription'])
+            ->where('subscription_id', $subscription->id)
             ->where('status', 'open')
             ->where('visibility', 'public')
             ->where('current_members', '<', DB::raw('max_members'))

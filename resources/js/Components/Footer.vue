@@ -10,7 +10,7 @@ import { Link } from '@inertiajs/vue3';
                 <div>
                     <Link href="/" class="text-xl font-bold text-white">Equitab</Link>
                     <p class="mt-3 text-sm text-white/50 leading-relaxed">
-                        Plateforme canadienne de partage d'abonnements numériques. Économisez sur Netflix, Spotify, et plus encore.
+                        Plateforme de partage d'abonnements numériques. Économisez sur Netflix, Spotify, et plus encore.
                     </p>
                     <p class="mt-4 text-xs text-white/30">Made in Canada</p>
 

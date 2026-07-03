@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
-import { Shield, Users, Calendar, Lock } from 'lucide-vue-next';
+import { Shield, Users, Lock } from 'lucide-vue-next';
 import { getBrandGradient } from '@/config/brandGradients';
 import StripeCardForm from '@/Components/StripeCardForm.vue';
 
@@ -87,7 +87,7 @@ function onSuccess(): void {
 
                     <div class="flex items-center gap-3 text-sm text-gray-600">
                         <Lock class="h-4 w-4 text-gray-400 shrink-0" />
-                        <span>Identifiants chiffrés — accessibles après paiement</span>
+                        <span>Identifiants chiffrés sont accessibles après paiement</span>
                     </div>
                 </div>
             </div>
@@ -101,7 +101,7 @@ function onSuccess(): void {
                     Rejoindre ce groupe
                 </button>
                 <div v-else class="rounded-xl bg-red-50 border border-red-100 p-4 text-center text-sm text-red-600">
-                    Ce groupe est complet — aucune place disponible.
+                    Ce groupe est complet; aucune place disponible.
                 </div>
             </div>
 

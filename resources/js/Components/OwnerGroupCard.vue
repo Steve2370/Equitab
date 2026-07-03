@@ -39,14 +39,11 @@ const prorationData = ref<{
 } | null>(null);
 
 async function openSubscribeForm(): Promise<void> {
-    console.log('openSubscribeForm appelé');
     const response = await fetch(`/api/groups/${props.groupId}/proration`, {
         headers: { 'Accept': 'application/json' },
     });
     prorationData.value = await response.json();
-    console.log('showForm avant:', showForm.value);
     showForm.value = true;
-    console.log('showForm après:', showForm.value);
 }
 
 function onSuccess(_subscriptionId: string): void {

@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
+import Toast from '@/Components/Toast.vue';
+import { useToast } from '@/composables/useToast';
 import {
     LayoutDashboard, CreditCard, MessageSquare,
     Wallet, ShieldCheck, Settings, Menu, X, ShieldAlert,
@@ -21,6 +23,9 @@ const page = usePage<{
     isAdmin: boolean;
 }>();
 
+const toastComponent = ref();
+const { setRef } = useToast();
+
 const isAdmin = computed(() => page.props.isAdmin);
 
 const user = computed(() => page.props.auth?.user);
@@ -33,6 +38,10 @@ const navItems = [
     { label: 'Identité', href: '/dashboard/profile', icon: ShieldCheck },
     { label: 'Préférences', href: '/dashboard/preferences', icon: Settings },
 ];
+
+onMounted(() => {
+    if (toastComponent.value) setRef(toastComponent.value);
+});
 
 const currentPath = computed(() => page.url);
 
@@ -147,5 +156,6 @@ function isActive(href: string): boolean {
                 <slot />
             </main>
         </div>
+        <Toast ref="toastComponent" />
     </div>
 </template>

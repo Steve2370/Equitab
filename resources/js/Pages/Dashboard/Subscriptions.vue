@@ -3,7 +3,10 @@ import { ref } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
 import CredentialsModal from '@/Components/CredentialsModal.vue';
+import { useToast } from '@/composables/useToast';
+const toast = useToast();
 import { router } from '@inertiajs/vue3';
+
 import { Users, Calendar, Plus, ChevronRight, Clock, Key } from 'lucide-vue-next';
 
 interface JoinedSubscription {
@@ -45,11 +48,6 @@ function openCredentials(groupId: number, subscriptionName: string): void {
     showCredentials.value = true;
 }
 
-function closeGroup(groupId: number): void {
-    if (!confirm('Êtes-vous sûr de vouloir fermer ce groupe ? Tous les membres seront désabonnés.')) return;
-    router.patch(`/groups/${groupId}/close`);
-}
-
 function formatPrice(cents: number): string {
     return new Intl.NumberFormat('fr-CA', {
         style: 'currency',
@@ -89,10 +87,28 @@ async function copyInviteLink(groupId: number, link: string): Promise<void> {
     setTimeout(() => copiedLink.value = null, 2000);
 }
 
+const closeModal = ref<{ show: boolean; groupId: number | null }>({
+    show: false,
+    groupId: null,
+});
+
+function confirmCloseGroup(): void {
+    if (!closeModal.value.groupId) return;
+    router.patch(`/groups/${closeModal.value.groupId}/close`, {}, {
+        onSuccess: () => {
+            toast.success('Groupe fermé avec succès.');
+            closeModal.value = { show: false, groupId: null };
+        },
+        onError: () => {
+            toast.error('Une erreur est survenue.');
+        }
+    });
+}
+
 </script>
 
 <template>
-    <Head title="Abonnements — Equitab" />
+    <Head title="Abonnements - Equitab" />
 
     <DashboardLayout>
         <div class="mb-6 flex items-center justify-between">
@@ -290,13 +306,29 @@ async function copyInviteLink(groupId: number, link: string): Promise<void> {
                         {{ copiedLink === sub.id ? 'Copié !' : 'Copier le lien' }}
                     </button>
 
-                    <button
-                        v-if="sub.status === 'open'"
-                        @click="closeGroup(sub.id)"
-                        class="rounded-lg border border-red-100 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50"
-                    >
-                        Fermer le groupe
-                    </button>
+                    <div v-if="closeModal.show" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <div class="absolute inset-0 bg-black/40" @click="closeModal.show = false" />
+                        <div class="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+                            <h3 class="font-semibold text-equitab-navy text-lg mb-2">Fermer ce groupe ?</h3>
+                            <p class="text-sm text-gray-500 mb-6">
+                                Tous les membres actifs seront désabonnés immédiatement. Cette action est irréversible.
+                            </p>
+                            <div class="flex gap-3">
+                                <button
+                                    @click="closeModal.show = false"
+                                    class="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50"
+                                >
+                                    Annuler
+                                </button>
+                                <button
+                                    @click="confirmCloseGroup"
+                                    class="flex-1 rounded-xl bg-red-500 py-2.5 text-sm font-medium text-white hover:bg-red-600"
+                                >
+                                    Fermer le groupe
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

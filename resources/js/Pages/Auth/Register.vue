@@ -165,9 +165,9 @@ function submit(): void {
 
                     <p class="text-xs text-gray-400">
                         En créant un compte, vous acceptez nos
-                        <a href="#" class="text-equitab-emerald hover:underline">conditions d'utilisation</a>
+                        <a href="/conditions" class="text-equitab-emerald hover:underline">conditions d'utilisation</a>
                         et notre
-                        <a href="#" class="text-equitab-emerald hover:underline">politique de confidentialité</a>.
+                        <a href="/confidentialite" class="text-equitab-emerald hover:underline">politique de confidentialité</a>.
                     </p>
 
                     <button

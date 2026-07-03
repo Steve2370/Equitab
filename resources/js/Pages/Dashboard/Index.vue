@@ -62,7 +62,7 @@ function statusLabel(status: string): string {
 </script>
 
 <template>
-    <Head title="Tableau de bord — Equitab" />
+    <Head title="Tableau de bord - Equitab" />
 
     <DashboardLayout>
         <div class="mb-8">

@@ -40,7 +40,7 @@ function submit(): void {
                     Partagez vos abonnements en toute confiance
                 </h1>
                 <p class="mt-4 text-lg text-white/60">
-                    Des paiements sécurisés, des identifiants protégés, et une communauté de confiance.
+                    Des paiements sécurisés via Stripe, des identifiants protégés, et une communauté de confiance.
                 </p>
 
                 <div class="mt-10 space-y-4">

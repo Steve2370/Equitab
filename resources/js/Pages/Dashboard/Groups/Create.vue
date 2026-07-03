@@ -91,7 +91,7 @@ function formatPrice(cents: number): string {
 function selectSubscription(sub: Subscription): void {
     form.value.subscription_id = sub.id;
     form.value.name = `Groupe ${sub.name}`;
-    form.value.total_price = sub.monthly_price; 
+    form.value.total_price = sub.monthly_price;
     step.value = 2;
 }
 
@@ -142,7 +142,7 @@ const visibilityOptions = [
 </script>
 
 <template>
-    <Head title="Partager un abonnement — Equitab" />
+    <Head title="Partager un abonnement - Equitab" />
 
     <DashboardLayout>
         <div v-if="verificationError" class="mx-auto max-w-lg text-center py-16">
@@ -328,7 +328,7 @@ const visibilityOptions = [
                                 </p>
                             </div>
                             <div class="mt-3 rounded-lg bg-blue-50 p-3 text-xs text-blue-700">
-                                💡 Ce prix est dynamique — il baisse automatiquement à chaque nouveau membre, et chaque membre actif voit son prix recalculé à son prochain renouvellement.
+                                💡 Ce prix est dynamique, donc il baisse automatiquement à chaque nouveau membre, et chaque membre actif voit son prix recalculé à son prochain renouvellement.
                             </div>
                         </div>
                     </div>
@@ -405,7 +405,7 @@ const visibilityOptions = [
 
                     <div class="mb-4 rounded-lg bg-blue-50 p-3 text-xs text-blue-700">
                         <p>1. Ces informations sont <strong>chiffrées</strong> et ne sont visibles qu'aux membres ayant un abonnement actif.</p>
-                        <p class="mt-1">2. Equitab ne peut pas lire vos identifiants — ils sont chiffrés de bout en bout.</p>
+                        <p class="mt-1">2. Equitab ne peut pas lire vos identifiants, car ils sont chiffrés de bout en bout.</p>
                     </div>
 
                     <div class="space-y-4">
@@ -484,7 +484,7 @@ const visibilityOptions = [
                     <input v-model="certify" type="checkbox" class="mt-0.5 accent-equitab-emerald" />
                     <span class="text-sm text-gray-600">
                         Je certifie être titulaire de cet abonnement et accepte les
-                        <a href="#" class="text-equitab-emerald hover:underline">conditions générales</a>
+                        <a href="/conditions" class="text-equitab-emerald hover:underline">conditions générales</a>
                         d'Equitab.
                     </span>
                 </label>
