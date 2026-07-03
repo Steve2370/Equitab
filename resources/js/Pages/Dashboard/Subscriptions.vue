@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
 import CredentialsModal from '@/Components/CredentialsModal.vue';
 import { useToast } from '@/composables/useToast';
-const toast = useToast();
-import { router } from '@inertiajs/vue3';
+import { Users, Calendar, Plus, ChevronRight, Clock, Key, Link2 } from 'lucide-vue-next';
 
-import { Users, Calendar, Plus, ChevronRight, Clock, Key } from 'lucide-vue-next';
+const toast = useToast();
 
 interface JoinedSubscription {
     id: number;
@@ -39,7 +38,6 @@ interface Props {
 defineProps<Props>();
 
 const activeTab = ref<'joined' | 'owned'>('joined');
-
 const showCredentials = ref(false);
 const selectedGroup = ref<{ id: number; name: string } | null>(null);
 
@@ -104,7 +102,6 @@ function confirmCloseGroup(): void {
         }
     });
 }
-
 </script>
 
 <template>
@@ -126,9 +123,7 @@ function confirmCloseGroup(): void {
             <button
                 @click="activeTab = 'joined'"
                 class="flex-1 rounded-lg py-2.5 text-sm font-medium transition-colors"
-                :class="activeTab === 'joined'
-                    ? 'bg-equitab-navy text-white'
-                    : 'text-gray-500 hover:text-gray-900'"
+                :class="activeTab === 'joined' ? 'bg-equitab-navy text-white' : 'text-gray-500 hover:text-gray-900'"
             >
                 Abonnements rejoints
                 <span class="ml-1.5 rounded-full bg-equitab-emerald/20 px-2 py-0.5 text-xs text-equitab-emerald">
@@ -138,9 +133,7 @@ function confirmCloseGroup(): void {
             <button
                 @click="activeTab = 'owned'"
                 class="flex-1 rounded-lg py-2.5 text-sm font-medium transition-colors"
-                :class="activeTab === 'owned'
-                    ? 'bg-equitab-navy text-white'
-                    : 'text-gray-500 hover:text-gray-900'"
+                :class="activeTab === 'owned' ? 'bg-equitab-navy text-white' : 'text-gray-500 hover:text-gray-900'"
             >
                 Abonnements partagés
                 <span class="ml-1.5 rounded-full bg-equitab-emerald/20 px-2 py-0.5 text-xs text-equitab-emerald">
@@ -169,13 +162,14 @@ function confirmCloseGroup(): void {
                     :key="sub.id"
                     class="flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-5 transition-shadow hover:shadow-sm"
                 >
-                <button
-                    @click="openCredentials(sub.id, sub.subscriptionName)"
-                    class="shrink-0 flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-gray-600 hover:border-equitab-emerald hover:text-equitab-emerald"
-                >
-                    <Key class="h-3.5 w-3.5" />
-                    Identifiants
-                </button>
+                    <button
+                        @click="openCredentials(sub.id, sub.subscriptionName)"
+                        class="shrink-0 flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-gray-600 hover:border-equitab-emerald hover:text-equitab-emerald"
+                    >
+                        <Key class="h-3.5 w-3.5" />
+                        Identifiants
+                    </button>
+
                     <div
                         class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-lg font-bold text-white"
                         :style="{ background: 'linear-gradient(135deg, #0B1929, #10B981)' }"
@@ -186,10 +180,7 @@ function confirmCloseGroup(): void {
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2">
                             <p class="font-semibold text-equitab-navy">{{ sub.subscriptionName }}</p>
-                            <span
-                                class="rounded-full px-2 py-0.5 text-xs font-medium"
-                                :class="statusClass(sub.status)"
-                            >
+                            <span class="rounded-full px-2 py-0.5 text-xs font-medium" :class="statusClass(sub.status)">
                                 {{ statusLabel(sub.status) }}
                             </span>
                         </div>
@@ -228,9 +219,7 @@ function confirmCloseGroup(): void {
                 class="rounded-xl border border-dashed border-gray-200 py-16 text-center"
             >
                 <p class="text-gray-400">Vous ne partagez aucun abonnement pour le moment.</p>
-                <p class="mt-2 text-sm text-gray-400">
-                    Créez un groupe pour partager vos frais d'abonnement.
-                </p>
+                <p class="mt-2 text-sm text-gray-400">Créez un groupe pour partager vos frais d'abonnement.</p>
             </div>
 
             <div v-else class="space-y-3">
@@ -239,13 +228,14 @@ function confirmCloseGroup(): void {
                     :key="sub.id"
                     class="flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-5 transition-shadow hover:shadow-sm"
                 >
-                <button
-                    @click="openCredentials(sub.id, sub.subscriptionName)"
-                    class="shrink-0 flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-gray-600 hover:border-equitab-emerald hover:text-equitab-emerald"
-                >
-                    <Key class="h-3.5 w-3.5" />
-                    Identifiants
-                </button>
+                    <button
+                        @click="openCredentials(sub.id, sub.subscriptionName)"
+                        class="shrink-0 flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-gray-600 hover:border-equitab-emerald hover:text-equitab-emerald"
+                    >
+                        <Key class="h-3.5 w-3.5" />
+                        Identifiants
+                    </button>
+
                     <div
                         class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-lg font-bold text-white"
                         :style="{ background: 'linear-gradient(135deg, #10B981, #0B1929)' }"
@@ -256,10 +246,7 @@ function confirmCloseGroup(): void {
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2">
                             <p class="font-semibold text-equitab-navy">{{ sub.subscriptionName }}</p>
-                            <span
-                                class="rounded-full px-2 py-0.5 text-xs font-medium"
-                                :class="statusClass(sub.status)"
-                            >
+                            <span class="rounded-full px-2 py-0.5 text-xs font-medium" :class="statusClass(sub.status)">
                                 {{ statusLabel(sub.status) }}
                             </span>
                         </div>
@@ -298,14 +285,6 @@ function confirmCloseGroup(): void {
                     </div>
 
                     <button
-                        v-if="sub.status === 'open'"
-                        @click="closeModal = { show: true, groupId: sub.id }"
-                        class="flex items-center gap-1.5 rounded-lg border border-red-100 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50"
-                    >
-                        Fermer le groupe
-                    </button>
-
-                    <button
                         v-if="sub.inviteLink"
                         @click="copyInviteLink(sub.id, sub.inviteLink)"
                         class="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:border-equitab-emerald hover:text-equitab-emerald"
@@ -314,32 +293,41 @@ function confirmCloseGroup(): void {
                         {{ copiedLink === sub.id ? 'Copié !' : 'Copier le lien' }}
                     </button>
 
-                    <div v-if="closeModal.show" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-                        <div class="absolute inset-0 bg-black/40" @click="closeModal.show = false" />
-                        <div class="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
-                            <h3 class="font-semibold text-equitab-navy text-lg mb-2">Fermer ce groupe ?</h3>
-                            <p class="text-sm text-gray-500 mb-6">
-                                Tous les membres actifs seront désabonnés immédiatement. Cette action est irréversible.
-                            </p>
-                            <div class="flex gap-3">
-                                <button
-                                    @click="closeModal.show = false"
-                                    class="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50"
-                                >
-                                    Annuler
-                                </button>
-                                <button
-                                    @click="confirmCloseGroup"
-                                    class="flex-1 rounded-xl bg-red-500 py-2.5 text-sm font-medium text-white hover:bg-red-600"
-                                >
-                                    Fermer le groupe
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    <button
+                        v-if="sub.status === 'open'"
+                        @click="closeModal = { show: true, groupId: sub.id }"
+                        class="flex items-center gap-1.5 rounded-lg border border-red-100 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50"
+                    >
+                        Fermer le groupe
+                    </button>
                 </div>
             </div>
         </div>
+
+        <div v-if="closeModal.show" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/40" @click="closeModal.show = false" />
+            <div class="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+                <h3 class="font-semibold text-equitab-navy text-lg mb-2">Fermer ce groupe ?</h3>
+                <p class="text-sm text-gray-500 mb-6">
+                    Tous les membres actifs seront désabonnés immédiatement. Cette action est irréversible.
+                </p>
+                <div class="flex gap-3">
+                    <button
+                        @click="closeModal.show = false"
+                        class="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50"
+                    >
+                        Annuler
+                    </button>
+                    <button
+                        @click="confirmCloseGroup"
+                        class="flex-1 rounded-xl bg-red-500 py-2.5 text-sm font-medium text-white hover:bg-red-600"
+                    >
+                        Fermer le groupe
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <CredentialsModal
             v-if="showCredentials && selectedGroup"
             :group-id="selectedGroup.id"
