@@ -298,6 +298,14 @@ function confirmCloseGroup(): void {
                     </div>
 
                     <button
+                        v-if="sub.status === 'open'"
+                        @click="closeModal = { show: true, groupId: sub.id }"
+                        class="flex items-center gap-1.5 rounded-lg border border-red-100 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50"
+                    >
+                        Fermer le groupe
+                    </button>
+
+                    <button
                         v-if="sub.inviteLink"
                         @click="copyInviteLink(sub.id, sub.inviteLink)"
                         class="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:border-equitab-emerald hover:text-equitab-emerald"
