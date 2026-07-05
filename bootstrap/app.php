@@ -42,7 +42,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->respond(function (Response $response, \Throwable $e, Request $request) {
+        $exceptions->respond(function (\Symfony\Component\HttpFoundation\Response $response, \Throwable $e, Request $request) {
             if (
                 ! app()->environment(['local', 'testing'])
                 && in_array($response->getStatusCode(), [500, 503])
