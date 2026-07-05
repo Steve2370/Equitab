@@ -27,7 +27,7 @@ function submit(): void {
 </script>
 
 <template>
-    <Head title="Connexion — Equitab" />
+    <Head title="Connexion" />
 
     <div class="flex min-h-screen">
         <div class="hidden lg:flex lg:w-1/2 flex-col justify-between bg-equitab-navy p-12">
