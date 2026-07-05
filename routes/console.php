@@ -11,3 +11,4 @@ Artisan::command('inspire', function () {
 Schedule::command('equitab:renewal-reminders')->dailyAt('09:00');
 Schedule::job(new RecalculateGroupPrices())->monthlyOn(1, '00:30');
 Schedule::command('equitab:update-trust-scores')->daily();
+Schedule::command('equitab:generate-sitemap')->daily();

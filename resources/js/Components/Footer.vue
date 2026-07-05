@@ -46,7 +46,7 @@ import { Link } from '@inertiajs/vue3';
                         <li><Link href="/register" class="text-sm text-white/50 hover:text-white transition-colors">Créer un compte</Link></li>
                         <li><Link href="/login" class="text-sm text-white/50 hover:text-white transition-colors">Se connecter</Link></li>
                         <li><Link href="/services" class="text-sm text-white/50 hover:text-white transition-colors">Tous les services</Link></li>
-                        <li><Link href="/dashboard" class="text-sm text-white/50 hover:text-white transition-colors">Mon espace</Link></li>
+                        <li><Link href="/login" class="text-sm text-white/50 hover:text-white transition-colors">Mon espace</Link></li>
                         <li><a href="mailto:support@equitab.ca" class="text-sm text-white/50 hover:text-white transition-colors">Nous contacter</a></li>
                     </ul>
                 </div>
