@@ -20,7 +20,7 @@ import Pusher from 'pusher-js';
     enabledTransports: ['ws', 'wss'],
 });
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const appName = import.meta.env.VITE_APP_NAME || 'Equitab';
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
