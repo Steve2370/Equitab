@@ -10,7 +10,7 @@ const brandGradients: Record<string, BrandGradient> = {
     crave: { from: '#00A8E0', to: '#0080B0' },
     crunchyroll: { from: '#F47521', to: '#D4611A' },
     'paramount': { from: '#0064FF', to: '#0050CC' },
-    'canal-plus': { from: '#000000', to: '#1A1A1A' },
+    'canal-plus': { from: '#FF0000', to: '#FF0000' },
     'amazon-prime': { from: '#00A8E1', to: '#0087B5' },
     spotify: { from: '#1DB954', to: '#17A349' },
     'apple-music': { from: '#FA2C56', to: '#D4234A' },
