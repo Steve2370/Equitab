@@ -43,4 +43,9 @@ return [
         'connect_client_id' => env('STRIPE_CONNECT_CLIENT_ID'),
     ],
 
+    'cloudflare' => [
+        'r2_url' => env('CLOUDFLARE_R2_URL'),
+        'r2_bucket' => env('CLOUDFLARE_R2_BUCKET'),
+    ],
+
 ];

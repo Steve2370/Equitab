@@ -268,7 +268,7 @@ class DashboardController extends Controller
         $user = $request->user();
 
         if ($user->avatar) {
-            $oldKey = str_replace(env('CLOUDFLARE_R2_URL') . '/', '', $user->avatar);
+            $oldKey = str_replace(config('services.cloudflare.r2_url') . '/', '', $user->avatar);
             Storage::disk('r2')->delete($oldKey);
         }
 
@@ -277,7 +277,7 @@ class DashboardController extends Controller
 
         Storage::disk('r2')->put($filename, file_get_contents($file), 'public');
 
-        $url = env('CLOUDFLARE_R2_URL') . '/' . $filename;
+        $url = config('services.cloudflare.r2_url') . '/' . $filename;
         $user->update(['avatar' => $url]);
 
         return back()->with('success', 'Avatar mis à jour.');
