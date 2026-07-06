@@ -151,27 +151,20 @@ const timezones = [
 
                         <div class="flex items-center gap-6">
                             <div class="relative">
-                                <div class="h-20 w-20 overflow-hidden rounded-full bg-equitab-navy/10">
-                                    <img
-                                        v-if="avatarPreview"
-                                        :src="avatarPreview"
-                                        class="h-full w-full object-cover"
-                                        alt="Avatar"
-                                    />
-                                    <span v-else class="flex h-full w-full items-center justify-center text-2xl font-bold text-equitab-navy">
-                                        {{ user.name.charAt(0).toUpperCase() }}
-                                    </span>
-                                </div>
-                                <button
-                                    @click="fileInput?.click()"
-                                    class="absolute bottom-0 right-0 flex h-6 w-6 items-center justify-center rounded-full bg-equitab-emerald text-white hover:bg-equitab-emerald-dark"
-                                >
-                                    <Camera class="h-3 w-3" />
-                                </button>
-                                <label class="cursor-pointer">
-                                    <div class="flex h-20 w-20 items-center justify-center rounded-full bg-equitab-emerald/10 overflow-hidden">
-                                        <img v-if="avatarPreview" :src="avatarPreview" class="h-full w-full object-cover" />
-                                        <Camera v-else class="h-8 w-8 text-equitab-emerald" />
+                                <label class="cursor-pointer block">
+                                    <div class="h-20 w-20 overflow-hidden rounded-full bg-equitab-navy/10 relative">
+                                        <img
+                                            v-if="avatarPreview"
+                                            :src="avatarPreview"
+                                            class="h-full w-full object-cover"
+                                            alt="Avatar"
+                                        />
+                                        <span v-else class="flex h-full w-full items-center justify-center text-2xl font-bold text-equitab-navy">
+                                            {{ user.name.charAt(0).toUpperCase() }}
+                                        </span>
+                                        <div class="absolute bottom-0 right-0 flex h-6 w-6 items-center justify-center rounded-full bg-equitab-emerald text-white">
+                                            <Camera class="h-3 w-3" />
+                                        </div>
                                     </div>
                                     <input
                                         type="file"
