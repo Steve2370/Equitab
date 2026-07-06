@@ -20,7 +20,7 @@ const gradientStyle = computed(() => ({
 
 const formattedPrice = computed(() =>
     new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' }).format(
-        props.pricePerMember,
+        props.pricePerMember / 100
     ),
 );
 </script>
