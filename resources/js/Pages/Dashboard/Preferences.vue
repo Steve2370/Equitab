@@ -172,7 +172,7 @@ const timezones = [
                                     ref="fileInput"
                                     type="file"
                                     accept="image/jpeg,image/png,image/webp"
-                                    class="hidden"
+                                    style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;"
                                     @change="onAvatarChange"
                                 />
                             </div>
