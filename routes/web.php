@@ -80,7 +80,7 @@ Route::get('/', function () {
         ->map(fn ($sub) => [
             'name' => $sub->name,
             'slug' => $sub->slug,
-            'pricePerMember' => $sub->monthly_price,
+            'pricePerMember' => $sub->monthly_price / 100,
             'discountPercent' => 50,
         ]);
 
