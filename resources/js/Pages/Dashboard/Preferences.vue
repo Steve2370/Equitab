@@ -168,13 +168,18 @@ const timezones = [
                                 >
                                     <Camera class="h-3 w-3" />
                                 </button>
-                                <input
-                                    ref="fileInput"
-                                    type="file"
-                                    accept="image/jpeg,image/png,image/webp"
-                                    style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;"
-                                    @change="onAvatarChange"
-                                />
+                                <label class="cursor-pointer">
+                                    <div class="flex h-20 w-20 items-center justify-center rounded-full bg-equitab-emerald/10 overflow-hidden">
+                                        <img v-if="avatarPreview" :src="avatarPreview" class="h-full w-full object-cover" />
+                                        <Camera v-else class="h-8 w-8 text-equitab-emerald" />
+                                    </div>
+                                    <input
+                                        type="file"
+                                        accept="image/jpeg,image/png,image/webp"
+                                        class="hidden"
+                                        @change="onAvatarChange"
+                                    />
+                                </label>
                             </div>
                             <div>
                                 <p class="text-sm font-medium text-equitab-navy">{{ user.name }}</p>
