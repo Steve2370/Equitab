@@ -79,8 +79,8 @@ Route::get('/', function () {
         ->get()
         ->map(fn ($sub) => [
             'name' => $sub->name,
-            'slug' => str($sub->name)->slug(),
-            'pricePerMember' => $sub->price_in_dollars,
+            'slug' => $sub->slug,
+            'pricePerMember' => $sub->monthly_price,
             'discountPercent' => 50,
         ]);
 
@@ -92,8 +92,8 @@ Route::get('/', function () {
         ->map(fn ($group) => [
             'id' => $group->id,
             'subscriptionName' => $group->subscription->name,
-            'subscriptionSlug' => str($group->subscription->name)->slug(),
-            'pricePerMember' => $group->price_in_dollars,
+            'subscriptionSlug' => $group->subscription->slug,
+            'pricePerMember' => $group->calculateCurrentPricePerMember(),
             'currentMembers' => $group->current_members,
             'maxMembers' => $group->max_members,
         ]);
