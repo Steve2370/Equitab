@@ -93,10 +93,28 @@ class ChatController extends Controller
         $request->validate(['body' => ['required', 'string', 'max:1000']]);
 
         $user = $request->user();
+        $isOwner = $group->owner_id === $user->id;
+        $isMemberActive = $group->members()
+            ->where('user_id', $user->id)
+            ->where('status', 'active')
+            ->exists();
 
-        $receiverId = $group->owner_id === $user->id
-            ? $request->input('receiver_id')
-            : $group->owner_id;
+        if (! $isOwner && ! $isMemberActive) {
+            return response()->json(['message' => 'Accès refusé.'], 403);
+        }
+
+        if ($isOwner) {
+            $receiverId = (int) $request->input('receiver_id');
+            $isValidReceiver = $group->members()
+                ->where('user_id', $receiverId)
+                ->where('status', 'active')
+                ->exists();
+            if (! $isValidReceiver) {
+                return response()->json(['message' => 'Destinataire invalide.'], 422);
+            }
+        } else {
+            $receiverId = $group->owner_id;
+        }
 
         $message = Message::create([
             'group_id' => $group->id,
