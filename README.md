@@ -135,7 +135,7 @@ Equitab permet à des particuliers canadiens de partager les frais de leurs abon
 ### 1. Cloner le projet
 
 ```bash
-git clone https://github.com/TON_USERNAME/equitab.git
+git clone https://github.com/Steve2370/equitab.git
 cd equitab
 ```
 
@@ -176,6 +176,7 @@ docker compose exec app php artisan tinker --execute="
     ['name' => 'Netflix', 'monthly_price' => 1999, 'max_members' => 4],
     ['name' => 'Spotify', 'monthly_price' => 1599, 'max_members' => 6],
     ['name' => 'Disney+', 'monthly_price' => 1399, 'max_members' => 4],
+    [Vous pouvez ajouter un service que vous souhaitez partager],
 ];
 foreach (\$services as \$s) {
     \App\Models\Subscription::create([
@@ -234,7 +235,7 @@ CLOUDFLARE_R2_ENDPOINT=https://ACCOUNT_ID.r2.cloudflarestorage.com
 CLOUDFLARE_R2_URL=https://pub-xxxxx.r2.dev
 
 # Laravel Reverb (WebSockets)
-REVERB_APP_ID=
+REVERB_APP_ID= (Pour le chat en temps reel)
 REVERB_APP_KEY=
 REVERB_APP_SECRET=
 REVERB_HOST=localhost
@@ -303,7 +304,7 @@ equitab/
 │   │   │   └── DashboardController.php
 │   │   └── Middleware/
 │   ├── Jobs/
-│   │   └── CheckCredentialsProvided.php   # Remboursement auto 48h
+│   │   └── CheckCredentialsProvided.php   # Remboursement auto 48h si le user n'a toujours pas reçu les ID de connexion
 │   ├── Models/
 │   │   ├── Group.php
 │   │   ├── GroupMember.php
