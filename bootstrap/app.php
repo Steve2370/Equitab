@@ -45,7 +45,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->respond(function (\Symfony\Component\HttpFoundation\Response $response, \Throwable $e, Request $request) {
             if (
                 ! app()->environment(['local', 'testing'])
-                && in_array($response->getStatusCode(), [500, 503])
+                && in_array($response->getStatusCode(), [404, 500, 503])
             ) {
                 return Inertia::render('Error', ['status' => $response->getStatusCode()])
                     ->toResponse($request)

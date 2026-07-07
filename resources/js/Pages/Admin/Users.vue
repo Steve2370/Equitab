@@ -2,6 +2,7 @@
 import { Head, router } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { CheckCircle, AlertCircle } from 'lucide-vue-next';
+import { ref } from 'vue';
 
 interface User {
     id: number;
@@ -15,9 +16,23 @@ interface User {
     createdAt: string;
 }
 
-function deleteUser(id: number, name: string): void {
-    if (!confirm(`Supprimer définitivement ${name} ?`)) return;
-    router.delete(`/admin/users/${id}`);
+const deleteModal = ref<{ show: boolean; userId: number | null; userName: string }>({
+    show: false,
+    userId: null,
+    userName: '',
+});
+
+function openDeleteModal(id: number, name: string): void {
+    deleteModal.value = { show: true, userId: id, userName: name };
+}
+
+function confirmDelete(): void {
+    if (!deleteModal.value.userId) return;
+    router.delete(`/admin/users/${deleteModal.value.userId}`, {
+        onSuccess: () => {
+            deleteModal.value = { show: false, userId: null, userName: '' };
+        }
+    });
 }
 
 defineProps<{ users: { data: User[]; current_page: number; last_page: number; total: number } }>();
@@ -79,7 +94,7 @@ defineProps<{ users: { data: User[]; current_page: number; last_page: number; to
 
                         <td class="px-6 py-4">
                             <button
-                                @click="deleteUser(user.id, user.name)"
+                                @click="openDeleteModal(user.id, user.name)"
                                 class="rounded-lg border border-red-100 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50"
                             >
                                 Supprimer
@@ -88,6 +103,29 @@ defineProps<{ users: { data: User[]; current_page: number; last_page: number; to
                     </tr>
                 </tbody>
             </table>
+            <div v-if="deleteModal.show" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div class="absolute inset-0 bg-black/40" @click="deleteModal.show = false" />
+                <div class="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+                    <h3 class="font-semibold text-equitab-navy text-lg mb-2">Supprimer cet utilisateur ?</h3>
+                    <p class="text-sm text-gray-500 mb-6">
+                        <strong>{{ deleteModal.userName }}</strong> sera définitivement supprimé avec tous ses groupes et abonnements. Cette action est irréversible.
+                    </p>
+                    <div class="flex gap-3">
+                        <button
+                            @click="deleteModal.show = false"
+                            class="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50"
+                        >
+                            Annuler
+                        </button>
+                        <button
+                            @click="confirmDelete"
+                            class="flex-1 rounded-xl bg-red-500 py-2.5 text-sm font-medium text-white hover:bg-red-600"
+                        >
+                            Supprimer définitivement
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </AdminLayout>
 </template>

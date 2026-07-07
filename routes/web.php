@@ -30,7 +30,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::patch('/disputes/{dispute}/resolve', [AdminController::class, 'resolveDispute'])->name('admin.disputes.resolve');
     Route::get('/messages', [AdminController::class, 'messages'])->name('admin.messages');
     Route::post('/messages/send', [AdminController::class, 'sendMessage'])->name('admin.messages.send');
-    Route::delete('/admin/users/{user}', [AdminController::class, 'deleteUser'])->name('admin.users.delete');
+    Route::delete('/users/{user}', [AdminController::class, 'deleteUser'])->name('admin.users.delete');
 });
 
 Route::post('/webhooks/stripe', StripeWebhookController::class);
