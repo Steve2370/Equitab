@@ -177,7 +177,7 @@ class GroupController extends Controller
             ->map(fn ($group) => [
                 'id' => $group->id,
                 'subscriptionName' => $group->subscription->name,
-                'ownerName' => $group->owner->name,
+                'ownerName' => $group->owner->display_name,
                 'ownerIdentityStatus' => $group->owner->identity_status,
                 'ownerActiveGroupsCount' => $group->owner->ownedGroups()->where('status', '!=', 'closed')->count(),
                 'ownerTrustScore' => $group->owner->calculateTrustScore(),

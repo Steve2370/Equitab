@@ -93,6 +93,7 @@ Route::get('/', function () {
             'id' => $group->id,
             'subscriptionName' => $group->subscription->name,
             'subscriptionSlug' => $group->subscription->slug,
+            'ownerName' => $group->owner->display_name,
             'pricePerMember' => $group->calculateCurrentPricePerMember(),
             'currentMembers' => $group->current_members,
             'maxMembers' => $group->max_members,

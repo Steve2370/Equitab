@@ -67,7 +67,7 @@ class DashboardController extends Controller
             ->map(fn($m) => [
                 'id' => $m->group->id,
                 'subscriptionName' => $m->group->subscription->name,
-                'ownerName' => $m->group->owner->name,
+                'ownerName' => $m->group->owner->display_name,
                 'pricePerMember' => $m->share_amount,
                 'joinedAt' => $m->joined_at?->format('d/m/Y'),
                 'status' => $m->status,
@@ -126,7 +126,7 @@ class DashboardController extends Controller
             ->map(fn($m) => [
                 'groupId' => $m->group->id,
                 'subscriptionName' => $m->group->subscription->name,
-                'ownerName' => $m->group->owner->name,
+                'ownerName' => $m->group->owner->display_name,
                 'slug' => $m->group->subscription->slug,
             ]);
 

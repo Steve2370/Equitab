@@ -62,6 +62,14 @@ class User extends Authenticatable
         return $this->hasMany(Transaction::class);
     }
 
+    public function getDisplayNameAttribute(): string
+    {
+        if ($this->show_real_name === false && $this->username) {
+            return '@' . $this->username;
+        }
+        return $this->name;
+    }
+
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
