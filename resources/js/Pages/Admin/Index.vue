@@ -24,7 +24,7 @@ function formatAmount(cents: number): string {
 </script>
 
 <template>
-    <Head title="Admin — Equitab" />
+    <Head title="Admin - Equitab" />
     <AdminLayout>
         <div class="mb-8">
             <h1 class="text-2xl font-semibold text-equitab-navy">Vue d'ensemble</h1>

@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
+import Toast from '@/Components/Toast.vue';
+import { useToast } from '@/composables/useToast';
+import { ref, onMounted } from 'vue';
 
 interface Props {
     canLogin?: boolean;
@@ -12,6 +15,12 @@ const props = withDefaults(defineProps<Props>(), {
     canRegister: true,
     isAuthenticated: false,
 });
+const toastComponent = ref();
+const { setRef } = useToast();
+
+onMounted(() => {
+    if (toastComponent.value) setRef(toastComponent.value);
+});
 
 </script>
 
@@ -21,33 +30,34 @@ const props = withDefaults(defineProps<Props>(), {
             Equitab
         </Link>
 
-        <div class="flex items-center gap-4">
-            <Link href="/services" class="text-sm font-medium text-white/70 hover:text-white">
-                Services
-            </Link>
-            <Link
-                v-if="isAuthenticated"
-                href="/dashboard"
-                class="text-sm font-medium text-white/90 hover:text-white"
-            >
-                Tableau de bord
-            </Link>
-            <template v-else>
+            <div class="flex items-center gap-4">
+                <Link href="/services" class="text-sm font-medium text-white/70 hover:text-white">
+                    Services
+                </Link>
                 <Link
-                    v-if="canLogin"
-                    href="/login"
+                    v-if="isAuthenticated"
+                    href="/dashboard"
                     class="text-sm font-medium text-white/90 hover:text-white"
                 >
-                    Connexion
+                    Tableau de bord
                 </Link>
-                <Link
-                    v-if="canRegister"
-                    href="/register"
-                    class="rounded-md bg-equitab-emerald px-4 py-2 text-sm font-medium text-white hover:bg-equitab-emerald-dark"
-                >
-                    S'inscrire
-                </Link>
-            </template>
-        </div>
+                <template v-else>
+                    <Link
+                        v-if="canLogin"
+                        href="/login"
+                        class="text-sm font-medium text-white/90 hover:text-white"
+                    >
+                        Connexion
+                    </Link>
+                    <Link
+                        v-if="canRegister"
+                        href="/register"
+                        class="rounded-md bg-equitab-emerald px-4 py-2 text-sm font-medium text-white hover:bg-equitab-emerald-dark"
+                    >
+                        S'inscrire
+                    </Link>
+                </template>
+            </div>
+        <Toast ref="toastComponent" />
     </nav>
 </template>

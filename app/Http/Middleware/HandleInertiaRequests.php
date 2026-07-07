@@ -40,7 +40,6 @@ class HandleInertiaRequests extends Middleware
             ],
             'isAdmin' => $request->user() && in_array($request->user()->email, [
                 'briceyouatchui@gmail.com',
-                'bricesteve02@gmail.com',
             ]),
         ];
     }

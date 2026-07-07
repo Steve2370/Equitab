@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Services\Wallet\WalletService;
 use Illuminate\Http\JsonResponse;
 use App\Mail\WelcomeUser;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
 class RegisterController extends Controller
@@ -25,7 +26,11 @@ class RegisterController extends Controller
             return $user;
         });
 
-        Mail::to($user->email)->send(new WelcomeUser($user));
+        try {
+            Mail::to($user->email)->send(new WelcomeUser($user));
+        } catch (\Exception $e) {
+            Log::error('Welcome email failed: ' . $e->getMessage());
+        }
 
         $token = $user->createToken('equitab')->plainTextToken;
 

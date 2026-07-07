@@ -9,7 +9,6 @@ class EnsureIsAdmin
 {
     private const ADMIN_EMAILS = [
         'briceyouatchui@gmail.com',
-        'bricesteve02@gmail.com',
     ];
 
     public function handle(Request $request, Closure $next)

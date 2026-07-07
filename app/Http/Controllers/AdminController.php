@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\AdminMessage;
 use App\Mail\AutoRefundProcessed;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use App\Services\Payment\Contracts\PaymentGatewayInterface;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -186,5 +188,31 @@ class AdminController extends Controller
         }
 
         return back()->with('success', "Message envoyé à {$users->count()} utilisateur(s).");
+    }
+
+    public function deleteUser(\App\Models\User $user): \Illuminate\Http\RedirectResponse
+    {
+        if ($user->id === Auth::id()) {
+            return back()->with('error', 'Vous ne pouvez pas supprimer votre propre compte.');
+        }
+
+        $user->groupMembers()->where('status', 'active')->each(function ($member) {
+            if ($member->stripe_subscription_id) {
+                try {
+                    app(\App\Services\Payment\Contracts\PaymentGatewayInterface::class)
+                        ->cancelSubscription($member->stripe_subscription_id);
+                } catch (\Exception $e) {
+                    Log::error('Cancel sub error: ' . $e->getMessage());
+                }
+            }
+            $member->update(['status' => 'left']);
+        });
+
+        $user->ownedGroups()->where('status', 'open')->each(function ($group) {
+            $group->update(['status' => 'closed']);
+        });
+
+        $user->delete();
+        return back()->with('success', 'Utilisateur supprimé.');
     }
 }

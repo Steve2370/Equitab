@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { CheckCircle, AlertCircle } from 'lucide-vue-next';
 
@@ -13,6 +13,11 @@ interface User {
     groupsOwned: number;
     groupsJoined: number;
     createdAt: string;
+}
+
+function deleteUser(id: number, name: string): void {
+    if (!confirm(`Supprimer définitivement ${name} ?`)) return;
+    router.delete(`/admin/users/${id}`);
 }
 
 defineProps<{ users: { data: User[]; current_page: number; last_page: number; total: number } }>();
@@ -71,6 +76,15 @@ defineProps<{ users: { data: User[]; current_page: number; last_page: number; to
                             {{ user.groupsOwned }} partagés · {{ user.groupsJoined }} rejoints
                         </td>
                         <td class="px-4 py-3 text-xs text-gray-400">{{ user.createdAt }}</td>
+
+                        <td class="px-6 py-4">
+                            <button
+                                @click="deleteUser(user.id, user.name)"
+                                class="rounded-lg border border-red-100 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50"
+                            >
+                                Supprimer
+                            </button>
+                        </td>
                     </tr>
                 </tbody>
             </table>

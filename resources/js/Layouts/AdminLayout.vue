@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { Link, usePage } from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
 import {
     LayoutDashboard, Users, CreditCard, FolderOpen,
     AlertTriangle, Mail, LogOut
 } from 'lucide-vue-next';
+import Toast from '@/Components/Toast.vue';
+import { useToast } from '@/composables/useToast';
+import { ref, onMounted } from 'vue';
 
 const navItems = [
     { href: '/admin', label: 'Vue d\'ensemble', icon: LayoutDashboard },
@@ -13,14 +16,22 @@ const navItems = [
     { href: '/admin/disputes', label: 'Disputes', icon: AlertTriangle },
     { href: '/admin/messages', label: 'Messagerie', icon: Mail },
 ];
+const toastComponent = ref();
+const { setRef } = useToast();
+
+onMounted(() => {
+    if (toastComponent.value) setRef(toastComponent.value);
+});
 </script>
 
 <template>
     <div class="flex min-h-screen bg-gray-50">
         <aside class="w-56 shrink-0 bg-equitab-navy">
             <div class="p-6">
-                <p class="text-lg font-bold text-white">Equitab</p>
-                <p class="text-xs text-white/40">Admin</p>
+                <Link href="/" class="block">
+                    <p class="text-lg font-bold text-white hover:text-white/80">Equitab</p>
+                    <p class="text-xs text-white/40">Panel Admin</p>
+                </Link>
             </div>
 
             <nav class="px-3 space-y-1">
@@ -36,6 +47,16 @@ const navItems = [
                     <component :is="item.icon" class="h-4 w-4 shrink-0" />
                     {{ item.label }}
                 </Link>
+
+                <div class="px-3 mb-4 pt-2">
+                    <Link
+                        href="/dashboard"
+                        class="flex items-center gap-2 text-xs text-white/40 hover:text-white"
+                    >
+                        <LayoutDashboard class="h-3.5 w-3.5" />
+                        Mon dashboard
+                    </Link>
+                </div>
             </nav>
 
             <div class="absolute bottom-0 w-56 p-4">
@@ -54,5 +75,6 @@ const navItems = [
         <main class="flex-1 p-8 overflow-auto">
             <slot />
         </main>
+        <Toast ref="toastComponent" />
     </div>
 </template>
