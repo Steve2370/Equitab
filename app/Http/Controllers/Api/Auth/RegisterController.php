@@ -21,10 +21,14 @@ class RegisterController extends Controller
     public function __invoke(RegisterRequest $request): JsonResponse
     {
         $user = DB::transaction(function () use ($request) {
+            Log::info('Creating user...');
             $user = User::create($request->validated());
+            Log::info('User created: ' . $user->id);
             $this->walletService->createForUser($user);
+            Log::info('Wallet created for: ' . $user->id);
             return $user;
         });
+        Log::info('After transaction: ' . ($user->id ?? 'NULL'));
 
         try {
             Log::info('Attempting to send welcome email to: ' . $user->email);
