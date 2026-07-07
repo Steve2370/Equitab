@@ -29,12 +29,11 @@ const props = defineProps<Props>();
 const page = usePage();
 const successMessage = computed(() => (page.props as any).flash?.success);
 
-const activeTab = ref<'profile' | 'notifications' | 'region' | 'privacy' | 'danger'>('profile');
+const activeTab = ref<'profile' | 'notifications' | 'privacy' | 'danger'>('profile');
 
 const tabs = [
     { key: 'profile', label: 'Profil public', icon: User },
     { key: 'notifications', label: 'Notifications', icon: Bell },
-    { key: 'region', label: 'Langue & Région', icon: Globe },
     { key: 'privacy', label: 'Confidentialité', icon: Shield },
     { key: 'danger', label: 'Danger', icon: Trash2 },
 ] as const;
@@ -218,7 +217,6 @@ const timezones = [
                     </div>
                 </div>
 
-                <!-- Notifications -->
                 <div v-if="activeTab === 'notifications'" class="rounded-xl border border-gray-100 bg-white p-6">
                     <h2 class="mb-5 font-semibold text-equitab-navy">Notifications par email</h2>
 
@@ -256,53 +254,6 @@ const timezones = [
                     </button>
                 </div>
 
-                <!-- Langue & Région -->
-                <div v-if="activeTab === 'region'" class="rounded-xl border border-gray-100 bg-white p-6">
-                    <h2 class="mb-5 font-semibold text-equitab-navy">Langue & Région</h2>
-
-                    <div class="space-y-4">
-                        <div>
-                            <label class="text-sm font-medium text-gray-700">Langue</label>
-                            <select
-                                v-model="form.locale"
-                                class="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-equitab-emerald focus:outline-none"
-                            >
-                                <option value="fr">Français</option>
-                                <option value="en">English</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="text-sm font-medium text-gray-700">Devise</label>
-                            <select
-                                v-model="form.currency"
-                                class="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-equitab-emerald focus:outline-none"
-                            >
-                                <option value="CAD">Dollar canadien (CAD)</option>
-                                <option value="USD">Dollar américain (USD)</option>
-                                <option value="EUR">Euro (EUR)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="text-sm font-medium text-gray-700">Fuseau horaire</label>
-                            <select
-                                v-model="form.timezone"
-                                class="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-equitab-emerald focus:outline-none"
-                            >
-                                <option v-for="tz in timezones" :key="tz" :value="tz">{{ tz }}</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <button
-                        @click="savePreferences"
-                        :disabled="isSaving"
-                        class="mt-6 rounded-lg bg-equitab-navy px-4 py-2.5 text-sm font-medium text-white hover:bg-equitab-navy-light disabled:opacity-60"
-                    >
-                        {{ isSaving ? 'Sauvegarde...' : 'Sauvegarder' }}
-                    </button>
-                </div>
-
-                <!-- Confidentialité -->
                 <div v-if="activeTab === 'privacy'" class="rounded-xl border border-gray-100 bg-white p-6">
                     <h2 class="mb-5 font-semibold text-equitab-navy">Confidentialité</h2>
 
@@ -338,7 +289,6 @@ const timezones = [
                     </button>
                 </div>
 
-                <!-- Danger zone -->
                 <div v-if="activeTab === 'danger'" class="rounded-xl border border-red-100 bg-white p-6">
                     <div class="flex items-center gap-2 mb-5">
                         <AlertTriangle class="h-5 w-5 text-red-500" />

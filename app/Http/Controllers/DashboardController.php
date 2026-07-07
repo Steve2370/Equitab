@@ -221,8 +221,6 @@ class DashboardController extends Controller
                 'username' => $user->username,
                 'avatar' => $user->avatar,
                 'email' => $user->email,
-                'locale' => $user->locale ?? 'fr',
-                'currency' => $user->currency ?? 'CAD',
                 'timezone' => $user->timezone ?? 'America/Toronto',
                 'notif_member_joined' => $user->notif_member_joined ?? true,
                 'notif_payment_received' => $user->notif_payment_received ?? true,
@@ -238,8 +236,6 @@ class DashboardController extends Controller
     {
         $request->validate([
             'username' => ['nullable', 'string', 'max:30', 'unique:users,username,' . $request->user()->id],
-            'locale' => ['required', 'in:fr,en'],
-            'currency' => ['required', 'in:CAD,USD,EUR'],
             'timezone' => ['required', 'string', 'timezone'],
             'notif_member_joined' => ['boolean'],
             'notif_payment_received' => ['boolean'],
@@ -250,7 +246,7 @@ class DashboardController extends Controller
         ]);
 
         $request->user()->update($request->only([
-            'username', 'locale', 'currency', 'timezone',
+            'username', 'timezone',
             'notif_member_joined', 'notif_payment_received',
             'notif_renewal_reminder', 'notif_payment_failed',
             'show_real_name', 'allow_direct_contact',
