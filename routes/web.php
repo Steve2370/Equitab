@@ -64,7 +64,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::get('/conditions', fn() => Inertia::render('Legal/Terms'))->name('legal.terms');
 Route::get('/confidentialite', fn() => Inertia::render('Legal/Privacy'))->name('legal.privacy');
-Route::get('/contact', fn() => Inertia::render('Legal/Contact'))->name('legal.contact');
 Route::get('/charte', fn() => Inertia::render('Legal/Trust'))->name('legal.trust');
 
 Route::get('/groups/service/{slug}', [GroupController::class, 'byService'])
