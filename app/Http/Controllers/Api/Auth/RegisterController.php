@@ -27,7 +27,9 @@ class RegisterController extends Controller
         });
 
         try {
+            Log::info('Attempting to send welcome email to: ' . $user->email);
             Mail::to($user->email)->send(new WelcomeUser($user));
+            Log::info('Welcome email sent successfully to: ' . $user->email);
         } catch (\Exception $e) {
             Log::error('Welcome email failed: ' . $e->getMessage());
         }
