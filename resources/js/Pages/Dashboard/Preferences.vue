@@ -150,40 +150,42 @@ const timezones = [
                         <h2 class="mb-5 font-semibold text-equitab-navy">Avatar</h2>
 
                         <div class="flex items-center gap-6">
-                            <div class="relative">
-                                <div class="relative h-20 w-20">
-                                    <div class="h-20 w-20 overflow-hidden rounded-full bg-equitab-navy/10">
-                                        <img
-                                            v-if="avatarPreview"
-                                            :src="avatarPreview"
-                                            class="h-full w-full object-cover"
-                                            alt="Avatar"
-                                        />
-                                        <span v-else class="flex h-full w-full items-center justify-center text-2xl font-bold text-equitab-navy">
-                                            {{ user.name.charAt(0).toUpperCase() }}
-                                        </span>
-                                    </div>
-                                    <div class="absolute bottom-0 right-0 flex h-6 w-6 items-center justify-center rounded-full bg-equitab-emerald text-white pointer-events-none">
-                                        <Camera class="h-3 w-3" />
-                                    </div>
-                                    <input
-                                        type="file"
-                                        accept="image/jpeg,image/png,image/webp"
-                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                        @change="onAvatarChange"
-                                    />
-                                </div>
+                            <div class="h-20 w-20 overflow-hidden rounded-full bg-equitab-navy/10 shrink-0">
+                                <img
+                                    v-if="avatarPreview"
+                                    :src="avatarPreview"
+                                    class="h-full w-full object-cover"
+                                    alt="Avatar"
+                                />
+                                <span v-else class="flex h-full w-full items-center justify-center text-2xl font-bold text-equitab-navy">
+                                    {{ user.name.charAt(0).toUpperCase() }}
+                                </span>
                             </div>
-                            <div>
+                            <div class="space-y-2">
                                 <p class="text-sm font-medium text-equitab-navy">{{ user.name }}</p>
                                 <p class="text-xs text-gray-400">JPG, PNG ou WebP · Max 2 Mo</p>
+                                <input
+                                    id="avatar-upload"
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp"
+                                    class="hidden"
+                                    @change="onAvatarChange"
+                                />
+                                <label
+                                    for="avatar-upload"
+                                    class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:border-equitab-emerald hover:text-equitab-emerald"
+                                >
+                                    <Camera class="h-3.5 w-3.5" />
+                                    Choisir une photo
+                                </label>
                                 <button
                                     v-if="avatarFile"
+                                    type="button"
                                     @click="uploadAvatar"
-                                    class="mt-2 flex items-center gap-1.5 rounded-lg bg-equitab-emerald px-3 py-1.5 text-xs font-medium text-white hover:bg-equitab-emerald-dark"
+                                    class="ml-2 inline-flex items-center gap-1.5 rounded-lg bg-equitab-emerald px-3 py-1.5 text-xs font-medium text-white hover:bg-equitab-emerald-dark"
                                 >
                                     <Check class="h-3.5 w-3.5" />
-                                    Sauvegarder l'avatar
+                                    Sauvegarder
                                 </button>
                             </div>
                         </div>
