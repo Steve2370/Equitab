@@ -1,6 +1,6 @@
 # Equitab
 
-> Plateforme canadienne de partage de coûts d'abonnements numériques — paiements sécurisés par Stripe, identifiants chiffrés, zéro argent transit par Equitab.
+> Plateforme de partage de coûts d'abonnements numériques — paiements sécurisés par Stripe, identifiants chiffrés, zéro argent transit par Equitab.
 
 ![Laravel](https://img.shields.io/badge/Laravel-13-FF2D20?style=flat&logo=laravel)
 ![Vue](https://img.shields.io/badge/Vue-3-4FC08D?style=flat&logo=vue.js)
