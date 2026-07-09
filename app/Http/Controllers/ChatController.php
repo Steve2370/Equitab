@@ -62,11 +62,20 @@ class ChatController extends Controller
     public function show(Request $request, Group $group): JsonResponse
     {
         $user = $request->user();
+        $isOwner = $group->owner_id === $user->id;
+        $isMemberActive = $group->members()
+            ->where('user_id', $user->id)
+            ->where('status', 'active')
+            ->exists();
+
+        if (! $isOwner && ! $isMemberActive) {
+            return response()->json(['message' => 'Accès refusé.'], 403);
+        }
 
         $messages = Message::where('group_id', $group->id)
             ->where(function ($q) use ($user) {
                 $q->where('sender_id', $user->id)
-                  ->orWhere('receiver_id', $user->id);
+                ->orWhere('receiver_id', $user->id);
             })
             ->with('sender')
             ->orderBy('created_at')
