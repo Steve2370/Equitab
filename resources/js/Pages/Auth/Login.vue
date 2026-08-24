@@ -32,7 +32,7 @@ function submit(): void {
     <div class="flex min-h-screen">
         <div class="hidden lg:flex lg:w-1/2 flex-col justify-between bg-equitab-navy p-12">
            <Link href="/" class="flex items-center">
-                <img src="/Images/EquitabLogoblanc.svg" alt="Equitab" class="h-7 w-auto" />
+                <img src="/Images/EquitabLogoblanc.png" alt="Equitab" class="h-12 w-auto" />
             </Link>
 
             <div>

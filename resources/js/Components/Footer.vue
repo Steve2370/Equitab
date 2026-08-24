@@ -9,7 +9,7 @@ import { Link } from '@inertiajs/vue3';
 
                 <div>
                     <Link href="/" class="flex items-center">
-                        <img src="/Images/EquitabLogoblanc.svg" alt="Equitab" class="h-7 w-auto" />
+                        <img src="/Images/EquitabLogoblanc.png" alt="Equitab" class="h-7 w-auto" />
                     </Link>
                     <p class="mt-3 text-sm text-white/50 leading-relaxed">
                         Plateforme de partage d'abonnements numériques. Économisez sur Netflix, Spotify, et plus encore.

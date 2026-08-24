@@ -71,7 +71,7 @@ const ownSteps = [
 
         <main class="flex flex-col items-center justify-center px-6 py-20 text-center">
             <h1 class="flex flex-wrap items-center justify-center gap-x-3 text-4xl font-semibold tracking-tight text-equitab-navy lg:text-6xl">
-                <img src="/Images/EquitabLogo.svg" alt="Equitab" class="inline-block h-[0.85em] w-auto align-middle" />
+                <img src="/Images/EquitabLogo.png" alt="Equitab" class="inline-block h-[0.85em] w-auto align-middle" />
                 <span>est</span>
                 <span class="text-equitab-emerald">
                     <TypewriterText :words="heroWords" />

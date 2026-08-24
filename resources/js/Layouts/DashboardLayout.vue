@@ -65,7 +65,7 @@ function isActive(href: string): boolean {
             >
                 <div class="flex h-16 items-center justify-between px-6">
                     <Link href="/" class="flex items-center">
-                        <img src="/Images/EquitabLogoblanc.svg" alt="Equitab" class="h-7 w-auto" />
+                        <img src="/Images/EquitabLogoblanc.png" alt="Equitab" class="h-7 w-auto" />
                     </Link>
                     <button @click="sidebarOpen = false" class="text-white/60 hover:text-white lg:hidden">
                         <X class="h-5 w-5" />
