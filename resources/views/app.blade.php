@@ -12,6 +12,12 @@
         <meta property="og:locale" content="fr_CA">
         <meta name="twitter:card" content="summary_large_image">
         <title inertia>{{ config('app.name', 'Equitab') }}</title>
+
+        <link rel="icon" type="image/x-icon" href="/favicon.ico">
+        <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+        <link rel="manifest" href="/site.webmanifest">
+
         <script src="https://js.stripe.com/v3/" defer></script>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
