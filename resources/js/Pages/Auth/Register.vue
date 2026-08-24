@@ -26,8 +26,8 @@ function submit(): void {
 
     <div class="flex min-h-screen">
         <div class="hidden lg:flex lg:w-1/2 flex-col justify-between bg-equitab-navy p-12">
-            <Link href="/" class="text-2xl font-semibold text-white">
-                Equitab
+            <Link href="/" class="flex items-center">
+                <img src="/Images/EquitabLogoblanc.svg" alt="Equitab" class="h-7 w-auto" />
             </Link>
 
             <div>
