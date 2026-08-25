@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="description" content="Equitab - Plateforme de partage d'abonnements numériques. Partagez Netflix, Spotify, Disney+ et économisez jusqu'à 75%.">
         <meta name="robots" content="index, follow">
+        <link rel="canonical" href="{{ url()->current() }}">
         <meta property="og:type" content="website">
         <meta property="og:site_name" content="Equitab">
         <meta property="og:title" content="Equitab - Partagez vos abonnements au Canada">
