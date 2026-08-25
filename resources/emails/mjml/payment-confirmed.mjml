@@ -15,9 +15,9 @@
     <!-- Header -->
     <mj-section background-color="#0B1929" padding="24px 32px">
       <mj-column>
-        <mj-text font-size="22px" font-weight="700" color="#FFFFFF" align="center">
-          Equitab
-        </mj-text>
+        <mj-column>
+            <mj-image src="https://equitab.ca/Images/EquitabLogoblanc.png" alt="Equitab" width="170px" align="center" padding="0" />
+        </mj-column>
       </mj-column>
     </mj-section>
 

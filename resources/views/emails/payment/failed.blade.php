@@ -51,6 +51,14 @@
     
   
     
+    <style type="text/css">
+
+    @media only screen and (max-width:479px) {
+      table.mj-full-width-mobile { width: 100% !important; }
+      td.mj-full-width-mobile { width: auto !important; }
+    }
+  
+    </style>
     
     
   </head>
@@ -88,12 +96,46 @@
           
               <tr>
                 <td
-                   align="center" style="font-size:0px;padding:10px 25px;word-break:break-word;"
+                   style="font-size:0px;word-break:break-word;"
                 >
                   
       <div
-         style="font-family:Montserrat, Arial, sans-serif;font-size:22px;font-weight:700;line-height:1.6;text-align:center;color:#FFFFFF;"
-      >Equitab</div>
+         class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;"
+      >
+        
+      <table
+         border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%"
+      >
+        <tbody>
+          
+              <tr>
+                <td
+                   align="center" style="font-size:0px;padding:0;word-break:break-word;"
+                >
+                  
+      <table
+         border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px;"
+      >
+        <tbody>
+          <tr>
+            <td  style="width:170px;">
+              
+      <img
+         alt="Equitab" src="https://equitab.ca/Images/EquitabLogoblanc.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" width="170" height="auto"
+      />
+    
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    
+                </td>
+              </tr>
+            
+        </tbody>
+      </table>
+    
+      </div>
     
                 </td>
               </tr>
