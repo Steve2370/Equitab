@@ -26,8 +26,8 @@ onMounted(() => {
 
 <template>
     <nav class="sticky top-0 z-10 flex items-center justify-between bg-equitab-navy px-6 py-4 lg:px-12">
-        <Link href="/" class="flex items-center">
-            <img src="/Images/EquitabLogoblanc.png" alt="Equitab" class="h-8 w-auto" />
+        <Link href="/" class="flex shrink-0 items-center">
+            <img src="/Images/EquitabLogoblanc.png" alt="Equitab" class="h-8 w-auto shrink-0" />
         </Link>
 
             <div class="flex items-center gap-4">
