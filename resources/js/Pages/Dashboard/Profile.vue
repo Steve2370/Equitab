@@ -60,7 +60,7 @@ const connectStatusConfig = computed(() => {
     const configs: Record<string, { label: string; class: string }> = {
         active: { label: 'Compte actif', class: 'text-equitab-emerald' },
         pending: { label: 'Configuration en cours', class: 'text-amber-500' },
-        restricted: { label: 'Accès limité', class: 'text-red-500' },
+        restricted: { label: 'Configuration à compléter', class: 'text-amber-500' },
         not_started: { label: 'Non configuré', class: 'text-gray-400' },
     };
     return configs[props.user.stripe_connect_status] ?? configs.not_started;
