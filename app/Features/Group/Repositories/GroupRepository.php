@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Repositories;
+namespace App\Features\Group\Repositories;
 
 use App\Models\Group;
-use App\Repositories\Contracts\GroupRepositoryInterface;
+use App\Features\Group\Repositories\Contracts\GroupRepositoryInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class GroupRepository implements GroupRepositoryInterface

@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Services\Group;
+namespace App\Features\Group\Services;
 
 use App\Models\Group;
 use App\Models\User;
 use App\Models\StripePrice;
-use App\Repositories\Contracts\GroupRepositoryInterface;
+use App\Features\Group\Repositories\Contracts\GroupRepositoryInterface;
 use App\Services\Payment\Contracts\PaymentGatewayInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;

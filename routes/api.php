@@ -2,7 +2,7 @@
 
 use App\Features\Auth\Controllers\Api\LoginController;
 use App\Features\Auth\Controllers\Api\RegisterController;
-use App\Http\Controllers\Api\GroupController;
+use App\Features\Group\Controllers\GroupController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\WalletController;
 use App\Http\Controllers\ChatController;

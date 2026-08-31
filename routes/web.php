@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Models\Subscription;
 use App\Models\Group;
-use App\Http\Controllers\Api\GroupController;
+use App\Features\Group\Controllers\GroupController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\DashboardController;

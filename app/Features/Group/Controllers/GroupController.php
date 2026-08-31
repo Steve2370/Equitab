@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Features\Group\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Group\StoreGroupRequest;
-use App\Http\Requests\Group\UpdateGroupRequest;
+use App\Features\Group\Requests\StoreGroupRequest;
+use App\Features\Group\Requests\UpdateGroupRequest;
 use App\Models\Group;
 use App\Models\Subscription;
-use App\Repositories\Contracts\GroupRepositoryInterface;
-use App\Services\Group\GroupService;
+use App\Features\Group\Repositories\Contracts\GroupRepositoryInterface;
+use App\Features\Group\Services\GroupService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
