@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Features\Payment\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Group;
 use App\Models\Dispute;
 use App\Models\Payment;
 use App\Models\GroupMember;
-use App\Services\Payment\PaymentService;
-use App\Services\Payment\Contracts\PaymentGatewayInterface;
+use App\Features\Payment\Services\PaymentService;
+use App\Features\Payment\Contracts\PaymentGatewayInterface;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -75,7 +75,7 @@ class PaymentController extends Controller
                 paymentMethodId: $request->payment_method_id,
             );
 
-            Log::info('Subscribe result', $result);  
+            Log::info('Subscribe result', $result);
 
             return response()->json($result);
         } catch (Exception $e) {

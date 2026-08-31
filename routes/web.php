@@ -8,11 +8,11 @@ use App\Models\Subscription;
 use App\Models\Group;
 use App\Features\Group\Controllers\GroupController;
 use App\Http\Controllers\SubscriptionController;
-use App\Http\Controllers\Api\PaymentController;
+use App\Features\Payment\Controllers\PaymentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\Api\StripeWebhookController;
+use App\Features\Payment\Controllers\StripeWebhookController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [

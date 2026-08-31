@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Repositories;
+namespace App\Features\Payment\Repositories;
 
 use App\Models\Payment;
-use App\Repositories\Contracts\PaymentRepositoryInterface;
+use App\Features\Payment\Repositories\Contracts\PaymentRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 
 class PaymentRepository implements PaymentRepositoryInterface

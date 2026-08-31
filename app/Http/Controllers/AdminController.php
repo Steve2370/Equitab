@@ -13,7 +13,7 @@ use App\Mail\AutoRefundProcessed;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use App\Services\Payment\Contracts\PaymentGatewayInterface;
+use App\Features\Payment\Contracts\PaymentGatewayInterface;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -199,7 +199,7 @@ class AdminController extends Controller
         $user->groupMembers()->where('status', 'active')->each(function ($member) {
             if ($member->stripe_subscription_id) {
                 try {
-                    app(\App\Services\Payment\Contracts\PaymentGatewayInterface::class)
+                    app(\App\Features\Payment\Contracts\PaymentGatewayInterface::class)
                         ->cancelSubscription($member->stripe_subscription_id);
                 } catch (\Exception $e) {
                     Log::error('Cancel sub error: ' . $e->getMessage());

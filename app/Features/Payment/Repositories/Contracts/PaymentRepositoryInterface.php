@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Repositories\Contracts;
+namespace App\Features\Payment\Repositories\Contracts;
 
 use App\Models\Payment;
 use Illuminate\Database\Eloquent\Collection;

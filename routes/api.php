@@ -3,7 +3,7 @@
 use App\Features\Auth\Controllers\Api\LoginController;
 use App\Features\Auth\Controllers\Api\RegisterController;
 use App\Features\Group\Controllers\GroupController;
-use App\Http\Controllers\Api\PaymentController;
+use App\Features\Payment\Controllers\PaymentController;
 use App\Http\Controllers\Api\WalletController;
 use App\Http\Controllers\ChatController;
 use Illuminate\Support\Facades\Route;

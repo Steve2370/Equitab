@@ -3,13 +3,13 @@
 namespace App\Providers;
 
 use App\Features\Group\Repositories\Contracts\GroupRepositoryInterface;
-use App\Repositories\Contracts\PaymentRepositoryInterface;
+use App\Features\Payment\Repositories\Contracts\PaymentRepositoryInterface;
 use App\Repositories\Contracts\WalletRepositoryInterface;
 use App\Features\Group\Repositories\GroupRepository;
-use App\Repositories\PaymentRepository;
+use App\Features\Payment\Repositories\PaymentRepository;
 use App\Repositories\WalletRepository;
-use App\Services\Payment\Contracts\PaymentGatewayInterface;
-use App\Services\Payment\StripeGateway;
+use App\Features\Payment\Contracts\PaymentGatewayInterface;
+use App\Features\Payment\Services\StripeGateway;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use App\Features\Group\Policies\GroupPolicy;

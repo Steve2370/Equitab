@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Features\Payment\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\GroupMember;
@@ -12,8 +12,8 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\ConnectAccountActivated;
 use App\Mail\PaymentFailed;
 use App\Jobs\CheckCredentialsProvided;
-use App\Services\Payment\Contracts\PaymentGatewayInterface;
-use App\Services\Payment\PaymentService;
+use App\Features\Payment\Contracts\PaymentGatewayInterface;
+use App\Features\Payment\Services\PaymentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;

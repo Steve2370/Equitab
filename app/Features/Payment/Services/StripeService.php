@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Payment;
+namespace App\Features\Payment\Services;
 
 use Stripe\Stripe;
 use Stripe\PaymentIntent;

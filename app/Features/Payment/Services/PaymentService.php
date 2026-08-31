@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Services\Payment;
+namespace App\Features\Payment\Services;
 
 use App\Models\Group;
 use App\Models\Payment;
 use App\Models\User;
-use App\Repositories\Contracts\PaymentRepositoryInterface;
-use App\Services\Payment\Contracts\PaymentGatewayInterface;
+use App\Features\Payment\Repositories\Contracts\PaymentRepositoryInterface;
+use App\Features\Payment\Contracts\PaymentGatewayInterface;
 use Illuminate\Support\Facades\DB;
 use Exception;
 

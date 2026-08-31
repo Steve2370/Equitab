@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Services\Payment;
+namespace App\Features\Payment\Services;
 
 use App\Models\User;
 use App\Models\Group;
-use App\Services\Payment\Contracts\PaymentGatewayInterface;
+use App\Features\Payment\Contracts\PaymentGatewayInterface;
 use Stripe\StripeClient;
 use Stripe\Exception\ApiErrorException;
 use Exception;

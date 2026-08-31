@@ -6,7 +6,7 @@ use App\Models\Group;
 use App\Models\User;
 use App\Models\StripePrice;
 use App\Features\Group\Repositories\Contracts\GroupRepositoryInterface;
-use App\Services\Payment\Contracts\PaymentGatewayInterface;
+use App\Features\Payment\Contracts\PaymentGatewayInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Exception;

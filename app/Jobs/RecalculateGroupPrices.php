@@ -3,7 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Group;
-use App\Services\Payment\Contracts\PaymentGatewayInterface;
+use App\Features\Payment\Contracts\PaymentGatewayInterface;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Payment\Contracts;
+namespace App\Features\Payment\Contracts;
 
 use App\Models\User;
 use App\Models\Group;

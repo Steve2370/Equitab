@@ -7,7 +7,7 @@ use App\Models\Payment;
 use App\Models\User;
 use App\Mail\AutoRefundProcessed;
 use Illuminate\Support\Facades\Mail;
-use App\Services\Payment\Contracts\PaymentGatewayInterface;
+use App\Features\Payment\Contracts\PaymentGatewayInterface;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
