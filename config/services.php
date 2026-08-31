@@ -48,10 +48,11 @@ return [
         'r2_bucket' => env('CLOUDFLARE_R2_BUCKET'),
     ],
 
-];
-
-'google' => [
+    'google' => [
     'client_id' => env('GOOGLE_CLIENT_ID'),
     'client_secret' => env('GOOGLE_CLIENT_SECRET'),
     'redirect' => env('GOOGLE_REDIRECT_URI'),
 ],
+
+];
+
