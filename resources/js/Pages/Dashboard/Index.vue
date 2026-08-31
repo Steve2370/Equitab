@@ -3,7 +3,18 @@ import { computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import DashboardLayout from '@/Layouts/DashboardLayout.vue';
 import MetricCard from '@/Components/Dashboard/MetricCard.vue';
-import { TrendingDown, Wallet, RefreshCcw, CheckCircle, Clock, AlertCircle } from 'lucide-vue-next';
+import TrustScoreGauge from '@/Components/Dashboard/TrustScoreGauge.vue';
+import SubscriptionCard from '@/Components/Dashboard/SubscriptionCard.vue';
+import BadgeChip from '@/Components/Dashboard/BadgeChip.vue';
+import {
+    TrendingDown,
+    Wallet,
+    RefreshCcw,
+    CheckCircle,
+    Clock,
+    AlertCircle,
+    Flame,
+} from 'lucide-vue-next';
 
 interface Payment {
     id: number;
@@ -14,12 +25,30 @@ interface Payment {
     dueDate: string;
 }
 
+interface Subscription {
+    id: number;
+    serviceName: string;
+    category: string;
+    brandColor: string;
+    daysUntilNextPayment: number;
+}
+
+interface Badge {
+    id: number;
+    label: string;
+    icon: 'award' | 'clock' | 'users';
+}
+
 interface Props {
     userName: string;
     totalSavings: number;
     monthlySpend: number;
     upcomingPayments: Payment[];
     activeSubscriptionsCount: number;
+    trustScore: number;
+    currentStreak: number;
+    subscriptions: Subscription[];
+    badges: Badge[];
 }
 
 const props = defineProps<Props>();
@@ -65,18 +94,28 @@ function statusLabel(status: string): string {
     <Head title="Tableau de bord - Equitab" />
 
     <DashboardLayout>
-        <div class="mb-8">
-            <h1 class="text-2xl font-semibold text-equitab-navy">
-                Bonjour, <span class="text-equitab-emerald">{{ firstName }}</span>
-            </h1>
-            <p class="mt-1 text-sm text-gray-500">
-                {{ activeSubscriptionsCount }}
-                abonnement{{ activeSubscriptionsCount > 1 ? 's' : '' }}
-                actif{{ activeSubscriptionsCount > 1 ? 's' : '' }}
-            </p>
+        <div class="mb-8 flex items-start justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-semibold text-equitab-navy">
+                    Bonjour, <span class="text-equitab-emerald">{{ firstName }}</span>
+                </h1>
+                <p class="mt-1 text-sm text-gray-500">
+                    {{ activeSubscriptionsCount }}
+                    abonnement{{ activeSubscriptionsCount > 1 ? 's' : '' }}
+                    actif{{ activeSubscriptionsCount > 1 ? 's' : '' }}
+                </p>
+            </div>
+
+            <span
+                v-if="currentStreak > 0"
+                class="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 text-sm font-medium text-amber-600"
+            >
+                <Flame class="h-4 w-4" />
+                {{ currentStreak }} mois d'affilée
+            </span>
         </div>
 
-        <div class="grid gap-4 sm:grid-cols-3">
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <MetricCard
                 label="Économies réalisées"
                 :value="formattedSavings"
@@ -98,6 +137,37 @@ function statusLabel(status: string): string {
                 :icon="RefreshCcw"
                 variant="info"
                 :sublabel="upcomingPayments.length > 0 ? `Prochain : ${upcomingPayments[0]?.dueDate}` : 'Aucun pour le moment'"
+            />
+            <div class="rounded-xl border border-gray-100 bg-white p-5">
+                <TrustScoreGauge :score="trustScore" />
+            </div>
+        </div>
+
+        <div v-if="subscriptions.length > 0" class="mt-8">
+            <div class="mb-3 flex items-center justify-between">
+                <h2 class="font-semibold text-equitab-navy">Tes abonnements</h2>
+                <Link href="/dashboard/subscriptions" class="text-sm text-equitab-emerald hover:underline">
+                    Voir tout →
+                </Link>
+            </div>
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <SubscriptionCard
+                    v-for="subscription in subscriptions"
+                    :key="subscription.id"
+                    :service-name="subscription.serviceName"
+                    :category="subscription.category"
+                    :brand-color="subscription.brandColor"
+                    :days-until-next-payment="subscription.daysUntilNextPayment"
+                />
+            </div>
+        </div>
+
+        <div v-if="badges.length > 0" class="mt-6 flex flex-wrap gap-2">
+            <BadgeChip
+                v-for="badge in badges"
+                :key="badge.id"
+                :label="badge.label"
+                :icon="badge.icon"
             />
         </div>
 
