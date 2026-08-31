@@ -47,6 +47,11 @@ class User extends Authenticatable
         return $this->hasOne(Wallet::class);
     }
 
+    public function oauthProviders(): HasMany
+    {
+        return $this->hasMany(OauthProvider::class);
+    }
+
     public function ownedGroups(): HasMany
     {
         return $this->hasMany(Group::class, 'owner_id');
