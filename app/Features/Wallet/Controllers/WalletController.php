@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Features\Wallet\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Repositories\Contracts\WalletRepositoryInterface;
-use App\Services\Wallet\WalletService;
+use App\Features\Wallet\Repositories\Contracts\WalletRepositoryInterface;
+use App\Features\Wallet\Services\WalletService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

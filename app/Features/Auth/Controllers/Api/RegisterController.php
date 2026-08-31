@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Features\Auth\Requests\RegisterRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
-use App\Services\Wallet\WalletService;
+use App\Features\Wallet\Services\WalletService;
 use Illuminate\Http\JsonResponse;
 use App\Mail\WelcomeUser;
 use Illuminate\Support\Facades\Log;

@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Repositories;
+namespace App\Features\Wallet\Repositories;
 
 use App\Models\Wallet;
-use App\Repositories\Contracts\WalletRepositoryInterface;
+use App\Features\Wallet\Repositories\Contracts\WalletRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 
 class WalletRepository implements WalletRepositoryInterface

@@ -4,7 +4,7 @@ namespace App\Features\Auth\Services;
 
 use App\Mail\WelcomeUser;
 use App\Models\User;
-use App\Services\Wallet\WalletService;
+use App\Features\Wallet\Services\WalletService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;

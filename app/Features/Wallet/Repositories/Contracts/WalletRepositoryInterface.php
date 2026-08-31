@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Repositories\Contracts;
+namespace App\Features\Wallet\Repositories\Contracts;
 
 use App\Models\Wallet;
 

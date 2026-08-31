@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Services\Wallet;
+namespace App\Features\Wallet\Services;
 
 use App\Models\User;
 use App\Models\Wallet;
 use App\Models\Transaction;
-use App\Repositories\Contracts\WalletRepositoryInterface;
+use App\Features\Wallet\Repositories\Contracts\WalletRepositoryInterface;
 use Illuminate\Support\Facades\DB;
 use Exception;
 

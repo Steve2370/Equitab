@@ -4,10 +4,10 @@ namespace App\Providers;
 
 use App\Features\Group\Repositories\Contracts\GroupRepositoryInterface;
 use App\Features\Payment\Repositories\Contracts\PaymentRepositoryInterface;
-use App\Repositories\Contracts\WalletRepositoryInterface;
+use App\Features\Wallet\Repositories\Contracts\WalletRepositoryInterface;
 use App\Features\Group\Repositories\GroupRepository;
 use App\Features\Payment\Repositories\PaymentRepository;
-use App\Repositories\WalletRepository;
+use App\Features\Wallet\Repositories\WalletRepository;
 use App\Features\Payment\Contracts\PaymentGatewayInterface;
 use App\Features\Payment\Services\StripeGateway;
 use Illuminate\Support\Facades\Vite;
