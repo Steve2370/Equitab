@@ -73,6 +73,7 @@ class SocialAuthService
             'name' => $socialiteUser->getName() ?: $socialiteUser->getNickname() ?: 'Nouvel utilisateur',
             'email' => $socialiteUser->getEmail(),
             'password' => null,
+            'status' => 'active',
             'email_verified_at' => now(),
             'avatar' => $socialiteUser->getAvatar(),
         ]);
