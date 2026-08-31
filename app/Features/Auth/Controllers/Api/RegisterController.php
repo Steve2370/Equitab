@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\Api\Auth;
+namespace App\Features\Auth\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\RegisterRequest;
+use App\Features\Auth\Requests\RegisterRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use App\Services\Wallet\WalletService;

@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\Api\Auth\LoginController;
-use App\Http\Controllers\Api\Auth\RegisterController;
+use App\Features\Auth\Controllers\Api\LoginController;
+use App\Features\Auth\Controllers\Api\RegisterController;
 use App\Http\Controllers\Api\GroupController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\WalletController;

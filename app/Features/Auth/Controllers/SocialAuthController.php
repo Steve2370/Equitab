@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Features\Auth\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Services\Auth\SocialAuthService;
+use App\Features\Auth\Services\SocialAuthService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;

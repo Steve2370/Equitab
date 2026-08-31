@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Auth;
+namespace App\Features\Auth\Services;
 
 use App\Mail\WelcomeUser;
 use App\Models\User;
