@@ -45,13 +45,18 @@ interface Props {
     monthlySpend: number;
     upcomingPayments: Payment[];
     activeSubscriptionsCount: number;
-    trustScore: number;
-    currentStreak: number;
-    subscriptions: Subscription[];
-    badges: Badge[];
+    trustScore?: number;
+    currentStreak?: number;
+    subscriptions?: Subscription[];
+    badges?: Badge[];
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+    trustScore: 0,
+    currentStreak: 0,
+    subscriptions: () => [],
+    badges: () => [],
+});
 
 const firstName = computed(() => props.userName.split(' ')[0]);
 
