@@ -7,11 +7,11 @@ use Inertia\Inertia;
 use App\Models\Subscription;
 use App\Models\Group;
 use App\Features\Group\Controllers\GroupController;
-use App\Http\Controllers\SubscriptionController;
+use App\Features\Subscription\Controllers\SubscriptionController;
 use App\Features\Payment\Controllers\PaymentController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ChatController;
-use App\Http\Controllers\AdminController;
+use App\Features\Dashboard\Controllers\DashboardController;
+use App\Features\Chat\Controllers\ChatController;
+use App\Features\Admin\Controllers\AdminController;
 use App\Features\Payment\Controllers\StripeWebhookController;
 
 Route::get('/', function () {
@@ -128,5 +128,3 @@ Route::patch('/groups/{group}/close', [GroupController::class, 'close'])
     ->middleware(['auth', 'verified']);
 
 Route::get('/invite/{token}', [GroupController::class, 'showInvite'])->name('invite.show');
-
-

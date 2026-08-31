@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Features\Admin\Controllers;
 
+use App\Http\Controllers\Controller;
 use App\Models\Dispute;
 use App\Models\Group;
 use App\Models\Payment;

@@ -5,7 +5,7 @@ use App\Features\Auth\Controllers\Api\RegisterController;
 use App\Features\Group\Controllers\GroupController;
 use App\Features\Payment\Controllers\PaymentController;
 use App\Features\Wallet\Controllers\WalletController;
-use App\Http\Controllers\ChatController;
+use App\Features\Chat\Controllers\ChatController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['throttle:30,1'])->group(function () {
@@ -46,5 +46,6 @@ Route::middleware(['auth:sanctum', 'throttle:120,1'])->group(function () {
     Route::post('/wallet/credit', [WalletController::class, 'credit']);
     Route::get('/groups/{group}/messages', [ChatController::class, 'show']);
     Route::post('/groups/{group}/messages', [ChatController::class, 'send']);
+    Route::get('/groups/{group}/chat-members', [ChatController::class, 'members']);
     Route::post('/subscriptions/confirm', [PaymentController::class, 'confirmSubscription']);
 });
