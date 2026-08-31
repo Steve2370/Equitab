@@ -31,9 +31,17 @@ function isActive(href: string): boolean {
     return page.url.startsWith(href);
 }
 
-const userInitial = computed(() =>
-    props.userName.trim().length > 0 ? props.userName.trim().charAt(0).toUpperCase() : '?'
-);
+const sharedUserName = computed(() => {
+    // Convention Laravel/Inertia standard : le nom de l'utilisateur connecté
+    // est généralement partagé globalement via auth.user dans HandleInertiaRequests.
+    const auth = page.props.auth as { user?: { name?: string } } | undefined;
+    return auth?.user?.name ?? '';
+});
+
+const userInitial = computed(() => {
+    const name = props.userName.trim().length > 0 ? props.userName : sharedUserName.value;
+    return name.trim().length > 0 ? name.trim().charAt(0).toUpperCase() : '?';
+});
 </script>
 
 <template>
