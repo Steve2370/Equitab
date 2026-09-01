@@ -98,6 +98,20 @@ class Group extends Model
         return (int) round($this->total_price / $activeMembers);
     }
 
+    /**
+     * Prix par membre tel qu'il sera APRÈS qu'un nouveau membre ait rejoint —
+     * à utiliser pour tout affichage destiné à quelqu'un qui n'a pas encore
+     * rejoint le groupe (page d'invitation, liste publique des groupes).
+     * Ne pas confondre avec calculateCurrentPricePerMember(), qui reflète le
+     * prix réel des membres déjà présents (gains du propriétaire, etc.).
+     */
+    public function calculatePricePerMemberIfJoined(): int
+    {
+        $activeMembers = $this->members()->where('status', 'active')->count();
+
+        return (int) round($this->total_price / ($activeMembers + 1));
+    }
+
     public function calculateOwnerNetEarnings(): int
     {
         $pricePerMember = $this->calculateCurrentPricePerMember();
