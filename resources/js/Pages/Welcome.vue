@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
-import TypewriterText from '@/Components/TypewriterText.vue';
 import ServiceCard from '@/Components/ServiceCard.vue';
 import ScrollingCarousel from '@/Components/ScrollingCarousel.vue';
 import NavbarWithSearch from '@/Components/NavbarWithSearch.vue';
@@ -37,13 +36,6 @@ interface Props {
 
 defineProps<Props>();
 
-const heroWords: string[] = [
-    'fiable',
-    'sécurisé',
-    'simple',
-    'transparent',
-];
-
 const joinSteps = [
     { icon: UserPlus, title: 'Je choisis', description: 'Parmi des dizaines de services streaming, logiciels, presse.' },
     { icon: Send, title: 'Je paie ma part', description: 'Directement au propriétaire, via Stripe.' },
@@ -69,22 +61,31 @@ const ownSteps = [
             :is-authenticated="isAuthenticated"
         />
 
-        <main class="flex flex-col items-center justify-center px-6 py-20 text-center">
-            <h1 class="flex flex-wrap items-center justify-center gap-x-3 text-4xl font-semibold tracking-tight text-equitab-navy lg:text-6xl">
-                <img src="/Images/EquitabLogo.png" alt="Equitab" class="inline-block h-[0.85em] w-auto align-middle" />
-                <span>est</span>
-                <span class="text-equitab-emerald">
-                    <TypewriterText :words="heroWords" />
-                </span>
-            </h1>
+        <main class="px-6 py-20 lg:px-12">
+            <div class="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-2 lg:gap-16">
+                <div class="flex flex-col items-center text-center lg:items-start lg:text-left">
+                    <h1 class="text-4xl font-semibold tracking-tight text-equitab-navy lg:text-6xl">
+                        Vos abonnements préférés,
+                        <span class="text-equitab-emerald">partagés en toute confiance.</span>
+                    </h1>
 
-            <p class="mt-6 max-w-xl text-lg text-gray-600">
-                Partagez vos abonnements Netflix, Disney+, et plus encore avec des
-                paiements sécurisés directement entre membres.
-            </p>
+                    <p class="mt-6 max-w-xl text-lg text-gray-600">
+                        Économisez jusqu'à 75 % sur Netflix, Spotify, Disney+ et plus
+                        encore, avec des paiements sécurisés directement entre membres.
+                    </p>
 
-            <div class="mt-10 w-full">
-                <SearchBar />
+                    <div class="mt-10 w-full max-w-xl">
+                        <SearchBar />
+                    </div>
+                </div>
+
+                <div class="flex justify-center lg:justify-end">
+                    <img
+                        src="/Images/ImageDroite.png"
+                        alt="Partage d'abonnements Equitab entre amis"
+                        class="h-auto w-full max-w-md lg:max-w-xl"
+                    />
+                </div>
             </div>
         </main>
 
@@ -92,7 +93,7 @@ const ownSteps = [
             <h2 class="mb-4 px-6 text-xl font-semibold text-equitab-navy lg:px-12">
                 Services populaires
             </h2>
-            <ScrollingCarousel :duration-seconds="60">
+            <ScrollingCarousel :duration-seconds="120">
                 <ServiceCard
                     v-for="service in catalogServices"
                     :key="service.slug"
