@@ -23,10 +23,12 @@ const errorMessage = ref('');
 let stripe: any = null;
 let cardElement: any = null;
 
-const formattedPrice = new Intl.NumberFormat('fr-CA', {
-    style: 'currency',
-    currency: 'CAD',
-}).format(props.pricePerMember);
+function formatCurrency(amountInCents: number): string {
+    return new Intl.NumberFormat('fr-CA', {
+        style: 'currency',
+        currency: 'CAD',
+    }).format(amountInCents / 100);
+}
 
 onMounted(async() => {
     await nextTick();
@@ -51,13 +53,6 @@ onMounted(async() => {
 onUnmounted(() => {
     if (cardElement) cardElement.destroy();
 });
-
-function formatCurrency(amountInCents: number): string {
-    return new Intl.NumberFormat('fr-CA', {
-        style: 'currency',
-        currency: 'CAD',
-    }).format(amountInCents / 100);
-}
 
 async function confirmOnBackend(subscriptionId: string): Promise<void> {
     console.log('confirmOnBackend appelé avec:', subscriptionId);
@@ -156,7 +151,7 @@ function getCsrfToken(): string {
         <div class="mb-4 flex items-center justify-between">
             <div>
                 <p class="font-semibold text-equitab-navy">{{ subscriptionName }}</p>
-                <p class="text-sm text-gray-500">{{ formattedPrice }} / mois</p>
+                <p class="text-sm text-gray-500">{{ formatCurrency(pricePerMember) }} / mois</p>
             </div>
             <div class="flex items-center gap-1 text-xs text-gray-400">
                 <Lock class="h-3 w-3" />
