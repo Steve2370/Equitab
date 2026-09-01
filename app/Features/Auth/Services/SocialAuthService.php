@@ -38,33 +38,29 @@ class SocialAuthService
     public function findOrCreateUser(string $provider, SocialiteUser $socialiteUser): User
     {
         $user = User::whereHas('oauthProviders', function ($query) use ($provider, $socialiteUser) {
-            $query->where('provider', $provider)
-                ->where('provider_id', $socialiteUser->getId());
+            $query->where('provider', $provider)->where('provider_id', $socialiteUser->getId());
         })->first();
 
-        if (! $user) {
-            $user = User::where('email', $socialiteUser->getEmail())->first();
-        }
-
-        if (! $user) {
-            $user = $this->createNewUser($socialiteUser);
-        }
-
+        $user ??= User::where('email', $socialiteUser->getEmail())->first();
+        $user ??= $this->createNewUser($socialiteUser);
         $this->ensureUserIsActive($user);
+        $this->syncOAuthProvider($user, $provider, $socialiteUser);
 
-        $user->oauthProviders()->updateOrCreate(
-            ['provider' => $provider],
+        return $user;
+    }
+
+    private function syncOAuthProvider(User $user, string $provider, SocialiteUser $socialiteUser): void {
+        $user->oauthProviders()->updateOrCreate(['provider' => $provider],
             [
                 'provider_id' => $socialiteUser->getId(),
                 'avatar' => $socialiteUser->getAvatar(),
             ],
         );
-
         if (! $user->email_verified_at) {
-            $user->forceFill(['email_verified_at' => now()])->save();
+            $user->forceFill([
+                'email_verified_at' => now(),
+            ])->save();
         }
-
-        return $user;
     }
 
     private function createNewUser(SocialiteUser $socialiteUser): User
