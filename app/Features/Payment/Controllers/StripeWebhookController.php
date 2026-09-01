@@ -37,6 +37,14 @@ class StripeWebhookController extends Controller
             ? config('services.stripe.connect_webhook_secret')
             : config('services.stripe.webhook_secret');
 
+        Log::info('Webhook debug TEMPORAIRE', [
+            'has_stripe_account_header' => $request->hasHeader('Stripe-Account'),
+            'stripe_account_header_value' => $request->header('Stripe-Account'),
+            'is_connect_webhook' => $isConnectWebhook,
+            'secret_used_prefix' => substr($secret ?? '', 0, 12),
+            'secret_used_length' => strlen($secret ?? ''),
+        ]);
+
         try {
             $event = Webhook::constructEvent($payload, $sigHeader, $secret);
         } catch (\Exception $e) {
@@ -194,8 +202,15 @@ class StripeWebhookController extends Controller
 
         $wasActive = $user->stripe_connect_status === 'active';
 
+        // Stripe peut activer charges_enabled avant d'avoir fini de vérifier
+        // certains éléments en arrière-plan (compte bancaire, identité du
+        // titulaire...). Tant que pending_verification n'est pas vide, le
+        // compte est encore en cours de vérification, pas actif.
+        $pendingVerification = ! empty($account->requirements->pending_verification ?? []);
+
         $status = match(true) {
-            $account->charges_enabled => 'active',
+            $pendingVerification => 'pending',
+            $account->charges_enabled && $account->payouts_enabled => 'active',
             $account->details_submitted => 'pending',
             default => 'restricted',
         };
