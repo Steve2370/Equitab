@@ -232,15 +232,14 @@ class StripeGateway implements PaymentGatewayInterface
 
     private function getNextFirstOfMonth(): int
     {
-        $now = new \DateTime('now', new \DateTimeZone('UTC'));
-
-        if ($now->format('d') === '01') {
-            $anchor = new \DateTime('first day of next month', new \DateTimeZone('UTC'));
-        } else {
-            $anchor = new \DateTime('first day of next month', new \DateTimeZone('UTC'));
-        }
-
+        // Toujours le 1er du mois suivant, y compris si on rejoint pile le
+        // 1er : dans ce cas, la période de prorata (aujourd'hui → 1er du
+        // mois prochain) couvre un mois complet, donc le montant facturé
+        // aujourd'hui est déjà 100% du prix mensuel. Pas de cas particulier
+        // à gérer ici.
+        $anchor = new \DateTime('first day of next month', new \DateTimeZone('UTC'));
         $anchor->setTime(0, 0, 0);
+
         return $anchor->getTimestamp();
     }
 
