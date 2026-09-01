@@ -3,6 +3,8 @@
 namespace App\Features\Dashboard\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Mail\IdentityVerified;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -149,6 +151,7 @@ class DashboardController extends Controller
 
                 if ($session->status === 'verified') {
                     $user->update(['identity_status' => 'verified']);
+                    Mail::to($user->email)->send(new IdentityVerified($user));
                 } elseif ($session->status === 'processing') {
                     $user->update(['identity_status' => 'pending']);
                 }
@@ -164,8 +167,15 @@ class DashboardController extends Controller
                 $stripe = $stripe ?? new \Stripe\StripeClient(config('services.stripe.secret'));
                 $account = $stripe->accounts->retrieve($user->stripe_connect_account_id);
 
+                // Même logique que le webhook account.updated : tant que
+                // pending_verification n'est pas vide, Stripe vérifie encore
+                // des éléments en arrière-plan (compte bancaire, identité...)
+                // même si charges_enabled est déjà à true.
+                $pendingVerification = ! empty($account->requirements->pending_verification ?? []);
+
                 $status = match(true) {
-                    $account->charges_enabled => 'active',
+                    $pendingVerification => 'pending',
+                    $account->charges_enabled && $account->payouts_enabled => 'active',
                     $account->details_submitted => 'pending',
                     default => 'restricted',
                 };
