@@ -31,24 +31,27 @@ class StripeWebhookController extends Controller
         $payload = $request->getContent();
         $sigHeader = $request->header('Stripe-Signature');
 
-        $isConnectWebhook = $request->header('Stripe-Account') !== null;
+        // Le header Stripe-Account n'est pas envoyé de façon fiable pour les
+        // événements de comptes connectés avec les Destinations d'événements
+        // (contrairement aux anciens webhooks Connect). On essaie donc les
+        // deux secrets connus plutôt que de deviner lequel utiliser.
+        $event = null;
+        $lastError = null;
 
-        $secret = $isConnectWebhook
-            ? config('services.stripe.connect_webhook_secret')
-            : config('services.stripe.webhook_secret');
+        foreach (array_filter([
+            config('services.stripe.webhook_secret'),
+            config('services.stripe.connect_webhook_secret'),
+        ]) as $secret) {
+            try {
+                $event = Webhook::constructEvent($payload, $sigHeader, $secret);
+                break;
+            } catch (\Exception $e) {
+                $lastError = $e;
+            }
+        }
 
-        Log::info('Webhook debug TEMPORAIRE', [
-            'has_stripe_account_header' => $request->hasHeader('Stripe-Account'),
-            'stripe_account_header_value' => $request->header('Stripe-Account'),
-            'is_connect_webhook' => $isConnectWebhook,
-            'secret_used_prefix' => substr($secret ?? '', 0, 12),
-            'secret_used_length' => strlen($secret ?? ''),
-        ]);
-
-        try {
-            $event = Webhook::constructEvent($payload, $sigHeader, $secret);
-        } catch (\Exception $e) {
-            Log::error('Webhook signature invalide: ' . $e->getMessage());
+        if (! $event) {
+            Log::error('Webhook signature invalide: ' . ($lastError?->getMessage() ?? 'aucun secret configuré'));
             return response()->json(['error' => 'Webhook invalide.'], 400);
         }
 
