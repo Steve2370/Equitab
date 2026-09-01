@@ -25,22 +25,17 @@ onMounted(() => {
     if (toastComponent.value) setRef(toastComponent.value);
 });
 
-const page = usePage();
+const page = usePage<{ auth: { user: { name: string; avatar: string | null } | null } }>();
 
 function isActive(href: string): boolean {
     return page.url.startsWith(href);
 }
 
-const sharedUserName = computed(() => {
-    // Convention Laravel/Inertia standard : le nom de l'utilisateur connecté
-    // est généralement partagé globalement via auth.user dans HandleInertiaRequests.
-    const auth = page.props.auth as { user?: { name?: string } } | undefined;
-    return auth?.user?.name ?? '';
-});
+const user = computed(() => page.props.auth?.user);
 
 const userInitial = computed(() => {
-    const name = props.userName.trim().length > 0 ? props.userName : sharedUserName.value;
-    return name.trim().length > 0 ? name.trim().charAt(0).toUpperCase() : '?';
+    const name = user.value?.name ?? props.userName;
+    return name && name.trim().length > 0 ? name.trim().charAt(0).toUpperCase() : '?';
 });
 </script>
 
@@ -73,9 +68,20 @@ const userInitial = computed(() => {
         <div class="flex items-center gap-4">
             <div
                 v-if="isAuthenticated"
-                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-equitab-emerald text-sm font-medium text-white"
+                class="flex h-8 w-8 shrink-0 overflow-hidden rounded-full bg-equitab-emerald"
             >
-                {{ userInitial }}
+                <img
+                    v-if="user?.avatar"
+                    :src="user.avatar"
+                    class="h-full w-full object-cover"
+                    alt="Avatar"
+                />
+                <span
+                    v-else
+                    class="flex h-full w-full items-center justify-center text-sm font-medium text-white"
+                >
+                    {{ userInitial }}
+                </span>
             </div>
             <template v-else>
                 <Link
