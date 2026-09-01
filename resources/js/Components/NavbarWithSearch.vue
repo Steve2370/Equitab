@@ -40,13 +40,13 @@ const userInitial = computed(() => {
 </script>
 
 <template>
-    <nav class="sticky top-0 z-10 flex items-center justify-between bg-equitab-navy px-6 py-4 lg:px-12">
-        <div class="flex items-center gap-8">
+    <nav class="sticky top-0 z-10 flex items-center justify-between gap-3 whitespace-nowrap bg-equitab-navy px-4 py-3 sm:px-6 sm:py-4 lg:px-12">
+        <div class="flex min-w-0 items-center gap-3 sm:gap-8">
             <Link href="/" class="flex shrink-0 items-center">
-                <img src="/Images/EquitabLogoblanc.png" alt="Equitab" class="h-8 w-auto shrink-0" />
+                <img src="/Images/EquitabLogoblanc.png" alt="Equitab" class="h-6 w-auto shrink-0 sm:h-8" />
             </Link>
 
-            <div class="flex items-center gap-5">
+            <div class="hidden items-center gap-5 sm:flex">
                 <Link
                     href="/services"
                     class="text-sm font-medium"
@@ -65,10 +65,11 @@ const userInitial = computed(() => {
             </div>
         </div>
 
-        <div class="flex items-center gap-4">
-            <div
+        <div class="flex shrink-0 items-center gap-2 sm:gap-4">
+            <Link
                 v-if="isAuthenticated"
-                class="flex h-8 w-8 shrink-0 overflow-hidden rounded-full bg-equitab-emerald"
+                href="/dashboard"
+                class="flex h-7 w-7 shrink-0 overflow-hidden rounded-full bg-equitab-emerald sm:h-8 sm:w-8"
             >
                 <img
                     v-if="user?.avatar"
@@ -82,19 +83,19 @@ const userInitial = computed(() => {
                 >
                     {{ userInitial }}
                 </span>
-            </div>
+            </Link>
             <template v-else>
                 <Link
                     v-if="canLogin"
                     href="/login"
-                    class="text-sm font-medium text-white/70 hover:text-white"
+                    class="text-xs font-medium text-white/70 hover:text-white sm:text-sm"
                 >
                     Connexion
                 </Link>
                 <Link
                     v-if="canRegister"
                     href="/register"
-                    class="rounded-md bg-equitab-emerald px-4 py-2 text-sm font-medium text-white hover:bg-equitab-emerald-dark"
+                    class="rounded-md bg-equitab-emerald px-3 py-1.5 text-xs font-medium text-white hover:bg-equitab-emerald-dark sm:px-4 sm:py-2 sm:text-sm"
                 >
                     S'inscrire
                 </Link>
