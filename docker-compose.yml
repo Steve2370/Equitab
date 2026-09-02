@@ -22,7 +22,7 @@ services:
     environment:
       POSTGRES_DB: equitab
       POSTGRES_USER: equitab
-      POSTGRES_PASSWORD: "EquitabProd2026"
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
