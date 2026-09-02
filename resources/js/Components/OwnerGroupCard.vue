@@ -54,7 +54,7 @@ function onSuccess(_subscriptionId: string): void {
 
 <template>
     <div class="flex flex-col rounded-xl border border-gray-100 p-5">
-        <div class="flex items-start justify-between">
+        <div class="flex items-start justify-between gap-3">
             <div>
                 <p class="font-semibold text-equitab-navy">{{ ownerName }}</p>
                 <div class="mt-1 flex items-center gap-2">
@@ -84,6 +84,13 @@ function onSuccess(_subscriptionId: string): void {
                     </span>
                 </div>
             </div>
+
+            <span
+                class="inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium"
+                :class="spotsAvailable <= 1 ? 'bg-red-50 text-red-600' : 'bg-equitab-emerald/10 text-equitab-emerald'"
+            >
+                {{ spotsAvailable }} place{{ spotsAvailable > 1 ? 's' : '' }} restante{{ spotsAvailable > 1 ? 's' : '' }}
+            </span>
         </div>
 
         <div class="mt-4 flex items-center gap-4 text-sm text-gray-500">
