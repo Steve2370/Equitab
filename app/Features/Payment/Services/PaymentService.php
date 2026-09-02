@@ -24,6 +24,10 @@ class PaymentService
         Group $group,
         string $paymentMethodId
     ): array {
+        if ($group->isFull()) {
+            throw new Exception('Ce groupe est complet.');
+        }
+
         if (! $this->gateway->isAccountActive($group->owner)) {
             throw new Exception('Le propriétaire n\'a pas configuré ses paiements.');
         }
