@@ -13,6 +13,15 @@ class Payment extends Model
         'amount', 'currency', 'status',
         'period_start', 'period_end', 'due_date',
         'paid_at', 'retry_count',
+        // Même bug que GroupMember : ces colonnes existent depuis
+        // add_stripe_fields_to_payments_table / add_refund_fields_to_payments_table
+        // mais n'avaient jamais été ajoutées ici, donc Eloquent les
+        // ignorait silencieusement — platform_fee_amount (les gains
+        // Equitab affichés dans l'admin) et stripe_payment_intent_id
+        // (utilisé pour la déduplication et les remboursements) ne
+        // s'enregistraient jamais.
+        'stripe_payment_intent_id', 'stripe_transfer_id', 'platform_fee_amount',
+        'refunded_at', 'refund_reason', 'stripe_refund_id',
     ];
 
     protected function casts(): array
@@ -23,6 +32,8 @@ class Payment extends Model
             'period_end' => 'date',
             'due_date' => 'date',
             'paid_at' => 'datetime',
+            'platform_fee_amount' => 'integer',
+            'refunded_at' => 'datetime',
         ];
     }
 
