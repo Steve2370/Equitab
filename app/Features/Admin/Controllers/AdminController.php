@@ -51,29 +51,80 @@ class AdminController extends Controller
                 'groupsOwned' => $u->owned_groups_count,
                 'groupsJoined' => $u->group_members_count,
                 'createdAt' => $u->created_at->format('d M Y'),
+                'status' => $u->status,
+                'isSuspended' => $u->isSuspended(),
+                'suspendedUntil' => $u->suspended_until?->format('d M Y H:i'),
+                'suspensionReason' => $u->suspension_reason,
             ]);
 
         return Inertia::render('Admin/Users', ['users' => $users]);
     }
 
+    public function suspendUser(Request $request, User $user): RedirectResponse
+    {
+        if ($user->id === Auth::id()) {
+            return back()->with('error', 'Vous ne pouvez pas suspendre votre propre compte.');
+        }
+
+        $request->validate([
+            // Nombre de jours ; null/absent = suspension indéfinie, jusqu'à
+            // ce qu'un admin la lève manuellement.
+            'duration_days' => ['nullable', 'integer', 'min:1', 'max:3650'],
+            'reason' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $user->update([
+            'status' => 'suspended',
+            'suspended_until' => $request->duration_days
+                ? now()->addDays((int) $request->duration_days)
+                : null,
+            'suspension_reason' => $request->reason,
+        ]);
+
+        return back()->with('success', "Compte de {$user->name} suspendu.");
+    }
+
+    public function unsuspendUser(User $user): RedirectResponse
+    {
+        $user->update([
+            'status' => 'active',
+            'suspended_until' => null,
+            'suspension_reason' => null,
+        ]);
+
+        return back()->with('success', "Compte de {$user->name} réactivé.");
+    }
+
     public function groups(): Response
     {
-        $groups = Group::with(['owner', 'subscription'])
+        $groups = Group::with(['owner', 'subscription', 'members.user'])
             ->withCount('members')
             ->latest()
             ->paginate(20)
             ->through(fn($g) => [
                 'id' => $g->id,
                 'name' => $g->name,
-                'ownerName' => $g->owner->name,
-                'ownerEmail' => $g->owner->email,
-                'subscriptionName' => $g->subscription->name,
+                'ownerName' => $g->owner->name ?? 'Utilisateur supprimé',
+                'ownerEmail' => $g->owner->email ?? '—',
+                'subscriptionName' => $g->subscription->name ?? '—',
                 'status' => $g->status,
                 'visibility' => $g->visibility,
                 'membersCount' => $g->members_count,
                 'maxMembers' => $g->max_members,
                 'totalPrice' => $g->total_price,
                 'createdAt' => $g->created_at->format('d M Y'),
+                // La composition du groupe (qui est dans quel groupe) —
+                // manquait ici alors que la page Admin/Groups.vue l'attend
+                // déjà pour son panneau dépliable.
+                'members' => $g->members->map(fn($m) => [
+                    'id' => $m->user_id,
+                    'name' => $m->user->name ?? 'Utilisateur supprimé',
+                    'email' => $m->user->email ?? '—',
+                    'avatar' => $m->user->avatar ?? null,
+                    'role' => $m->role,
+                    'status' => $m->status,
+                    'joinedAt' => $m->joined_at?->format('d M Y'),
+                ])->values(),
             ]);
 
         return Inertia::render('Admin/Groups', ['groups' => $groups]);
@@ -87,10 +138,10 @@ class AdminController extends Controller
             ->paginate(20)
             ->through(fn($p) => [
                 'id' => $p->id,
-                'userName' => $p->user->name,
-                'userEmail' => $p->user->email,
-                'groupName' => $p->group->name,
-                'subscriptionName' => $p->group->subscription->name,
+                'userName' => $p->user->name ?? 'Utilisateur supprimé',
+                'userEmail' => $p->user->email ?? '—',
+                'groupName' => $p->group->name ?? '—',
+                'subscriptionName' => $p->group->subscription->name ?? '—',
                 'amount' => $p->amount,
                 'equitabFee' => $p->platform_fee_amount,
                 'currency' => $p->currency,

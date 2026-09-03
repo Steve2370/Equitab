@@ -54,8 +54,7 @@ onUnmounted(() => {
     if (cardElement) cardElement.destroy();
 });
 
-async function confirmOnBackend(subscriptionId: string): Promise<void> {
-    console.log('confirmOnBackend appelé avec:', subscriptionId);
+async function confirmOnBackend(subscriptionId: string): Promise<boolean> {
     const response = await fetch(`/api/subscriptions/confirm`, {
         method: 'POST',
         headers: {
@@ -66,7 +65,18 @@ async function confirmOnBackend(subscriptionId: string): Promise<void> {
         body: JSON.stringify({ subscription_id: subscriptionId }),
     });
     const data = await response.json();
-    console.log('confirmOnBackend réponse:', response.status, JSON.stringify(data));
+
+    if (! response.ok) {
+        // Le paiement a bien été prélevé par Stripe à ce stade — on ne
+        // bloque donc pas l'utilisateur, mais on ne prétend plus que tout
+        // s'est bien passé silencieusement. Un job planifié (equitab:reconcile-payments)
+        // rattrapera l'activation ct côté serveur ; on informe simplement
+        // l'utilisateur pour éviter la confusion pendant ce court délai.
+        console.error('confirmOnBackend a échoué:', response.status, data);
+        return false;
+    }
+
+    return true;
 }
 
 async function handleSubmit(): Promise<void> {
@@ -104,7 +114,11 @@ async function handleSubmit(): Promise<void> {
 
         // Paiement direct réussi sans 3DS
         if (data.status === 'active') {
-            await confirmOnBackend(data.subscription_id);
+            const confirmed = await confirmOnBackend(data.subscription_id);
+            if (! confirmed) {
+                errorMessage.value = "Votre paiement a été accepté par Stripe, mais son enregistrement a pris plus de temps que prévu. Rechargez cette page dans une minute — l'accès s'activera automatiquement.";
+                return;
+            }
             emit('success', data.subscription_id);
             window.location.href = `/payment/success?group_id=${props.groupId}`;
             return;
@@ -123,14 +137,19 @@ async function handleSubmit(): Promise<void> {
             }
 
             if (paymentIntent?.status === 'succeeded') {
-                await confirmOnBackend(data.subscription_id);
+                const confirmed = await confirmOnBackend(data.subscription_id);
+                if (! confirmed) {
+                    errorMessage.value = "Votre paiement a été accepté par Stripe, mais son enregistrement a pris plus de temps que prévu. Rechargez cette page dans une minute — l'accès s'activera automatiquement.";
+                    return;
+                }
                 emit('success', data.subscription_id);
                 window.location.href = `/payment/success?group_id=${props.groupId}`;
                 return;
             }
         }
 
-        // Fallback — rediriger quand même
+        // Fallback — rediriger quand même (l'activation sera rattrapée par
+        // le webhook Stripe ou le job de réconciliation périodique)
         emit('success', data.subscription_id);
         window.location.href = `/payment/success?group_id=${props.groupId}`;
 

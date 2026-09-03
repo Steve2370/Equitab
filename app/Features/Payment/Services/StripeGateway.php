@@ -81,9 +81,12 @@ class StripeGateway implements PaymentGatewayInterface
             'metadata' => ['group_id' => (string) $group->id],
         ]);
 
+        // price_per_member n'est jamais renseigné sur le groupe (le prix
+        // réel est total_price / nombre de membres actifs) — on calcule
+        // donc le prix courant plutôt que de lire une colonne toujours nulle.
         $price = $this->stripe->prices->create([
             'product' => $product->id,
-            'unit_amount' => $group->price_per_member,
+            'unit_amount' => $group->calculateCurrentPricePerMember(),
             'currency' => strtolower($group->subscription->currency),
             'recurring' => ['interval' => 'month'],
         ]);
@@ -147,7 +150,14 @@ class StripeGateway implements PaymentGatewayInterface
             'subscription_item_id' => $subscription->items->data[0]->id ?? null,
             'status' => $subscription->status,
             'client_secret' => $paymentIntent?->client_secret ?? null,
+            'payment_intent_id' => $paymentIntent?->id ?? null,
+            // Montant réellement dû aujourd'hui (peut être 0 si l'abonnement
+            // rejoint tombe pile sur l'ancrage de facturation) — c'est aussi
+            // ce montant, pas price_per_member (jamais renseigné sur le
+            // groupe), qui doit être présenté à l'utilisateur comme le
+            // paiement du jour.
             'amount_today' => $invoice?->amount_due ?? 0,
+            'invoice_paid' => $invoice?->status === 'paid' || ($invoice?->amount_due ?? 0) === 0,
             'next_billing_date' => $this->getNextFirstOfMonth(),
         ];
     }

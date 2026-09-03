@@ -125,47 +125,17 @@ class StripeWebhookController extends Controller
 
     private function activateMemberAndCreatePayment(GroupMember $member, int $amountPaid, string $currency, ?string $paymentIntentId): void
     {
-        $alreadyPaid = Payment::where('user_id', $member->user_id)
-            ->where('group_id', $member->group_id)
-            ->where('status', 'completed')
-            ->whereDate('paid_at', today())
-            ->exists();
-
-        if ($alreadyPaid) {
-            Log::info('Payment already created today for this member, skipping.');
-            return;
-        }
-
-        $member->update([
-            'status' => 'active',
-            'subscription_status' => 'active',
-            'last_payment_at' => now(),
-            'next_payment_at' => now()->addMonth(),
-        ]);
-
-        $member->user->increment('completed_payments_count');
-
-        $payment = Payment::create([
-            'group_id' => $member->group_id,
-            'user_id' => $member->user_id,
-            'amount' => $amountPaid,
-            'currency' => strtoupper($currency),
-            'status' => 'completed',
-            'paid_at' => now(),
-            'due_date' => now(),
-            'period_start' => now()->startOfMonth(),
-            'period_end' => now()->endOfMonth(),
-            'platform_fee_amount' => (int) round($amountPaid * 0.05),
-            'stripe_payment_intent_id' => $paymentIntentId,
-        ]);
-
-        CheckCredentialsProvided::dispatch(
-            paymentId: $payment->id,
-            groupId: $member->group_id,
-            userId: $member->user_id,
-        )->delay(now()->addHours(48));
-
-        Log::info('Payment créé', ['payment_id' => $payment->id, 'amount' => $amountPaid]);
+        // Délègue au même point d'entrée que le flux de souscription
+        // synchrone et confirmSubscription() — évite que ces trois chemins
+        // d'activation divergent à nouveau (c'est cette divergence qui
+        // laissait des membres bloqués "en attente" malgré un paiement
+        // Stripe réussi). Idempotent via stripe_payment_intent_id.
+        $this->paymentService->activateMemberAndRecordPayment(
+            member: $member,
+            amountPaid: $amountPaid,
+            currency: strtoupper($currency),
+            paymentIntentId: $paymentIntentId,
+        );
     }
 
     private function handleInvoicePaymentFailed(object $invoice): void

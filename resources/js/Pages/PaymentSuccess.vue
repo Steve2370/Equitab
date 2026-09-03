@@ -18,6 +18,7 @@ interface Group {
     ownerName: string;
     pricePerMember: number;
     renewalDate: string;
+    memberStatus?: string;
 }
 
 interface Props {
@@ -145,6 +146,14 @@ async function copyToClipboard(text: string, type: 'email' | 'password'): Promis
                             <li>En cas de problème, contactez le propriétaire via le chat</li>
                         </ol>
                     </div>
+                </div>
+
+                <div v-else-if="group.memberStatus && group.memberStatus !== 'active'" class="p-5">
+                    <p class="text-sm text-gray-500">
+                        Votre paiement est en cours de traitement par Stripe. L'accès s'activera
+                        automatiquement dans quelques instants — rechargez cette page pour vérifier,
+                        ou revenez plus tard depuis votre espace.
+                    </p>
                 </div>
 
                 <div v-else class="p-5">

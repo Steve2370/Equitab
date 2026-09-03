@@ -25,6 +25,7 @@ class User extends Authenticatable
         'username', 'notif_member_joined', 'notif_payment_received',
         'notif_renewal_reminder', 'notif_payment_failed',
         'locale', 'currency', 'show_real_name', 'allow_direct_contact',
+        'suspended_until', 'suspension_reason',
     ];
 
     protected $hidden = [
@@ -39,7 +40,23 @@ class User extends Authenticatable
             'two_factor_enabled' => 'boolean',
             'identity_verified_at' => 'datetime',
             'trust_score' => 'decimal:2',
+            'suspended_until' => 'datetime',
         ];
+    }
+
+    /**
+     * Un compte est considéré suspendu si status='suspended' ET que la
+     * suspension n'a pas de date de fin (indéfinie) ou que cette date n'est
+     * pas encore passée. Une suspension à durée expirée est traitée comme
+     * levée automatiquement, sans qu'un admin ait besoin de la lever à la main.
+     */
+    public function isSuspended(): bool
+    {
+        if ($this->status !== 'suspended') {
+            return false;
+        }
+
+        return $this->suspended_until === null || $this->suspended_until->isFuture();
     }
 
     public function wallet(): HasOne

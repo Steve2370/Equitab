@@ -78,7 +78,10 @@ class GroupService
                 'user_id' => $user->id,
                 'role' => 'member',
                 'status' => 'pending_payment',
-                'share_amount' => $group->price_per_member,
+                // price_per_member n'est jamais renseigné sur le groupe —
+                // calculatePricePerMemberIfJoined() donne le partage réel
+                // une fois ce membre ajouté (total_price / membres+1).
+                'share_amount' => $group->calculatePricePerMemberIfJoined(),
                 'joined_at' => now(),
                 'next_payment_at' => now()->addDays(3),
             ]);

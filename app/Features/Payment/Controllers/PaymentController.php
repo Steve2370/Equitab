@@ -43,14 +43,20 @@ class PaymentController extends Controller
 
     public function calculateProration(Group $group): JsonResponse
     {
+        // $group->price_per_member n'est jamais renseigné (le prix réel
+        // vient de total_price / membres actifs) — calculatePricePerMemberIfJoined()
+        // donne le prix tel qu'il sera pour quelqu'un qui n'a pas encore
+        // rejoint, ce qui est le bon prix à afficher ici.
+        $pricePerMember = $group->calculatePricePerMemberIfJoined();
+
         $now = now();
         $daysInMonth = $now->daysInMonth;
         $daysRemaining = $daysInMonth - $now->day + 1;
-        $prorata = (int) round($group->price_per_member * ($daysRemaining / $daysInMonth));
+        $prorata = (int) round($pricePerMember * ($daysRemaining / $daysInMonth));
 
         return response()->json([
             'amount_today' => $prorata,
-            'amount_recurring' => $group->price_per_member,
+            'amount_recurring' => $pricePerMember,
             'days_remaining' => $daysRemaining,
             'next_billing_date' => now()->addMonthNoOverflow()->startOfMonth()->format('d M Y'),
         ]);
@@ -90,10 +96,8 @@ class PaymentController extends Controller
         $group = Group::with(['subscription', 'owner'])->findOrFail($groupId);
         $user = $request->user();
 
-        $isMemberActive = $group->members()
-            ->where('user_id', $user->id)
-            ->where('status', 'active')
-            ->exists();
+        $member = $group->members()->where('user_id', $user->id)->first();
+        $isMemberActive = $member?->status === 'active';
 
         return Inertia::render('PaymentSuccess', [
             'group' => [
@@ -102,8 +106,13 @@ class PaymentController extends Controller
                 'subscriptionName' => $group->subscription->name,
                 'subscriptionSlug' => $group->subscription->slug,
                 'ownerName' => $group->owner->name,
-                'pricePerMember' => $group->price_per_member,
+                // group->price_per_member n'est jamais renseigné — le prix
+                // réellement payé par ce membre est son share_amount (figé
+                // au moment de la souscription). On retombe sur le calcul
+                // dynamique seulement si le membre n'existe pas encore.
+                'pricePerMember' => $member?->share_amount ?? $group->calculatePricePerMemberIfJoined(),
                 'renewalDate' => $group->renewal_date?->format('d M Y'),
+                'memberStatus' => $member?->status ?? 'pending_payment',
             ],
             'credentials' => $isMemberActive ? [
                 'email' => $group->credential_email,
@@ -175,35 +184,22 @@ class PaymentController extends Controller
             return response()->json(['message' => 'Paiement non confirmé par Stripe.'], 422);
         }
 
-        $member->update([
-            'status' => 'active',
-            'subscription_status' => 'active',
-            'last_payment_at' => now(),
-            'next_payment_at' => now()->addMonth()->startOfMonth(),
-        ]);
-
-        $member->user->increment('completed_payments_count');
-
-        $payment = Payment::firstOrCreate(
-            ['stripe_payment_intent_id' => $invoice?->payment_intent?->id],
-            [
-                'group_id' => $member->group_id,
-                'user_id' => $member->user_id,
-                'amount' => $invoice?->amount_paid ?? 0,
-                'currency' => strtoupper($subscription->currency),
-                'status' => 'completed',
-                'paid_at' => now(),
-                'due_date' => now(),
-                'period_start' => now()->startOfMonth(),
-                'period_end' => now()->endOfMonth(),
-                'platform_fee_amount' => (int) round(($invoice?->amount_paid ?? 0) * 0.05),
-            ]
+        // Délègue au même point d'entrée que le flux de souscription
+        // synchrone et le webhook Stripe — idempotent via
+        // stripe_payment_intent_id, donc rejouable sans risque même si le
+        // webhook ou l'activation synchrone est déjà passé par là.
+        $payment = $this->paymentService->activateMemberAndRecordPayment(
+            member: $member,
+            amountPaid: $invoice?->amount_paid ?? 0,
+            currency: strtoupper($subscription->currency),
+            paymentIntentId: $invoice?->payment_intent?->id,
         );
+
         Mail::to($member->user->email)
             ->send(new PaymentConfirmed($payment, $member));
 
         Mail::to($member->group->owner->email)
-            ->send(new NewMemberJoined($member->group->load('subscription', 'owner'), $member->user));
+            ->send(new NewMemberJoined($member->group->load('subscription', 'owner'), $member->user, $member->share_amount));
 
         return response()->json(['message' => 'Abonnement activé.']);
     }

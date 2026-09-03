@@ -14,6 +14,10 @@ interface User {
     groupsOwned: number;
     groupsJoined: number;
     createdAt: string;
+    status: string;
+    isSuspended: boolean;
+    suspendedUntil: string | null;
+    suspensionReason: string | null;
 }
 
 const deleteModal = ref<{ show: boolean; userId: number | null; userName: string }>({
@@ -33,6 +37,41 @@ function confirmDelete(): void {
             deleteModal.value = { show: false, userId: null, userName: '' };
         }
     });
+}
+
+const suspendModal = ref<{ show: boolean; userId: number | null; userName: string; durationDays: number | null; reason: string }>({
+    show: false,
+    userId: null,
+    userName: '',
+    durationDays: 7,
+    reason: '',
+});
+
+const durationOptions = [
+    { label: '1 jour', value: 1 },
+    { label: '7 jours', value: 7 },
+    { label: '30 jours', value: 30 },
+    { label: 'Indéfini', value: null },
+];
+
+function openSuspendModal(id: number, name: string): void {
+    suspendModal.value = { show: true, userId: id, userName: name, durationDays: 7, reason: '' };
+}
+
+function confirmSuspend(): void {
+    if (!suspendModal.value.userId) return;
+    router.post(`/admin/users/${suspendModal.value.userId}/suspend`, {
+        duration_days: suspendModal.value.durationDays,
+        reason: suspendModal.value.reason || null,
+    }, {
+        onSuccess: () => {
+            suspendModal.value = { show: false, userId: null, userName: '', durationDays: 7, reason: '' };
+        }
+    });
+}
+
+function unsuspend(id: number): void {
+    router.post(`/admin/users/${id}/unsuspend`);
 }
 
 defineProps<{ users: { data: User[]; current_page: number; last_page: number; total: number } }>();
@@ -56,6 +95,7 @@ defineProps<{ users: { data: User[]; current_page: number; last_page: number; to
                         <th class="text-left px-4 py-3 font-medium text-gray-500">Score</th>
                         <th class="text-left px-4 py-3 font-medium text-gray-500">Groupes</th>
                         <th class="text-left px-4 py-3 font-medium text-gray-500">Inscrit le</th>
+                        <th class="text-right px-6 py-3 font-medium text-gray-500">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
@@ -93,12 +133,35 @@ defineProps<{ users: { data: User[]; current_page: number; last_page: number; to
                         <td class="px-4 py-3 text-xs text-gray-400">{{ user.createdAt }}</td>
 
                         <td class="px-6 py-4">
-                            <button
-                                @click="openDeleteModal(user.id, user.name)"
-                                class="rounded-lg border border-red-100 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50"
-                            >
-                                Supprimer
-                            </button>
+                            <div class="flex items-center justify-end gap-2">
+                                <span
+                                    v-if="user.isSuspended"
+                                    class="rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-500"
+                                    :title="user.suspensionReason ?? ''"
+                                >
+                                    Suspendu{{ user.suspendedUntil ? ` jusqu'au ${user.suspendedUntil}` : '' }}
+                                </span>
+                                <button
+                                    v-if="user.isSuspended"
+                                    @click="unsuspend(user.id)"
+                                    class="rounded-lg border border-equitab-emerald/30 px-3 py-1.5 text-xs font-medium text-equitab-emerald hover:bg-equitab-emerald/10"
+                                >
+                                    Réactiver
+                                </button>
+                                <button
+                                    v-else
+                                    @click="openSuspendModal(user.id, user.name)"
+                                    class="rounded-lg border border-amber-200 px-3 py-1.5 text-xs font-medium text-amber-600 hover:bg-amber-50"
+                                >
+                                    Suspendre
+                                </button>
+                                <button
+                                    @click="openDeleteModal(user.id, user.name)"
+                                    class="rounded-lg border border-red-100 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50"
+                                >
+                                    Supprimer
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 </tbody>
@@ -122,6 +185,54 @@ defineProps<{ users: { data: User[]; current_page: number; last_page: number; to
                             class="flex-1 rounded-xl bg-red-500 py-2.5 text-sm font-medium text-white hover:bg-red-600"
                         >
                             Supprimer définitivement
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="suspendModal.show" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div class="absolute inset-0 bg-black/40" @click="suspendModal.show = false" />
+                <div class="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+                    <h3 class="font-semibold text-equitab-navy text-lg mb-2">Suspendre {{ suspendModal.userName }} ?</h3>
+                    <p class="text-sm text-gray-500 mb-4">
+                        L'utilisateur sera déconnecté immédiatement et ne pourra plus se reconnecter pendant la durée choisie.
+                    </p>
+
+                    <p class="mb-2 text-xs font-medium uppercase text-gray-400">Durée</p>
+                    <div class="mb-4 grid grid-cols-4 gap-2">
+                        <button
+                            v-for="option in durationOptions"
+                            :key="option.label"
+                            @click="suspendModal.durationDays = option.value"
+                            class="rounded-lg border py-2 text-xs font-medium transition-colors"
+                            :class="suspendModal.durationDays === option.value
+                                ? 'border-amber-400 bg-amber-50 text-amber-700'
+                                : 'border-gray-200 text-gray-500 hover:bg-gray-50'"
+                        >
+                            {{ option.label }}
+                        </button>
+                    </div>
+
+                    <label class="mb-1 block text-xs font-medium uppercase text-gray-400">Raison (optionnel)</label>
+                    <textarea
+                        v-model="suspendModal.reason"
+                        rows="2"
+                        class="mb-6 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-amber-400 focus:outline-none"
+                        placeholder="Visible par l'utilisateur si vous le souhaitez"
+                    ></textarea>
+
+                    <div class="flex gap-3">
+                        <button
+                            @click="suspendModal.show = false"
+                            class="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50"
+                        >
+                            Annuler
+                        </button>
+                        <button
+                            @click="confirmSuspend"
+                            class="flex-1 rounded-xl bg-amber-500 py-2.5 text-sm font-medium text-white hover:bg-amber-600"
+                        >
+                            Suspendre
                         </button>
                     </div>
                 </div>

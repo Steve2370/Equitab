@@ -20,6 +20,7 @@ class NewMemberJoined extends Mailable
     public function __construct(
         public readonly Group $group,
         public readonly User $newMember,
+        public readonly ?int $amountInCents = null,
     ) {}
 
     /**
@@ -44,7 +45,7 @@ class NewMemberJoined extends Mailable
                 'memberName' => $this->newMember->name,
                 'groupName' => $this->group->name,
                 'subscriptionName' => $this->group->subscription->name,
-                'pricePerMember' => number_format($this->group->price_per_member / 100, 2),
+                'pricePerMember' => number_format(($this->amountInCents ?? $this->group->calculateCurrentPricePerMember()) / 100, 2),
                 'spotsLeft' => $this->group->max_members - $this->group->current_members,
                 'dashboardUrl' => config('app.url') . '/dashboard/subscriptions',
             ],

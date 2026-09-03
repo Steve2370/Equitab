@@ -50,6 +50,24 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        $user = Auth::user();
+
+        if ($user->isSuspended()) {
+            Auth::logout();
+
+            $message = $user->suspended_until
+                ? "Votre compte est suspendu jusqu'au " . $user->suspended_until->format('d M Y à H:i') . '.'
+                : 'Votre compte est suspendu.';
+
+            if ($user->suspension_reason) {
+                $message .= ' Raison : ' . $user->suspension_reason;
+            }
+
+            throw ValidationException::withMessages([
+                'email' => $message,
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

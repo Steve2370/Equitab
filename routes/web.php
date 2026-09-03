@@ -31,6 +31,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/messages', [AdminController::class, 'messages'])->name('admin.messages');
     Route::post('/messages/send', [AdminController::class, 'sendMessage'])->name('admin.messages.send');
     Route::delete('/users/{user}', [AdminController::class, 'deleteUser'])->name('admin.users.delete');
+    Route::post('/users/{user}/suspend', [AdminController::class, 'suspendUser'])->name('admin.users.suspend');
+    Route::post('/users/{user}/unsuspend', [AdminController::class, 'unsuspendUser'])->name('admin.users.unsuspend');
 });
 
 Route::post('/webhooks/stripe', StripeWebhookController::class);
