@@ -29,8 +29,8 @@ onMounted(() => {
         <aside class="w-56 shrink-0 bg-equitab-navy">
             <div class="p-6">
                 <Link href="/" class="block">
-                    <p class="text-lg font-bold text-white hover:text-white/80">Equitab</p>
-                    <p class="text-xs text-white/40">Panel Admin</p>
+                    <img src="/Images/EquitabLogoblanc.svg" alt="Equitab" class="h-7 w-auto" />
+                    <p class="mt-1 text-xs text-white/40">Panel Admin</p>
                 </Link>
             </div>
 
