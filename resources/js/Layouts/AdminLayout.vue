@@ -4,9 +4,6 @@ import {
     LayoutDashboard, Users, CreditCard, FolderOpen,
     AlertTriangle, Mail, LogOut
 } from 'lucide-vue-next';
-import Toast from '@/Components/Toast.vue';
-import { useToast } from '@/composables/useToast';
-import { ref, onMounted } from 'vue';
 
 const navItems = [
     { href: '/admin', label: 'Vue d\'ensemble', icon: LayoutDashboard },
@@ -16,12 +13,6 @@ const navItems = [
     { href: '/admin/disputes', label: 'Disputes', icon: AlertTriangle },
     { href: '/admin/messages', label: 'Messagerie', icon: Mail },
 ];
-const toastComponent = ref();
-const { setRef } = useToast();
-
-onMounted(() => {
-    if (toastComponent.value) setRef(toastComponent.value);
-});
 </script>
 
 <template>
@@ -75,6 +66,5 @@ onMounted(() => {
         <main class="flex-1 p-8 overflow-auto">
             <slot />
         </main>
-        <Toast ref="toastComponent" />
     </div>
 </template>

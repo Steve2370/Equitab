@@ -156,40 +156,6 @@ class PaymentService
     }
 
 
-    public function confirmPayment(string $stripePaymentIntentId): ?Payment
-    {
-        return DB::transaction(function () use ($stripePaymentIntentId) {
-            $payment = Payment::where('stripe_payment_intent_id', $stripePaymentIntentId)
-                ->lockForUpdate()
-                ->first();
-
-            if (! $payment) {
-                return null;
-            }
-
-            if ($payment->status === 'completed') {
-                return $payment;
-            }
-
-            $payment->update([
-                'status' => 'completed',
-                'paid_at' => now(),
-            ]);
-
-            $payment->group->members()
-                ->where('user_id', $payment->user_id)
-                ->update([
-                    'status' => 'active',
-                    'last_payment_at' => now(),
-                    'next_payment_at' => $payment->group->renewal_date,
-                ]);
-
-            $payment->user->increment('completed_payments_count');
-
-            return $payment;
-        });
-    }
-
     public function markPaymentFailed(string $stripePaymentIntentId, string $reason = ''): ?Payment
     {
         $payment = Payment::where('stripe_payment_intent_id', $stripePaymentIntentId)->first();

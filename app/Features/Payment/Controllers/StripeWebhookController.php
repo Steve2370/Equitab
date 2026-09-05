@@ -70,7 +70,17 @@ class StripeWebhookController extends Controller
 
         try {
             match ($event->type) {
-                'payment_intent.succeeded' => $this->paymentService->confirmPayment($event->data->object->id),
+                // Stripe envoie aussi cet événement pour les factures
+                // d'abonnement, en plus de invoice.paid et
+                // invoice_payment.paid — mais l'activation du membre passe
+                // désormais uniquement par ces deux derniers (via
+                // activateMemberAndRecordPayment). Avoir eu ici une seconde
+                // logique d'activation (PaymentService::confirmPayment,
+                // supprimée) dupliquait ce point d'entrée unique et pouvait
+                // diverger silencieusement — exactement la classe de bug à
+                // l'origine des membres bloqués "en attente". On se contente
+                // donc de journaliser sa réception, sans action.
+                'payment_intent.succeeded' => Log::info('payment_intent.succeeded reçu (activation déjà gérée par invoice.paid / invoice_payment.paid)', ['payment_intent_id' => $event->data->object->id]),
                 'invoice.paid' => $this->handleInvoicePaid($event->data->object),
                 'invoice_payment.paid' => $this->handleInvoicePaymentPaid($event->data->object),
                 'invoice.payment_failed' => $this->handleInvoicePaymentFailed($event->data->object),

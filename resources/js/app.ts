@@ -5,6 +5,7 @@ import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createApp, h } from 'vue';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
+import FlashToastBridge from './Components/FlashToastBridge.vue';
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
 
@@ -30,7 +31,10 @@ createInertiaApp({
             import.meta.glob('./Pages/**/*.vue'),
         ) as any,
     setup({ el, App, props, plugin }) {
-        return createApp({ render: () => h(App, props) })
+        // FlashToastBridge est monté en frère de App (pas un wrapper autour),
+        // pour exister sur toutes les pages sans dépendre d'un layout
+        // particulier — voir ce fichier pour le pourquoi.
+        return createApp({ render: () => [h(App, props), h(FlashToastBridge)] })
             .use(plugin)
             .use(ZiggyVue)
             .mount(el);
