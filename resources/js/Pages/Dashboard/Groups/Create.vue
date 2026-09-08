@@ -262,6 +262,23 @@ const visibilityOptions = [
                         </div>
                     </div>
 
+                    <div class="mb-6">
+                        <label class="text-sm font-medium text-gray-700">
+                            Précisez votre offre
+                            <span class="text-gray-400">(optionnel)</span>
+                        </label>
+                        <textarea
+                            v-model="form.description"
+                            rows="2"
+                            maxlength="1000"
+                            placeholder="Ex : Crunchyroll Mega Fan, Netflix Famille avec 4K, forfait étudiant..."
+                            class="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-equitab-emerald focus:outline-none"
+                        />
+                        <p class="mt-1 text-xs text-gray-400">
+                            Visible par les personnes qui envisagent de rejoindre votre groupe — utile si votre abonnement a un forfait ou une offre particulière.
+                        </p>
+                    </div>
+
                     <div class="space-y-6">
                         <div>
                             <label class="text-sm font-medium text-equitab-emerald">

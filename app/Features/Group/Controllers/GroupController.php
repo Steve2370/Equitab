@@ -93,6 +93,7 @@ class GroupController extends Controller
                 'name' => $group->name,
                 'subscriptionName' => $group->subscription->name,
                 'subscriptionSlug' => $group->subscription->slug,
+                'description' => $group->description,
                 'ownerName' => $group->owner->name,
                 'ownerTrustScore' => $group->owner->calculateTrustScore(),
                 'pricePerMember' => $group->calculatePricePerMemberIfJoined(),
@@ -177,6 +178,11 @@ class GroupController extends Controller
             ->map(fn ($group) => [
                 'id' => $group->id,
                 'subscriptionName' => $group->subscription->name,
+                // Description libre, optionnelle, que le propriétaire peut
+                // renseigner à la création pour préciser l'offre partagée
+                // (ex: "Crunchyroll Megafan", "Netflix Famille 4K") — visible
+                // par les utilisateurs qui envisagent de rejoindre.
+                'description' => $group->description,
                 'ownerName' => $group->owner->display_name,
                 'ownerIdentityStatus' => $group->owner->identity_status,
                 'ownerActiveGroupsCount' => $group->owner->ownedGroups()->where('status', '!=', 'closed')->count(),

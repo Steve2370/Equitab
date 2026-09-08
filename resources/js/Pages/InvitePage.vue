@@ -10,6 +10,7 @@ interface Group {
     name: string;
     subscriptionName: string;
     subscriptionSlug: string;
+    description?: string | null;
     ownerName: string;
     ownerTrustScore: number;
     pricePerMember: number;
@@ -58,6 +59,9 @@ function onSuccess(): void {
                     </p>
                     <p class="text-2xl font-semibold">{{ group.subscriptionName }}</p>
                     <p class="text-sm opacity-80 mt-1">Partagé par {{ group.ownerName }}</p>
+                    <p v-if="group.description" class="mt-2 text-sm opacity-90 bg-white/10 rounded-lg px-2.5 py-1.5">
+                        {{ group.description }}
+                    </p>
                     <div class="mt-4 flex items-baseline gap-1">
                         <span class="text-3xl font-bold">{{ formattedPrice }}</span>
                         <span class="text-sm opacity-80">/ mois</span>

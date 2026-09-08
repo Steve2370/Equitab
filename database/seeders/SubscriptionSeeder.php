@@ -38,7 +38,7 @@ class SubscriptionSeeder extends Seeder
             [$productivite->id, 'Envato', 5499, 4],
             [$productivite->id, 'Google One', 299, 5],
             [$productivite->id, 'Microsoft 365', 1099, 6],
-            [$productivite->id, 'Adobe Creative Cloud', 6999, 4],
+            [$productivite->id, 'Apple One Family', 3095, 6],
             [$education->id, 'Duolingo', 899, 6],
             [$lecture->id, 'Readly', 999, 5],
         ];

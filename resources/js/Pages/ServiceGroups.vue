@@ -6,6 +6,7 @@ import OwnerGroupCard from '@/Components/OwnerGroupCard.vue';
 interface OwnerGroup {
     id: number;
     subscriptionName: string;
+    description?: string | null;
     ownerName: string;
     ownerIdentityStatus: string;
     ownerActiveGroupsCount: number;
@@ -56,6 +57,7 @@ defineProps<Props>();
                     :key="group.id"
                     :group-id="group.id"
                     :subscription-name="group.subscriptionName"
+                    :description="group.description"
                     :owner-name="group.ownerName"
                     :owner-identity-status="group.ownerIdentityStatus"
                     :owner-active-groups-count="group.ownerActiveGroupsCount"

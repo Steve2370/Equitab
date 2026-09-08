@@ -17,6 +17,7 @@ interface Props {
     maxMembers: number;
     createdAt: string;
     subscriptionName: string;
+    description?: string | null;
 }
 
 const props = defineProps<Props>();
@@ -92,6 +93,13 @@ function onSuccess(_subscriptionId: string): void {
                 {{ spotsAvailable }} place{{ spotsAvailable > 1 ? 's' : '' }} restante{{ spotsAvailable > 1 ? 's' : '' }}
             </span>
         </div>
+
+        <p
+            v-if="description"
+            class="mt-3 rounded-lg bg-gray-50 px-3 py-2 text-xs text-gray-600"
+        >
+            {{ description }}
+        </p>
 
         <div class="mt-4 flex items-center gap-4 text-sm text-gray-500">
             <span class="flex items-center gap-1">
