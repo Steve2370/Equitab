@@ -25,34 +25,18 @@ function submit(): void {
     <Head title="Inscription" />
 
     <div class="flex min-h-screen">
-        <div class="hidden lg:flex lg:w-1/2 flex-col justify-between bg-equitab-navy p-12">
-            <Link href="/" class="flex items-center">
-                <img src="/Images/EquitabLogoblanc.png" alt="Equitab" class="h-16 w-auto" />
+        <div class="hidden lg:block lg:w-1/2 relative overflow-hidden bg-equitab-navy">
+            <img
+                src="/Images/Login.png"
+                alt="Partagez vos abonnements en bonne compagnie"
+                class="absolute inset-0 h-full w-full object-cover object-top"
+            />
+            <Link
+                href="/"
+                class="absolute left-10 top-10 z-10 transition-opacity hover:opacity-80 lg:left-12 lg:top-12"
+            >
+                <img src="/Images/EquitabLogoblanc.svg" alt="Equitab" class="h-10 w-auto" />
             </Link>
-
-            <div>
-                <h1 class="text-4xl font-semibold leading-tight text-white">
-                    Rejoignez ceux qui partagent déjà leurs abonnements
-                </h1>
-                <p class="mt-4 text-lg text-white/60">
-                    Créez un compte gratuit et commencez à économiser dès aujourd'hui.
-                </p>
-
-                <div class="mt-10 flex items-center">
-                    <div
-                        v-for="n in 3"
-                        :key="n"
-                        class="-mr-3 flex h-12 w-12 items-center justify-center rounded-full border-2 border-equitab-emerald bg-equitab-navy-light last:mr-0"
-                    >
-                        <svg class="h-5 w-5 text-equitab-emerald" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                    </div>
-                </div>
-                <p class="mt-2 text-xs text-white/40">Un groupe, un abonnement, plusieurs personnes</p>
-            </div>
-
-            <p class="text-xs text-white/30">© 2026 Equitab. Tous droits réservés.</p>
         </div>
 
         <div class="flex w-full flex-col items-center justify-center px-6 lg:w-1/2 lg:px-16">
