@@ -35,7 +35,7 @@ function submit(): void {
                 href="/"
                 class="absolute left-10 top-10 z-10 transition-opacity hover:opacity-80 lg:left-12 lg:top-12"
             >
-                <img src="/Images/EquitabLogoblanc.svg" alt="Equitab" class="h-10 w-auto" />
+                <img src="/Images/EquitabLogoblanc.svg" alt="Equitab" class="h-14 w-auto" />
             </Link>
         </div>
 

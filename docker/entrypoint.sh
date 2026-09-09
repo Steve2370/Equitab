@@ -12,6 +12,13 @@ set -e
 
 cd /var/www
 
+# Le volume /var/www appartient à l'utilisateur de l'hôte, pas à root (qui
+# exécute ce script dans le conteneur) : git refuse alors d'y opérer
+# ("detected dubious ownership"). Sans effet de bord réel ici puisque
+# personne ne commit depuis le conteneur, mais ça évite l'avertissement et
+# tout futur outil qui dépendrait de git à l'intérieur du conteneur.
+git config --global --add safe.directory /var/www
+
 if [ -f composer.json ]; then
     composer install --no-interaction --optimize-autoloader
 fi
