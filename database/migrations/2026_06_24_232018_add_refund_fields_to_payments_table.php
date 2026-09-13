@@ -24,7 +24,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('payments', function (Blueprint $table) {
-            //
+            $table->dropColumn(['refunded_at', 'refund_reason', 'stripe_refund_id']);
         });
     }
 };

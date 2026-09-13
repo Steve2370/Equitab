@@ -14,7 +14,7 @@ use App\Mail\AutoRefundProcessed;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use App\Features\Payment\Contracts\PaymentGatewayInterface;
+use App\Features\Payment\Services\PaymentService;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -177,28 +177,28 @@ class AdminController extends Controller
         return Inertia::render('Admin/Disputes', ['disputes' => $disputes]);
     }
 
-    public function resolveDispute(Request $request, Dispute $dispute): RedirectResponse
+    public function resolveDispute(Request $request, Dispute $dispute, PaymentService $paymentService): RedirectResponse
     {
         $request->validate([
             'status' => ['required', 'in:resolved_refund,resolved_rejected'],
             'admin_notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $dispute->update([
-            'status' => $request->status,
-            'admin_notes' => $request->admin_notes,
-            'resolved_at' => now(),
-        ]);
+        if ($request->status === 'resolved_refund') {
+            if (! $dispute->payment->stripe_payment_intent_id) {
+                return back()->with('error', 'Ce paiement n\'a pas d\'identifiant Stripe — remboursement impossible.');
+            }
 
-        if ($request->status === 'resolved_refund' && $dispute->payment->stripe_payment_intent_id) {
-            app(PaymentGatewayInterface::class)
-                ->refundPayment($dispute->payment->stripe_payment_intent_id);
-
-            $dispute->payment->update([
-                'status' => 'refunded',
-                'refunded_at' => now(),
-                'refund_reason' => 'dispute_resolved',
-            ]);
+            try {
+                // Point d'entrée unique de remboursement, partagé avec le
+                // job CheckCredentialsProvided : ne marque le paiement
+                // "refunded" qu'après confirmation réelle de Stripe, et
+                // annule l'abonnement du membre au passage.
+                $paymentService->refundPayment($dispute->payment, 'dispute_resolved');
+            } catch (\Exception $e) {
+                Log::error("Échec remboursement dispute #{$dispute->id}: " . $e->getMessage());
+                return back()->with('error', 'Le remboursement Stripe a échoué : ' . $e->getMessage());
+            }
 
             Mail::to($dispute->user->email)
                 ->send(new AutoRefundProcessed(
@@ -206,6 +206,12 @@ class AdminController extends Controller
                     $dispute->user
                 ));
         }
+
+        $dispute->update([
+            'status' => $request->status,
+            'admin_notes' => $request->admin_notes,
+            'resolved_at' => now(),
+        ]);
 
         return back()->with('success', 'Dispute résolue avec succès.');
     }

@@ -30,7 +30,12 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('group_members', function (Blueprint $table) {
-            //
+            $table->dropColumn([
+                'stripe_subscription_id',
+                'stripe_customer_id',
+                'subscription_status',
+                'current_period_end',
+            ]);
         });
     }
 };

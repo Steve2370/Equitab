@@ -156,6 +156,89 @@ class PaymentService
     }
 
 
+    /**
+     * Point d'entrée unique de remboursement — auparavant, le job
+     * CheckCredentialsProvided et AdminController::resolveDispute
+     * dupliquaient chacun leur propre logique, avec les mêmes trois défauts :
+     * le résultat de l'appel Stripe n'était jamais inspecté (le paiement
+     * était marqué "refunded" même si Stripe renvoyait un échec, voire même
+     * sans appeler Stripe du tout quand stripe_payment_intent_id était nul),
+     * aucun identifiant de remboursement n'était conservé, et l'abonnement
+     * Stripe du membre n'était jamais annulé — un membre "remboursé" côté
+     * Equitab continuait donc d'être facturé par Stripe. Idempotent : un
+     * paiement déjà remboursé est renvoyé tel quel sans repasser par Stripe.
+     */
+    public function refundPayment(Payment $payment, string $reason): Payment
+    {
+        return DB::transaction(function () use ($payment, $reason) {
+            $payment = Payment::whereKey($payment->id)->lockForUpdate()->firstOrFail();
+
+            if ($payment->status === 'refunded') {
+                return $payment;
+            }
+
+            if (! $payment->stripe_payment_intent_id) {
+                throw new Exception(
+                    "Remboursement impossible : le paiement #{$payment->id} n'a pas d'identifiant Stripe (payment_intent) associé."
+                );
+            }
+
+            $result = $this->gateway->refundPayment($payment->stripe_payment_intent_id);
+
+            // Un refund Stripe peut échouer (carte déjà remboursée ailleurs,
+            // fonds insuffisants côté compte connecté, etc.) — le statut
+            // renvoyé par Stripe doit être inspecté avant de considérer
+            // quoi que ce soit comme remboursé côté Equitab.
+            if (! in_array($result['status'] ?? null, ['succeeded', 'pending'], true)) {
+                throw new Exception(
+                    "Le remboursement Stripe du paiement #{$payment->id} n'a pas abouti (statut: " . ($result['status'] ?? 'inconnu') . ')'
+                );
+            }
+
+            $payment->update([
+                'status' => 'refunded',
+                'refunded_at' => now(),
+                'refund_reason' => $reason,
+                'stripe_refund_id' => $result['refund_id'] ?? null,
+            ]);
+
+            $member = GroupMember::where('group_id', $payment->group_id)
+                ->where('user_id', $payment->user_id)
+                ->first();
+
+            if ($member) {
+                if ($member->stripe_subscription_id) {
+                    try {
+                        $this->gateway->cancelSubscription($member->stripe_subscription_id);
+                    } catch (Exception $e) {
+                        // Déjà annulé côté Stripe (ex: customer.subscription.deleted
+                        // déjà traité par le webhook) — ne doit pas faire échouer
+                        // le remboursement, qui est la partie critique ici.
+                        Log::warning("Annulation abonnement Stripe échouée pendant remboursement paiement #{$payment->id}: " . $e->getMessage());
+                    }
+                }
+
+                $wasActive = $member->status === 'active';
+
+                $member->update([
+                    'status' => 'left',
+                    'subscription_status' => 'canceled',
+                ]);
+
+                if ($wasActive) {
+                    $member->group()->decrement('current_members');
+                }
+            }
+
+            Log::info("Remboursement confirmé — paiement #{$payment->id}", [
+                'reason' => $reason,
+                'stripe_refund_id' => $result['refund_id'] ?? null,
+            ]);
+
+            return $payment->fresh();
+        });
+    }
+
     public function markPaymentFailed(string $stripePaymentIntentId, string $reason = ''): ?Payment
     {
         $payment = Payment::where('stripe_payment_intent_id', $stripePaymentIntentId)->first();

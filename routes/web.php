@@ -14,13 +14,6 @@ use App\Features\Chat\Controllers\ChatController;
 use App\Features\Admin\Controllers\AdminController;
 use App\Features\Payment\Controllers\StripeWebhookController;
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-    ]);
-});
-
 Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::get('/', [AdminController::class, 'index'])->name('admin.index');
     Route::get('/users', [AdminController::class, 'users'])->name('admin.users');
@@ -60,9 +53,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/dashboard/subscriptions', [DashboardController::class, 'subscriptions']);
+    Route::get('/dashboard/subscriptions', [DashboardController::class, 'subscriptions'])
+        ->name('dashboard.subscriptions');
     Route::get('/dashboard/payments', [DashboardController::class, 'payments']);
     Route::get('/dashboard/profile', [DashboardController::class, 'profile']);
+    Route::patch('/dashboard/profile', [DashboardController::class, 'updateProfile']);
 });
 
 Route::get('/conditions', fn() => Inertia::render('Legal/Terms'))->name('legal.terms');
@@ -116,11 +111,6 @@ Route::get('/payment/success', [PaymentController::class, 'success'])
 
 Route::get('/dashboard/groups/create', [GroupController::class, 'create'])
     ->middleware(['auth', 'verified']);
-
-Route::patch('/dashboard/profile', [DashboardController::class, 'updateProfile']);
-
-Route::get('/dashboard/subscriptions', [DashboardController::class, 'subscriptions'])
-    ->name('dashboard.subscriptions');
 
 Route::post('/groups', [GroupController::class, 'store'])
     ->middleware(['auth', 'verified'])

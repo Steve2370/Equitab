@@ -17,7 +17,7 @@ RUN npm ci
 RUN npm run build
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
-RUN chmod +x docker/entrypoint.sh
+RUN chmod +x docker/entrypoint.sh docker/entrypoint-worker.sh
 
 ENTRYPOINT ["docker/entrypoint.sh"]
 CMD ["php-fpm"]

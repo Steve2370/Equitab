@@ -15,6 +15,50 @@ services:
     networks:
       - equitab_network
 
+  # Sans ce conteneur, QUEUE_CONNECTION=database (voir .env) faisait
+  # uniquement empiler les jobs dans la table "jobs" sans jamais les
+  # exécuter : le remboursement automatique 48h sans identifiants fournis
+  # (CheckCredentialsProvided) et le recalcul mensuel des prix
+  # (RecalculateGroupPrices) ne s'exécutaient donc jamais en production.
+  queue-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: equitab_queue_worker
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+    entrypoint: ["docker/entrypoint-worker.sh"]
+    command: ["php", "artisan", "queue:work", "--sleep=3", "--tries=3", "--max-time=3600"]
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - equitab_network
+
+  # Même constat pour le planificateur : rien n'invoquait schedule:run,
+  # donc les tâches de routes/console.php (rappels de renouvellement,
+  # recalcul des scores de confiance, sitemap, et surtout
+  # equitab:reconcile-payments toutes les 15 min — le filet de sécurité
+  # si un webhook Stripe est manqué) ne tournaient jamais non plus.
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: equitab_scheduler
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+    entrypoint: ["docker/entrypoint-worker.sh"]
+    command: ["php", "artisan", "schedule:work"]
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - equitab_network
+
   postgres:
     image: postgres:16-alpine
     container_name: equitab_postgres

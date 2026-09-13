@@ -169,12 +169,22 @@ class StripeWebhookController extends Controller
         $member = GroupMember::where('stripe_subscription_id', $subscription->id)->first();
         if (! $member) return;
 
+        // customer.subscription.deleted peut arriver plusieurs fois pour le
+        // même abonnement (retries Stripe), ou après que le membre ait déjà
+        // quitté via un autre chemin (refund, leave manuel) — décrémenter
+        // sans vérifier le statut précédent faisait passer current_members
+        // sous le vrai nombre de membres actifs à chaque répétition.
+        $wasActive = $member->status === 'active';
+
         $member->update([
             'status' => 'left',
             'subscription_status' => 'canceled',
         ]);
 
-        $member->group->decrement('current_members');
+        if ($wasActive) {
+            $member->group()->decrement('current_members');
+        }
+
         Log::info('Subscription canceled for member #' . $member->user_id);
     }
 

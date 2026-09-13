@@ -7,7 +7,7 @@ use App\Models\Payment;
 use App\Models\User;
 use App\Mail\AutoRefundProcessed;
 use Illuminate\Support\Facades\Mail;
-use App\Features\Payment\Contracts\PaymentGatewayInterface;
+use App\Features\Payment\Services\PaymentService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -31,7 +31,7 @@ class CheckCredentialsProvided implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(PaymentGatewayInterface $gateway): void
+    public function handle(PaymentService $paymentService): void
     {
         $payment = Payment::find($this->paymentId);
         $group = Group::find($this->groupId);
@@ -42,15 +42,11 @@ class CheckCredentialsProvided implements ShouldQueue
         if ($group->credential_email || $group->credential_password) return;
 
         try {
-            if ($payment->stripe_payment_intent_id) {
-                $gateway->refundPayment($payment->stripe_payment_intent_id);
-            }
-
-            $payment->update([
-                'status' => 'refunded',
-                'refunded_at' => now(),
-                'refund_reason' => 'auto_no_credentials',
-            ]);
+            // Délègue à PaymentService::refundPayment(), point d'entrée
+            // unique partagé avec AdminController::resolveDispute() : ne
+            // marque "refunded" qu'après confirmation réelle de Stripe,
+            // conserve l'ID du refund, annule l'abonnement du membre.
+            $paymentService->refundPayment($payment, 'auto_no_credentials');
 
             $group->owner->increment('disputed_payments_count');
 

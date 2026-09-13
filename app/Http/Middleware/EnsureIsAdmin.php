@@ -7,7 +7,13 @@ use Illuminate\Http\Request;
 
 class EnsureIsAdmin
 {
-    private const ADMIN_EMAILS = [
+    // Rendu public pour que HandleInertiaRequests puisse réutiliser exactement
+    // la même liste (isAdmin partagé au frontend) plutôt que de maintenir une
+    // seconde copie divergente — c'était le cas auparavant : deux listes
+    // codées en dur, faciles à désynchroniser en n'en mettant à jour qu'une.
+    // Idéalement une colonne is_admin en base remplacerait cette liste (voir
+    // rapport d'audit) ; en attendant, au moins une seule source de vérité.
+    public const ADMIN_EMAILS = [
         'briceyouatchui@gmail.com',
     ];
 

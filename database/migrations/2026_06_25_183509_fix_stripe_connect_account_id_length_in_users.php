@@ -21,8 +21,12 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // La migration d'origine (add_stripe_fields_to_users_table) créait
+        // déjà la colonne avec string() sans longueur explicite, donc déjà
+        // 255 par défaut chez Laravel — cette migration ne change en
+        // pratique rien, il n'y a donc rien de différent à restaurer ici.
         Schema::table('users', function (Blueprint $table) {
-            //
+            $table->string('stripe_connect_account_id', 255)->nullable()->change();
         });
     }
 };

@@ -14,9 +14,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Features\Payment\Contracts\PaymentGatewayInterface;
+use App\Http\Resources\GroupResource;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Response;
 use Inertia\Inertia;
+use Exception;
 
 class GroupController extends Controller
 {
@@ -30,7 +32,7 @@ class GroupController extends Controller
     {
         $groups = $this->groupRepository->findAvailable();
 
-        return response()->json($groups);
+        return GroupResource::collection($groups)->response();
     }
 
     public function create(Request $request): \Inertia\Response
@@ -66,7 +68,11 @@ class GroupController extends Controller
 
     public function store(StoreGroupRequest $request): RedirectResponse
     {
-        $group = $this->groupService->create($request->user(), $request->validated());
+        try {
+            $group = $this->groupService->create($request->user(), $request->validated());
+        } catch (Exception $e) {
+            return back()->with('error', $e->getMessage())->withInput();
+        }
 
         return redirect()->route('dashboard.subscriptions')
             ->with('success', 'Votre groupe a été créé avec succès !');
@@ -74,9 +80,8 @@ class GroupController extends Controller
 
     public function show(Group $group): JsonResponse
     {
-        return response()->json(
-            $group->load(['subscription', 'owner', 'activeMembers'])
-        );
+        return (new GroupResource($group->load(['subscription', 'owner'])))
+            ->response();
     }
 
     public function showInvite(string $token): Response
@@ -126,7 +131,15 @@ class GroupController extends Controller
 
     public function join(Request $request, Group $group): JsonResponse
     {
-        $this->groupService->join($request->user(), $group);
+        try {
+            $this->groupService->join(
+                $request->user(),
+                $group,
+                $request->string('invite_token')->value() ?: null,
+            );
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
 
         return response()->json([
             'message' => 'Vous avez rejoint le groupe.',
