@@ -124,13 +124,13 @@ const ownSteps = [
                             accent-color="emerald"
                             :steps="joinSteps"
                         />
-                        <VideoPlaceholder />
+                        <VideoPlaceholder video-src="/Images/Participer.mp4" />
                     </div>
                 </div>
 
                 <div class="mt-8 rounded-2xl border border-gray-100 p-6 lg:p-10">
                     <div class="grid items-center gap-8 lg:grid-cols-2 lg:gap-12">
-                        <VideoPlaceholder class="lg:order-1" />
+                        <VideoPlaceholder video-src="/Images/Proposez.mp4" class="lg:order-1" />
                         <HowItWorksColumn
                             label="Proposer"
                             accent-color="navy"
