@@ -1,13 +1,23 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { Head, router, Link } from '@inertiajs/vue3';
-import DashboardLayout from '@/Layouts/DashboardLayout.vue';
-import { getBrandGradient } from '@/config/brandGradients';
+import { ref, computed } from "vue";
+import { Head, router, Link } from "@inertiajs/vue3";
+import DashboardLayout from "@/Layouts/DashboardLayout.vue";
+import { getBrandGradient } from "@/config/brandGradients";
+import ServiceArtwork from "@/Components/Experience/ServiceArtwork.vue";
+import { servicePresentation } from "@/config/servicePresentation";
 import {
-    Users, Eye, EyeOff,
-    TrendingDown, Lock, Globe, Link2, UserCheck,
-    ShieldAlert, CheckCircle, Circle,
-} from 'lucide-vue-next';
+    Users,
+    Eye,
+    EyeOff,
+    TrendingDown,
+    Lock,
+    Globe,
+    Link2,
+    UserCheck,
+    ShieldAlert,
+    CheckCircle,
+    Circle,
+} from "lucide-vue-next";
 
 interface Subscription {
     id: number;
@@ -35,22 +45,22 @@ const certify = ref(false);
 
 const form = ref({
     subscription_id: null as number | null,
-    name: '',
-    description: '',
-    tier: 'standard' as 'standard' | 'premium' | 'famille',
+    name: "",
+    description: "",
+    tier: "standard" as "standard" | "premium" | "famille",
     max_members: 2,
     total_price: 0,
-    split_type: 'equal' as 'equal',
-    visibility: 'public' as 'public' | 'private' | 'invite_only',
-    renewal_date: '',
+    split_type: "equal" as "equal",
+    visibility: "public" as "public" | "private" | "invite_only",
+    renewal_date: "",
     auto_renew: true,
-    credential_email: '',
-    credential_password: '',
-    credential_notes: '',
+    credential_email: "",
+    credential_password: "",
+    credential_notes: "",
 });
 
 const selectedSubscription = computed(() =>
-    props.subscriptions.find(s => s.id === form.value.subscription_id)
+    props.subscriptions.find((s) => s.id === form.value.subscription_id),
 );
 
 const currentPricePerMember = computed(() => {
@@ -58,8 +68,8 @@ const currentPricePerMember = computed(() => {
     return Math.round(form.value.total_price / form.value.max_members);
 });
 
-const monthlyEarnings = computed(() =>
-    currentPricePerMember.value * (form.value.max_members - 1)
+const monthlyEarnings = computed(
+    () => currentPricePerMember.value * (form.value.max_members - 1),
 );
 
 const annualSavings = computed(() => {
@@ -73,19 +83,22 @@ const netCostAfterSharing = computed(() => {
 });
 
 const gradient = computed(() => {
-    if (!selectedSubscription.value) return { from: '#0B1929', to: '#10B981' };
+    if (!selectedSubscription.value) return { from: "#0B1929", to: "#10B981" };
     return getBrandGradient(selectedSubscription.value.slug);
 });
 
 const totalPriceDollars = computed({
-    get: () => form.value.total_price ? form.value.total_price / 100 : 0,
+    get: () => (form.value.total_price ? form.value.total_price / 100 : 0),
     set: (value: number) => {
         form.value.total_price = Math.round(value * 100);
     },
 });
 
 function formatPrice(cents: number): string {
-    return new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' }).format(cents / 100);
+    return new Intl.NumberFormat("fr-CA", {
+        style: "currency",
+        currency: "CAD",
+    }).format(cents / 100);
 }
 
 function selectSubscription(sub: Subscription): void {
@@ -100,42 +113,56 @@ async function submit(): Promise<void> {
     isSubmitting.value = true;
     errors.value = {};
 
-    const renewalDate = form.value.renewal_date ||
+    const renewalDate =
+        form.value.renewal_date ||
         new Date(new Date().setMonth(new Date().getMonth() + 1))
-            .toISOString().split('T')[0];
+            .toISOString()
+            .split("T")[0];
 
-    router.post('/groups', {
-        ...form.value,
-        renewal_date: renewalDate,
-    }, {
-        onError: (e) => { errors.value = e; isSubmitting.value = false; },
-        onSuccess: () => { router.visit('/dashboard/subscriptions'); },
-        onFinish: () => { isSubmitting.value = false; },
-    });
+    router.post(
+        "/groups",
+        {
+            ...form.value,
+            renewal_date: renewalDate,
+        },
+        {
+            onError: (e) => {
+                errors.value = e;
+                isSubmitting.value = false;
+            },
+            onSuccess: () => {
+                router.visit("/dashboard/subscriptions");
+            },
+            onFinish: () => {
+                isSubmitting.value = false;
+            },
+        },
+    );
 }
 
-const stepLabels = ['Service', 'Prix', 'Visibilité', 'Identifiants'];
+const stepLabels = ["Service", "Prix", "Visibilité", "Identifiants"];
 
 const visibilityOptions = [
     {
-        value: 'public',
-        label: 'Public',
-        description: 'Votre groupe est visible par tous les utilisateurs Equitab.',
-        advantage: 'Le plus rapide pour trouver des membres',
+        value: "public",
+        label: "Public",
+        description:
+            "Votre groupe est visible par tous les utilisateurs Equitab.",
+        advantage: "Le plus rapide pour trouver des membres",
         icon: Globe,
     },
     {
-        value: 'invite_only',
-        label: 'Sur invitation',
-        description: 'Seules les personnes avec votre lien peuvent rejoindre.',
-        advantage: 'Confidentialité et contrôle total',
+        value: "invite_only",
+        label: "Sur invitation",
+        description: "Seules les personnes avec votre lien peuvent rejoindre.",
+        advantage: "Confidentialité et contrôle total",
         icon: Link2,
     },
     {
-        value: 'private',
-        label: 'Privé',
-        description: 'Vous invitez directement chaque membre par email.',
-        advantage: 'Pour partager avec vos proches uniquement',
+        value: "private",
+        label: "Privé",
+        description: "Vous invitez directement chaque membre par email.",
+        advantage: "Pour partager avec vos proches uniquement",
         icon: UserCheck,
     },
 ] as const;
@@ -145,35 +172,64 @@ const visibilityOptions = [
     <Head title="Partager un abonnement - Equitab" />
 
     <DashboardLayout>
-        <div v-if="verificationError" class="mx-auto max-w-lg text-center py-16">
-            <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50">
+        <div
+            v-if="verificationError"
+            class="mx-auto max-w-lg text-center py-16"
+        >
+            <div
+                class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50"
+            >
                 <ShieldAlert class="h-8 w-8 text-amber-500" />
             </div>
             <h1 class="mt-6 text-2xl font-semibold text-equitab-navy">
                 Vérification requise
             </h1>
             <p class="mt-3 text-gray-500">
-                Pour des raisons de sécurité, vous devez vérifier votre identité et configurer votre compte bancaire avant de pouvoir partager un abonnement.
+                Pour des raisons de sécurité, vous devez vérifier votre identité
+                et configurer votre compte bancaire avant de pouvoir partager un
+                abonnement.
             </p>
 
             <div class="mt-8 space-y-3 text-left">
-                <div class="flex items-center gap-3 rounded-xl border border-gray-100 bg-white p-4">
+                <div
+                    class="flex items-center gap-3 rounded-xl border border-gray-100 bg-white p-4"
+                >
                     <component
                         :is="identityVerified ? CheckCircle : Circle"
                         class="h-5 w-5 shrink-0"
-                        :class="identityVerified ? 'text-equitab-emerald' : 'text-gray-300'"
+                        :class="
+                            identityVerified
+                                ? 'text-equitab-emerald'
+                                : 'text-gray-300'
+                        "
                     />
-                    <span class="text-sm" :class="identityVerified ? 'text-gray-700' : 'text-gray-400'">
+                    <span
+                        class="text-sm"
+                        :class="
+                            identityVerified ? 'text-gray-700' : 'text-gray-400'
+                        "
+                    >
                         Identité vérifiée
                     </span>
                 </div>
-                <div class="flex items-center gap-3 rounded-xl border border-gray-100 bg-white p-4">
+                <div
+                    class="flex items-center gap-3 rounded-xl border border-gray-100 bg-white p-4"
+                >
                     <component
                         :is="connectActive ? CheckCircle : Circle"
                         class="h-5 w-5 shrink-0"
-                        :class="connectActive ? 'text-equitab-emerald' : 'text-gray-300'"
+                        :class="
+                            connectActive
+                                ? 'text-equitab-emerald'
+                                : 'text-gray-300'
+                        "
                     />
-                    <span class="text-sm" :class="connectActive ? 'text-gray-700' : 'text-gray-400'">
+                    <span
+                        class="text-sm"
+                        :class="
+                            connectActive ? 'text-gray-700' : 'text-gray-400'
+                        "
+                    >
                         Compte bancaire configuré
                     </span>
                 </div>
@@ -187,60 +243,100 @@ const visibilityOptions = [
             </Link>
         </div>
 
-        <div v-else class="mx-auto max-w-2xl">
-            <div class="mb-8">
-                <h1 class="text-2xl font-semibold text-equitab-navy">Partager un abonnement</h1>
-                <p class="mt-1 text-sm text-gray-500">Créez un groupe et invitez des membres à partager vos frais.</p>
+        <div v-else class="mx-auto max-w-3xl">
+            <div class="eq-page-heading">
+                <div>
+                    <p class="eq-eyebrow">UNE PLACE POUR CHACUN</p>
+                    <h1>Créez votre groupe.</h1>
+                    <p class="mt-1 text-sm text-gray-500">
+                        Créez un groupe et invitez des membres à partager vos
+                        frais.
+                    </p>
+                </div>
             </div>
 
-            <div class="mb-8 flex items-center gap-1">
+            <div
+                class="mb-4 flex items-center gap-1"
+                aria-label="Étapes de création"
+            >
                 <template v-for="(label, i) in stepLabels" :key="i">
-                    <div class="flex items-center gap-2">
+                    <div
+                        class="flex items-center gap-2"
+                        :aria-current="step === i + 1 ? 'step' : undefined"
+                    >
                         <div
                             class="flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold transition-colors"
-                            :class="step > i + 1
-                                ? 'bg-equitab-emerald text-white'
-                                : step === i + 1
-                                ? 'bg-equitab-navy text-white'
-                                : 'bg-gray-100 text-gray-400'"
+                            :class="
+                                step > i + 1
+                                    ? 'bg-equitab-emerald text-white'
+                                    : step === i + 1
+                                      ? 'bg-equitab-navy text-white'
+                                      : 'bg-gray-100 text-gray-400'
+                            "
                         >
                             <span v-if="step > i + 1">✓</span>
                             <span v-else>{{ i + 1 }}</span>
                         </div>
                         <span
                             class="hidden text-xs sm:block"
-                            :class="step === i + 1 ? 'font-medium text-equitab-navy' : 'text-gray-400'"
+                            :class="
+                                step === i + 1
+                                    ? 'font-medium text-equitab-navy'
+                                    : 'text-gray-400'
+                            "
                         >
                             {{ label }}
                         </span>
                     </div>
-                    <div v-if="i < stepLabels.length - 1" class="mx-1 h-px flex-1 bg-gray-200" />
+                    <div
+                        v-if="i < stepLabels.length - 1"
+                        class="mx-1 h-px flex-1 bg-gray-200"
+                    />
                 </template>
             </div>
+            <p class="mb-7 text-xs text-eq-muted" aria-live="polite">
+                Étape {{ step }} sur 4 · {{ stepLabels[step - 1] }}
+            </p>
 
             <div v-if="step === 1">
                 <div class="grid gap-3 sm:grid-cols-2">
                     <button
                         v-for="sub in subscriptions"
                         :key="sub.id"
+                        :aria-label="'Choisir ' + sub.name"
                         @click="selectSubscription(sub)"
-                        class="flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-4 text-left transition-all hover:border-equitab-emerald hover:shadow-sm"
+                        class="service-choice text-left"
                     >
-                        <div
-                            class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-xl font-bold text-white"
-                            :style="{ background: `linear-gradient(135deg, ${getBrandGradient(sub.slug).from}, ${getBrandGradient(sub.slug).to})` }"
-                        >
-                            {{ sub.name.charAt(0) }}
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <p class="truncate font-semibold text-equitab-navy">{{ sub.name }}</p>
-                            <div class="mt-1 flex items-center gap-2 text-xs text-gray-400">
+                        <ServiceArtwork
+                            :scene="
+                                servicePresentation(sub.slug, sub.category)
+                                    .scene
+                            "
+                            :palette="
+                                servicePresentation(sub.slug, sub.category)
+                                    .palette
+                            "
+                            :category="sub.category"
+                            tagline="À vous de commencer l’histoire."
+                            :motion="false"
+                        />
+                        <div class="min-w-0 p-5">
+                            <p class="truncate font-semibold text-equitab-navy">
+                                {{ sub.name }}
+                            </p>
+                            <div
+                                class="mt-1 flex items-center gap-2 text-xs text-gray-400"
+                            >
                                 <span class="flex items-center gap-1">
                                     <Users class="h-3.5 w-3.5" />
                                     {{ sub.max_members }} max
                                 </span>
                                 <span>·</span>
-                                <span class="font-medium text-equitab-navy">{{ formatPrice(sub.monthly_price) }}/mois</span>
+                                <span class="font-medium text-equitab-navy"
+                                    >{{
+                                        formatPrice(sub.monthly_price)
+                                    }}/mois</span
+                                >
                             </div>
                         </div>
                     </button>
@@ -252,13 +348,25 @@ const visibilityOptions = [
                     <div class="mb-4 flex items-center gap-3">
                         <div
                             class="flex h-10 w-10 items-center justify-center rounded-xl text-lg font-bold text-white"
-                            :style="{ background: `linear-gradient(135deg, ${gradient.from}, ${gradient.to})` }"
+                            :style="{
+                                background: `linear-gradient(135deg, ${gradient.from}, ${gradient.to})`,
+                            }"
                         >
                             {{ selectedSubscription.name.charAt(0) }}
                         </div>
                         <div>
-                            <p class="font-semibold text-equitab-navy">{{ selectedSubscription.name }}</p>
-                            <p class="text-xs text-gray-400">Prix total : {{ formatPrice(selectedSubscription.monthly_price) }} / mois</p>
+                            <p class="font-semibold text-equitab-navy">
+                                {{ selectedSubscription.name }}
+                            </p>
+                            <p class="text-xs text-gray-400">
+                                Prix total :
+                                {{
+                                    formatPrice(
+                                        selectedSubscription.monthly_price,
+                                    )
+                                }}
+                                / mois
+                            </p>
                         </div>
                     </div>
 
@@ -269,49 +377,76 @@ const visibilityOptions = [
                         </label>
                         <textarea
                             v-model="form.description"
+                            aria-label="Précisez votre offre"
                             rows="2"
                             maxlength="1000"
                             placeholder="Ex : Crunchyroll Mega Fan, Netflix Famille avec 4K, forfait étudiant..."
                             class="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-equitab-emerald focus:outline-none"
                         />
                         <p class="mt-1 text-xs text-gray-400">
-                            Visible par les personnes qui envisagent de rejoindre votre groupe — utile si votre abonnement a un forfait ou une offre particulière.
+                            Visible par les personnes qui envisagent de
+                            rejoindre votre groupe — utile si votre abonnement a
+                            un forfait ou une offre particulière.
                         </p>
                     </div>
 
                     <div class="space-y-6">
                         <div>
-                            <label class="text-sm font-medium text-equitab-emerald">
+                            <label
+                                class="text-sm font-medium text-equitab-emerald"
+                            >
                                 Combien de places souhaitez-vous partager ?
                             </label>
                             <div class="mt-3 flex items-center gap-4">
                                 <button
-                                    @click="form.max_members = Math.max(2, form.max_members - 1)"
+                                    @click="
+                                        form.max_members = Math.max(
+                                            2,
+                                            form.max_members - 1,
+                                        )
+                                    "
+                                    aria-label="Réduire le nombre de places"
                                     class="flex h-10 w-10 items-center justify-center rounded-full bg-equitab-emerald text-white hover:bg-equitab-emerald-dark"
                                 >
                                     −
                                 </button>
-                                <span class="flex h-14 w-24 items-center justify-center rounded-xl border-2 border-gray-200 text-2xl font-bold text-equitab-navy">
+                                <span
+                                    class="flex h-14 w-24 items-center justify-center rounded-xl border-2 border-gray-200 text-2xl font-bold text-equitab-navy"
+                                >
                                     {{ form.max_members - 1 }}
                                 </span>
                                 <button
-                                    @click="form.max_members = Math.min(selectedSubscription.max_members, form.max_members + 1)"
+                                    @click="
+                                        form.max_members = Math.min(
+                                            selectedSubscription.max_members,
+                                            form.max_members + 1,
+                                        )
+                                    "
+                                    aria-label="Augmenter le nombre de places"
                                     class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 text-gray-600 hover:bg-gray-300"
                                 >
                                     +
                                 </button>
                             </div>
                             <p class="mt-2 text-xs text-gray-400">
-                                Maximum {{ selectedSubscription.max_members - 1 }} places pour ce service
+                                Maximum
+                                {{ selectedSubscription.max_members - 1 }}
+                                places pour ce service
                             </p>
                         </div>
 
                         <div>
-                            <label class="text-sm font-medium text-gray-700">Prix total de l'abonnement / mois</label>
+                            <label class="text-sm font-medium text-gray-700"
+                                >Prix total de l'abonnement / mois</label
+                            >
                             <div class="relative mt-2">
-                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">$</span>
+                                <span
+                                    class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400"
+                                    >$</span
+                                >
                                 <input
                                     v-model.number="totalPriceDollars"
+                                    aria-label="Prix total de l’abonnement par mois en CAD"
                                     type="number"
                                     min="1"
                                     step="0.01"
@@ -320,39 +455,69 @@ const visibilityOptions = [
                                 />
                             </div>
                             <p class="mt-1 text-xs text-gray-400">
-                                Le prix total facturé par {{ selectedSubscription.name }} (ex: 19.99 pour 19,99$)
+                                Le prix total facturé par
+                                {{ selectedSubscription.name }} (ex: 19.99 pour
+                                19,99$)
                             </p>
                         </div>
 
                         <div class="rounded-xl bg-equitab-emerald/5 p-4">
                             <p class="text-sm text-gray-600">
-                                Avec {{ form.max_members - 1 }} membre(s), chaque personne paie
-                                <strong class="text-equitab-navy">{{ formatPrice(currentPricePerMember) }} / mois</strong>
+                                Pour un groupe complet de
+                                {{ form.max_members }} personnes, part estimée :
+                                <strong class="text-equitab-navy"
+                                    >{{ formatPrice(currentPricePerMember) }} /
+                                    mois</strong
+                                >
                             </p>
-                            <p class="mt-1 text-base font-semibold text-equitab-navy">
-                                Vous recevrez
-                                <span class="text-equitab-emerald">{{ formatPrice(monthlyEarnings) }} / mois</span>
+                            <p
+                                class="mt-1 text-base font-semibold text-equitab-navy"
+                            >
+                                Contributions estimées :
+                                <span class="text-equitab-emerald"
+                                    >{{ formatPrice(monthlyEarnings) }} /
+                                    mois</span
+                                >
                                 des autres membres
                             </p>
-                            <div class="mt-3 border-t border-equitab-emerald/20 pt-3">
+                            <div
+                                class="mt-3 border-t border-equitab-emerald/20 pt-3"
+                            >
                                 <p class="text-sm text-gray-600">
                                     Votre coût net après partage :
-                                    <strong class="text-equitab-navy">{{ formatPrice(netCostAfterSharing) }} / mois</strong>
+                                    <strong class="text-equitab-navy"
+                                        >{{
+                                            formatPrice(netCostAfterSharing)
+                                        }}
+                                        / mois</strong
+                                    >
                                 </p>
-                                <p class="mt-1 flex items-center gap-1 text-sm font-semibold text-equitab-emerald">
+                                <p
+                                    class="mt-1 flex items-center gap-1 text-sm font-semibold text-equitab-emerald"
+                                >
                                     <TrendingDown class="h-4 w-4" />
-                                    Vous économisez {{ formatPrice(annualSavings) }} par an grâce au partage
+                                    Économie annuelle estimée :
+                                    {{ formatPrice(annualSavings) }}
                                 </p>
                             </div>
-                            <div class="mt-3 rounded-lg bg-blue-50 p-3 text-xs text-blue-700">
-                                💡 Ce prix est dynamique, donc il baisse automatiquement à chaque nouveau membre, et chaque membre actif voit son prix recalculé à son prochain renouvellement.
+                            <div
+                                class="mt-3 rounded-lg bg-blue-50 p-3 text-xs text-blue-700"
+                            >
+                                Estimations pour un groupe complet, hors frais
+                                éventuels. 💡 Ce prix est dynamique, donc il
+                                baisse automatiquement à chaque nouveau membre,
+                                et chaque membre actif voit son prix recalculé à
+                                son prochain renouvellement.
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="flex gap-3">
-                    <button @click="step = 1" class="rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50">
+                    <button
+                        @click="step = 1"
+                        class="rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50"
+                    >
                         ← Précédent
                     </button>
                     <button
@@ -369,9 +534,13 @@ const visibilityOptions = [
                 <div>
                     <h2 class="text-lg font-semibold text-equitab-navy">
                         Visibilité de votre abonnement
-                        <span class="text-equitab-emerald">{{ selectedSubscription?.name }}</span>
+                        <span class="text-equitab-emerald">{{
+                            selectedSubscription?.name
+                        }}</span>
                     </h2>
-                    <p class="mt-1 text-sm text-gray-500">Choisissez qui peut voir et rejoindre votre groupe.</p>
+                    <p class="mt-1 text-sm text-gray-500">
+                        Choisissez qui peut voir et rejoindre votre groupe.
+                    </p>
                 </div>
 
                 <div class="grid gap-3 sm:grid-cols-3">
@@ -379,29 +548,49 @@ const visibilityOptions = [
                         v-for="opt in visibilityOptions"
                         :key="opt.value"
                         @click="form.visibility = opt.value"
+                        :aria-pressed="form.visibility === opt.value"
                         class="rounded-xl border p-4 text-left transition-all"
-                        :class="form.visibility === opt.value
-                            ? 'border-equitab-emerald bg-equitab-emerald/5'
-                            : 'border-gray-100 bg-white hover:border-gray-200'"
+                        :class="
+                            form.visibility === opt.value
+                                ? 'border-equitab-emerald bg-equitab-emerald/5'
+                                : 'border-gray-100 bg-white hover:border-gray-200'
+                        "
                     >
                         <component
                             :is="opt.icon"
                             class="h-6 w-6"
-                            :class="form.visibility === opt.value ? 'text-equitab-emerald' : 'text-gray-400'"
+                            :class="
+                                form.visibility === opt.value
+                                    ? 'text-equitab-emerald'
+                                    : 'text-gray-400'
+                            "
                         />
                         <p
                             class="mt-2 font-semibold"
-                            :class="form.visibility === opt.value ? 'text-equitab-emerald' : 'text-equitab-navy'"
+                            :class="
+                                form.visibility === opt.value
+                                    ? 'text-equitab-emerald'
+                                    : 'text-equitab-navy'
+                            "
                         >
                             {{ opt.label }}
                         </p>
-                        <p class="mt-1 text-xs text-gray-500">{{ opt.description }}</p>
-                        <p class="mt-2 text-xs font-medium text-equitab-emerald">{{ opt.advantage }}</p>
+                        <p class="mt-1 text-xs text-gray-500">
+                            {{ opt.description }}
+                        </p>
+                        <p
+                            class="mt-2 text-xs font-medium text-equitab-emerald"
+                        >
+                            {{ opt.advantage }}
+                        </p>
                     </button>
                 </div>
 
                 <div class="flex gap-3">
-                    <button @click="step = 2" class="rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50">
+                    <button
+                        @click="step = 2"
+                        class="rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50"
+                    >
                         ← Précédent
                     </button>
                     <button
@@ -417,39 +606,68 @@ const visibilityOptions = [
                 <div class="rounded-xl border border-gray-100 bg-white p-6">
                     <div class="mb-4 flex items-center gap-2">
                         <Lock class="h-5 w-5 text-equitab-navy" />
-                        <h3 class="font-semibold text-equitab-navy">Partagez vos identifiants</h3>
+                        <h3 class="font-semibold text-equitab-navy">
+                            Partagez vos identifiants
+                        </h3>
                     </div>
 
-                    <div class="mb-4 rounded-lg bg-blue-50 p-3 text-xs text-blue-700">
-                        <p>1. Ces informations sont <strong>chiffrées</strong> et ne sont visibles qu'aux membres ayant un abonnement actif.</p>
-                        <p class="mt-1">2. Equitab ne peut pas lire vos identifiants, car ils sont chiffrés de bout en bout.</p>
+                    <div
+                        class="mb-4 rounded-lg bg-blue-50 p-3 text-xs text-blue-700"
+                    >
+                        <p>
+                            Ces informations sont
+                            <strong>chiffrées au stockage</strong>. Leur accès
+                            est réservé aux personnes autorisées dans le groupe.
+                        </p>
+                        <p class="mt-1">
+                            Partagez uniquement les accès nécessaires à ce
+                            service, jamais le mot de passe de votre compte
+                            Equitab.
+                        </p>
                     </div>
 
                     <div class="space-y-4">
                         <div class="grid gap-4 sm:grid-cols-2">
                             <div>
-                                <label class="text-sm font-medium text-gray-700">Identifiant (email)</label>
+                                <label class="text-sm font-medium text-gray-700"
+                                    >Identifiant (email)</label
+                                >
                                 <input
                                     v-model="form.credential_email"
+                                    aria-label="Courriel du service partagé"
                                     type="email"
                                     placeholder="exemple@email.com"
                                     class="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-equitab-emerald focus:outline-none"
                                 />
                             </div>
                             <div>
-                                <label class="text-sm font-medium text-gray-700">Mot de passe</label>
+                                <label class="text-sm font-medium text-gray-700"
+                                    >Mot de passe</label
+                                >
                                 <div class="relative mt-1">
                                     <input
                                         v-model="form.credential_password"
-                                        :type="showPassword ? 'text' : 'password'"
+                                        aria-label="Mot de passe du service partagé"
+                                        :type="
+                                            showPassword ? 'text' : 'password'
+                                        "
                                         placeholder="Mot de passe du service"
                                         class="w-full rounded-lg border border-gray-200 px-3 py-2.5 pr-10 text-sm focus:border-equitab-emerald focus:outline-none"
                                     />
                                     <button
                                         @click="showPassword = !showPassword"
+                                        :aria-label="
+                                            showPassword
+                                                ? 'Masquer le mot de passe'
+                                                : 'Afficher le mot de passe'
+                                        "
+                                        :aria-pressed="showPassword"
                                         class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
                                     >
-                                        <EyeOff v-if="showPassword" class="h-4 w-4" />
+                                        <EyeOff
+                                            v-if="showPassword"
+                                            class="h-4 w-4"
+                                        />
                                         <Eye v-else class="h-4 w-4" />
                                     </button>
                                 </div>
@@ -463,6 +681,7 @@ const visibilityOptions = [
                             </label>
                             <textarea
                                 v-model="form.credential_notes"
+                                aria-label="Informations complémentaires pour les membres"
                                 rows="3"
                                 placeholder="Ex: Utilisez le profil 'Invité 1', connectez-vous via l'app mobile..."
                                 class="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-equitab-emerald focus:outline-none"
@@ -472,42 +691,90 @@ const visibilityOptions = [
                 </div>
 
                 <div class="rounded-xl border border-gray-100 bg-white p-6">
-                    <h3 class="mb-3 font-semibold text-equitab-navy">Récapitulatif</h3>
-                    <div class="space-y-2 text-sm">
+                    <h3 class="mb-3 font-semibold text-equitab-navy">
+                        Récapitulatif
+                    </h3>
+                    <div class="group-summary space-y-2 text-sm">
                         <div class="flex justify-between">
                             <span class="text-gray-500">Service</span>
-                            <span class="font-medium">{{ selectedSubscription?.name }}</span>
+                            <span class="font-medium">{{
+                                selectedSubscription?.name
+                            }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-gray-500">Places</span>
-                            <span class="font-medium">{{ form.max_members - 1 }} membre(s)</span>
+                            <span class="font-medium"
+                                >{{ form.max_members - 1 }} membre(s)</span
+                            >
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-gray-500">Prix par membre</span>
-                            <span class="font-medium">{{ formatPrice(form.total_price) }} / mois</span>
+                            <span class="text-gray-500">Prix total</span>
+                            <span class="font-medium"
+                                >{{ formatPrice(form.total_price) }} /
+                                mois</span
+                            >
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500"
+                                >Part estimée par personne</span
+                            >
+                            <span class="font-medium"
+                                >{{ formatPrice(currentPricePerMember) }} /
+                                mois</span
+                            >
                         </div>
                         <div class="flex justify-between">
                             <span class="text-gray-500">Visibilité</span>
-                            <span class="font-medium capitalize">{{ form.visibility }}</span>
+                            <span class="font-medium capitalize">{{
+                                visibilityOptions.find(
+                                    (option) =>
+                                        option.value === form.visibility,
+                                )?.label
+                            }}</span>
                         </div>
-                        <div class="flex justify-between border-t border-gray-100 pt-2">
-                            <span class="text-gray-500">Vous récupérerez</span>
-                            <span class="font-semibold text-equitab-emerald">{{ formatPrice(monthlyEarnings) }} / mois</span>
+                        <div
+                            class="flex justify-between border-t border-gray-100 pt-2"
+                        >
+                            <span class="text-gray-500"
+                                >Contributions estimées</span
+                            >
+                            <span class="font-semibold text-equitab-emerald"
+                                >{{ formatPrice(monthlyEarnings) }} / mois</span
+                            >
                         </div>
                     </div>
+                    <p class="mt-4 text-xs leading-5 text-eq-muted">
+                        Montants en CAD pour un groupe complet, hors frais
+                        éventuels. Ils peuvent évoluer selon les membres
+                        présents.
+                    </p>
                 </div>
 
-                <label class="flex items-start gap-3 rounded-xl border border-gray-100 bg-white p-4 cursor-pointer">
-                    <input v-model="certify" type="checkbox" class="mt-0.5 accent-equitab-emerald" />
+                <label
+                    class="flex items-start gap-3 rounded-xl border border-gray-100 bg-white p-4 cursor-pointer"
+                >
+                    <input
+                        v-model="certify"
+                        type="checkbox"
+                        class="mt-0.5 accent-equitab-emerald"
+                    />
                     <span class="text-sm text-gray-600">
-                        Je certifie être titulaire de cet abonnement et accepte les
-                        <a href="/conditions" class="text-equitab-emerald hover:underline">conditions générales</a>
+                        Je certifie être titulaire de cet abonnement et accepte
+                        les
+                        <a
+                            href="/conditions"
+                            class="text-equitab-emerald hover:underline"
+                            >conditions générales</a
+                        >
                         d'Equitab.
                     </span>
                 </label>
 
                 <div class="flex gap-3">
-                    <button @click="step = 3" class="rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50">
+                    <button
+                        @click="step = 3"
+                        class="rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50"
+                    >
                         ← Précédent
                     </button>
                     <button
@@ -515,10 +782,40 @@ const visibilityOptions = [
                         :disabled="isSubmitting || !certify"
                         class="flex-1 rounded-lg bg-equitab-emerald px-4 py-2.5 text-sm font-medium text-white hover:bg-equitab-emerald-dark disabled:opacity-50"
                     >
-                        {{ isSubmitting ? 'Création en cours...' : 'Créer le groupe' }}
+                        {{
+                            isSubmitting
+                                ? "Création en cours..."
+                                : "Créer le groupe"
+                        }}
                     </button>
                 </div>
             </div>
         </div>
     </DashboardLayout>
 </template>
+<style scoped>
+.group-summary > div {
+    gap: 16px;
+}
+.group-summary > div > span:last-child {
+    text-align: right;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+.service-choice {
+    min-width: 0;
+    border: 1px solid #dededb;
+    border-radius: 24px;
+    background: #fff;
+    box-shadow: 0 15px 30px -30px #25273277;
+    transition: border-color 0.2s;
+}
+.service-choice:hover {
+    border-color: #83858c;
+}
+@media (max-width: 600px) {
+    .p-6 {
+        padding: 20px;
+    }
+}
+</style>

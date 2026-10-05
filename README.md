@@ -489,6 +489,113 @@ autorestart=true
 
 ## Tests
 
+### Aperçu isolé de la refonte
+
+Lancer `npm run preview:design`, puis ouvrir [l’aperçu local](http://127.0.0.1:4173).
+Ce serveur écoute uniquement sur la machine locale. Il n’amorce pas Laravel, ne
+charge pas les fichiers d’environnement et n’utilise ni base de données, ni
+Stripe, ni messagerie temps réel. Les prix et profils sont entièrement fictifs.
+Les soumissions et requêtes de modification sont bloquées.
+
+L’aperçu couvre l’accueil, le catalogue, les groupes, la connexion, l’inscription,
+le tableau de bord, les abonnements, les paiements, les conversations, le profil,
+les préférences et la création de groupe. Les données sont fictives et les écritures
+sont interdites. Ce n’est pas une validation des parcours de paiement,
+d’identité, de messagerie en temps réel ou d’authentification réels.
+
+Cas de vérification disponibles :
+
+- `/services?search=Spotify` : recherche initiale.
+- `/services?empty=1` et `/?empty=1` : catalogue vide.
+- `/services?signedin=1` : navigation d’un membre connecté.
+- `/dashboard?empty=1` : nouveau membre.
+- `/dashboard` : membre avec abonnements et échéance fictifs.
+
+La commande `npm run build` compile l’application réelle. L’entrée de prévisualisation
+est séparée de l’application publiée. L’aperçu se ferme avec Ctrl+C.
+
+#### Direction issue du brief d’inspirations
+
+La page `/direction` présente une proposition indépendante : trois scènes de
+cartes originales, filtres, recherche, favoris temporaires et détails en fenêtre
+modale. Elle ne remplace pas les pages de production. Les illustrations réagissent
+au pointeur ; les actions restent accessibles au toucher et au clavier. Le réglage
+« Animations » respecte aussi la préférence système de réduction des mouvements.
+
+La source du skill dédié se trouve dans `skills/equitab-experience/`. Son fichier
+de références distingue les exigences du brief des choix créatifs proposés.
+Pour utiliser un autre port local : `EQUITAB_PREVIEW_PORT=4175 npm run preview:design`.
+Ce prototype doit être vérifié via cet aperçu, car `npm run build` ne l’inclut pas.
+
+#### Connexion et catalogue — direction collection
+
+Les pages réelles `/login` et `/services` utilisent désormais cette direction.
+La connexion conserve ses routes, ses champs, Google, la récupération du mot de
+passe et les erreurs Inertia. Le découpage est de 70/30 à partir de 1100 px ; sous
+ce seuil, le formulaire passe avant la présentation.
+
+L’animation originale `public/media/equitab-story.mp4` dure 18 secondes, sans son.
+Elle dispose d’une affiche, d’un contrôle lecture/pause, de trois étapes
+sélectionnables et d’une explication textuelle. Elle ne démarre pas automatiquement
+sur mobile ni avec la préférence système de réduction des mouvements, et se met
+en pause hors écran ou lorsque la page est masquée. Le fichier préexistant
+`public/Images/Equitab.mp4` n’a pas été modifié.
+
+Le catalogue utilise les catégories du serveur et conserve les liens vers les
+groupes. Les parts restent indicatives, calculées en cents pour un groupe complet.
+Aucun propriétaire, membre, favori ou nombre de places disponibles n’est simulé
+dans ces cartes de services.
+
+Vérifications locales sans authentification réelle ni paiement :
+
+- `node --experimental-strip-types --test scripts/test-service-presentation.mjs`
+  (Node compatible avec l’effacement des types TypeScript).
+- `/services?empty=1` : catalogue vide.
+- `/services?edge=1` : nom long, service inconnu et prix/capacité manquants.
+- `/login?status=1&noreset=1` : message de session fictif et récupération désactivée.
+
+La source de l’animation est `scripts/render-equitab-story.mjs`. Sa régénération
+nécessite `ffmpeg` et `@napi-rs/canvas` ; `EQUITAB_RENDER_MODULES` peut pointer vers
+un dossier `node_modules` existant. Ces outils ne sont pas nécessaires à la lecture
+de la vidéo ni au fonctionnement de l’application.
+
+#### Extension de la collection aux parcours membres
+
+La direction validée dans la capture utilisateur est intégrée aux pages réelles :
+accueil, groupes, inscription, tableau de bord, abonnements, historique des
+paiements, messagerie, profil, préférences et création de groupe. La connexion
+70/30 et le catalogue restent dans cette même famille. Les pages légales et les
+formulaires secondaires héritent de la navigation et de l’habillage communs.
+
+`CollectionCard` sépare la scène décorative des informations et des actions.
+Sur l’accueil, le montant est la **part actuelle** reçue du serveur ; dans les
+groupes, c’est la **part estimée après arrivée**. Le catalogue de l’accueil ne
+présente pas son ancien champ `pricePerMember` comme une part : cette donnée
+correspond en réalité au prix total du service en dollars. Aucun favori de
+démonstration ni information de confiance n’est ajouté aux données réelles.
+
+Les détails de groupe et les confirmations utilisent un dialogue natif, avec
+Échap, focus contenu et retour au déclencheur. Le formulaire Stripe n’est monté
+qu’après demande explicite et réception du récapitulatif. Les appels existants
+et règles métier côté serveur ne sont pas réécrits. L’administration et l’écran
+de confirmation de transaction ne font pas partie de cette passe visuelle.
+
+Scénarios de l’aperçu :
+
+- `/?catalogonly=1` : catalogue sans groupe ; `/?empty=1` : collection vide.
+- `/groups/service/netflix` : groupes ouverts et complet ; `?empty=1` : aucun groupe.
+- `/dashboard/subscriptions` : cartes rejointes et partagées ; `?empty=1` : état vide.
+- `/dashboard/payments` : payé, en attente et échoué ; filtres limités à la page affichée.
+- `/dashboard/chat` : conversations et messages fictifs ; aucun envoi réel.
+- `/dashboard/profile` : profil sans score, édition locale et annulation.
+- `/dashboard/preferences` : rubriques et interrupteurs au clavier, sans sauvegarde.
+- `/dashboard/groups/create` : étapes de création ; `?unverified=1` : vérification requise.
+
+Tous les accès privés et récapitulatifs de paiement `/api/…` sont bloqués dans
+l’aperçu, hormis les lectures des conversations fictives. Les formulaires,
+redirections Stripe et mutations financières doivent être testés séparément
+dans un environnement applicatif de test avant mise en ligne.
+
 ### Cartes de test Stripe
 | Carte | Résultat |
 |---|---|

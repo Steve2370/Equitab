@@ -1,11 +1,17 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { Head, router, usePage } from '@inertiajs/vue3';
-import DashboardLayout from '@/Layouts/DashboardLayout.vue';
+import { ref, computed } from "vue";
+import { Head, router, usePage } from "@inertiajs/vue3";
+import DashboardLayout from "@/Layouts/DashboardLayout.vue";
 import {
-    User, Bell, Globe, Shield, Trash2,
-    Camera, Check, AlertTriangle
-} from 'lucide-vue-next';
+    User,
+    Bell,
+    Globe,
+    Shield,
+    Trash2,
+    Camera,
+    Check,
+    AlertTriangle,
+} from "lucide-vue-next";
 
 interface Props {
     user: {
@@ -29,17 +35,19 @@ const props = defineProps<Props>();
 const page = usePage();
 const successMessage = computed(() => (page.props as any).flash?.success);
 
-const activeTab = ref<'profile' | 'notifications' | 'privacy' | 'danger'>('profile');
+const activeTab = ref<"profile" | "notifications" | "privacy" | "danger">(
+    "profile",
+);
 
 const tabs = [
-    { key: 'profile', label: 'Profil public', icon: User },
-    { key: 'notifications', label: 'Notifications', icon: Bell },
-    { key: 'privacy', label: 'Confidentialité', icon: Shield },
-    { key: 'danger', label: 'Danger', icon: Trash2 },
+    { key: "profile", label: "Profil public", icon: User },
+    { key: "notifications", label: "Notifications", icon: Bell },
+    { key: "privacy", label: "Confidentialité", icon: Shield },
+    { key: "danger", label: "Danger", icon: Trash2 },
 ] as const;
 
 const form = ref({
-    username: props.user.username ?? '',
+    username: props.user.username ?? "",
     locale: props.user.locale,
     currency: props.user.currency,
     timezone: props.user.timezone,
@@ -51,7 +59,7 @@ const form = ref({
     allow_direct_contact: props.user.allow_direct_contact,
 });
 
-const deletePassword = ref('');
+const deletePassword = ref("");
 const isSaving = ref(false);
 const isDeleting = ref(false);
 const avatarPreview = ref<string | null>(props.user.avatar);
@@ -68,38 +76,44 @@ function onAvatarChange(e: Event): void {
 function uploadAvatar(): void {
     if (!avatarFile.value) return;
     const formData = new FormData();
-    formData.append('avatar', avatarFile.value);
-    router.post('/dashboard/preferences/avatar', formData, {
+    formData.append("avatar", avatarFile.value);
+    router.post("/dashboard/preferences/avatar", formData, {
         forceFormData: true,
-        onSuccess: () => { avatarFile.value = null; },
+        onSuccess: () => {
+            avatarFile.value = null;
+        },
     });
 }
 
 function savePreferences(): void {
     isSaving.value = true;
-    router.patch('/dashboard/preferences', form.value, {
-        onFinish: () => { isSaving.value = false; },
+    router.patch("/dashboard/preferences", form.value, {
+        onFinish: () => {
+            isSaving.value = false;
+        },
     });
 }
 
 function deleteAccount(): void {
     if (!deletePassword.value) return;
     isDeleting.value = true;
-    router.delete('/dashboard/preferences/account', {
+    router.delete("/dashboard/preferences/account", {
         data: { password: deletePassword.value },
-        onFinish: () => { isDeleting.value = false; },
+        onFinish: () => {
+            isDeleting.value = false;
+        },
     });
 }
 
 const timezones = [
-    'America/Toronto',
-    'America/Vancouver',
-    'America/Winnipeg',
-    'America/Halifax',
-    'America/St_Johns',
-    'America/New_York',
-    'Europe/Paris',
-    'UTC',
+    "America/Toronto",
+    "America/Vancouver",
+    "America/Winnipeg",
+    "America/Halifax",
+    "America/St_Johns",
+    "America/New_York",
+    "Europe/Paris",
+    "UTC",
 ];
 </script>
 
@@ -107,9 +121,14 @@ const timezones = [
     <Head title="Préférences — Equitab" />
 
     <DashboardLayout>
-        <div class="mb-6">
-            <h1 class="text-2xl font-semibold text-equitab-navy">Préférences</h1>
-            <p class="mt-1 text-sm text-gray-500">Personnalisez votre expérience Equitab</p>
+        <div class="eq-page-heading">
+            <div>
+                <p class="eq-eyebrow">À VOTRE FAÇON</p>
+                <h1>Votre expérience.</h1>
+                <p class="mt-1 text-sm text-gray-500">
+                    Personnalisez votre expérience Equitab
+                </p>
+            </div>
         </div>
 
         <div
@@ -119,21 +138,24 @@ const timezones = [
             {{ successMessage }}
         </div>
 
-        <div class="flex gap-6">
-            <aside class="w-48 shrink-0">
-                <nav class="space-y-1">
+        <div class="preferences-layout">
+            <aside class="preferences-tabs">
+                <nav aria-label="Rubriques des préférences">
                     <button
                         v-for="tab in tabs"
                         :key="tab.key"
+                        :aria-pressed="activeTab === tab.key"
                         @click="activeTab = tab.key"
                         class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors"
-                        :class="activeTab === tab.key
-                            ? tab.key === 'danger'
-                                ? 'bg-red-50 text-red-600'
-                                : 'bg-equitab-navy text-white'
-                            : tab.key === 'danger'
-                                ? 'text-red-500 hover:bg-red-50'
-                                : 'text-gray-500 hover:bg-gray-50 hover:text-equitab-navy'"
+                        :class="
+                            activeTab === tab.key
+                                ? tab.key === 'danger'
+                                    ? 'bg-red-50 text-red-600'
+                                    : 'bg-equitab-navy text-white'
+                                : tab.key === 'danger'
+                                  ? 'text-red-500 hover:bg-red-50'
+                                  : 'text-gray-500 hover:bg-gray-50 hover:text-equitab-navy'
+                        "
                     >
                         <component :is="tab.icon" class="h-4 w-4 shrink-0" />
                         {{ tab.label }}
@@ -141,42 +163,56 @@ const timezones = [
                 </nav>
             </aside>
 
-            <div class="flex-1 space-y-4">
-
+            <div class="min-w-0 flex-1 space-y-4">
                 <!-- Profil public -->
                 <div v-if="activeTab === 'profile'" class="space-y-4">
                     <div class="rounded-xl border border-gray-100 bg-white p-6">
-                        <h2 class="mb-5 font-semibold text-equitab-navy">Avatar</h2>
+                        <h2 class="mb-5 font-semibold text-equitab-navy">
+                            Avatar
+                        </h2>
 
-                        <div class="flex items-center gap-6">
-                            <div class="h-20 w-20 overflow-hidden rounded-full bg-equitab-navy/10 shrink-0">
+                        <div class="flex flex-wrap items-center gap-6">
+                            <div
+                                class="h-20 w-20 overflow-hidden rounded-full bg-equitab-navy/10 shrink-0"
+                            >
                                 <img
                                     v-if="avatarPreview"
                                     :src="avatarPreview"
                                     class="h-full w-full object-cover"
                                     alt="Avatar"
                                 />
-                                <span v-else class="flex h-full w-full items-center justify-center text-2xl font-bold text-equitab-navy">
+                                <span
+                                    v-else
+                                    class="flex h-full w-full items-center justify-center text-2xl font-bold text-equitab-navy"
+                                >
                                     {{ user.name.charAt(0).toUpperCase() }}
                                 </span>
                             </div>
                             <div class="space-y-2">
-                                <p class="text-sm font-medium text-equitab-navy">{{ user.name }}</p>
-                                <p class="text-xs text-gray-400">JPG, PNG ou WebP · Max 2 Mo</p>
+                                <p
+                                    class="text-sm font-medium text-equitab-navy"
+                                >
+                                    {{ user.name }}
+                                </p>
+                                <p class="text-xs text-gray-400">
+                                    JPG, PNG ou WebP · Max 2 Mo
+                                </p>
                                 <input
+                                    ref="fileInput"
                                     id="avatar-upload"
                                     type="file"
                                     accept="image/jpeg,image/png,image/webp"
                                     class="hidden"
                                     @change="onAvatarChange"
                                 />
-                                <label
-                                    for="avatar-upload"
+                                <button
+                                    type="button"
+                                    @click="fileInput?.click()"
                                     class="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:border-equitab-emerald hover:text-equitab-emerald"
                                 >
                                     <Camera class="h-3.5 w-3.5" />
                                     Choisir une photo
-                                </label>
+                                </button>
                                 <button
                                     v-if="avatarFile"
                                     type="button"
@@ -191,14 +227,21 @@ const timezones = [
                     </div>
 
                     <div class="rounded-xl border border-gray-100 bg-white p-6">
-                        <h2 class="mb-5 font-semibold text-equitab-navy">Pseudo public</h2>
+                        <h2 class="mb-5 font-semibold text-equitab-navy">
+                            Pseudo public
+                        </h2>
                         <p class="mb-3 text-sm text-gray-500">
-                            Votre pseudo est affiché à la place de votre vrai nom dans les groupes publics.
+                            Votre pseudo est affiché à la place de votre vrai
+                            nom dans les groupes publics.
                         </p>
-                        <div class="flex items-center gap-3">
+                        <div class="flex flex-wrap items-center gap-3">
                             <div class="relative flex-1">
-                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">@</span>
+                                <span
+                                    class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400"
+                                    >@</span
+                                >
                                 <input
+                                    aria-label="Pseudo public"
                                     v-model="form.username"
                                     type="text"
                                     placeholder="mon_pseudo"
@@ -211,38 +254,67 @@ const timezones = [
                                 :disabled="isSaving"
                                 class="rounded-lg bg-equitab-navy px-4 py-2.5 text-sm font-medium text-white hover:bg-equitab-navy-light disabled:opacity-60"
                             >
-                                {{ isSaving ? 'Sauvegarde...' : 'Sauvegarder' }}
+                                {{ isSaving ? "Sauvegarde..." : "Sauvegarder" }}
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <div v-if="activeTab === 'notifications'" class="rounded-xl border border-gray-100 bg-white p-6">
-                    <h2 class="mb-5 font-semibold text-equitab-navy">Notifications par email</h2>
+                <div
+                    v-if="activeTab === 'notifications'"
+                    class="rounded-xl border border-gray-100 bg-white p-6"
+                >
+                    <h2 class="mb-5 font-semibold text-equitab-navy">
+                        Notifications par email
+                    </h2>
 
                     <div class="space-y-4">
-                        <label
+                        <div
                             v-for="(label, key) in {
-                                notif_member_joined: 'Un membre rejoint votre groupe',
+                                notif_member_joined:
+                                    'Un membre rejoint votre groupe',
                                 notif_payment_received: 'Un paiement est reçu',
-                                notif_renewal_reminder: 'Rappel avant renouvellement (3 jours)',
+                                notif_renewal_reminder:
+                                    'Rappel avant renouvellement (3 jours)',
                                 notif_payment_failed: 'Un paiement échoue',
                             }"
                             :key="key"
                             class="flex items-center justify-between rounded-lg border border-gray-100 p-4 cursor-pointer hover:bg-gray-50"
                         >
-                            <span class="text-sm text-gray-700">{{ label }}</span>
-                            <div
-                                class="relative h-6 w-11 rounded-full transition-colors cursor-pointer"
-                                :class="form[key as keyof typeof form] ? 'bg-equitab-emerald' : 'bg-gray-200'"
-                                @click="(form[key as keyof typeof form] as boolean) = !(form[key as keyof typeof form] as boolean)"
+                            <span class="text-sm text-gray-700">{{
+                                label
+                            }}</span>
+                            <button
+                                type="button"
+                                role="switch"
+                                :aria-label="label"
+                                :aria-checked="
+                                    Boolean(form[key as keyof typeof form])
+                                "
+                                class="relative h-7 w-12 shrink-0 rounded-full transition-colors cursor-pointer"
+                                :class="
+                                    form[key as keyof typeof form]
+                                        ? 'bg-equitab-emerald'
+                                        : 'bg-gray-200'
+                                "
+                                @click="
+                                    (form[
+                                        key as keyof typeof form
+                                    ] as boolean) = !(form[
+                                        key as keyof typeof form
+                                    ] as boolean)
+                                "
                             >
                                 <div
                                     class="absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform"
-                                    :class="form[key as keyof typeof form] ? 'translate-x-5' : 'translate-x-0.5'"
+                                    :class="
+                                        form[key as keyof typeof form]
+                                            ? 'translate-x-5'
+                                            : 'translate-x-0.5'
+                                    "
                                 />
-                            </div>
-                        </label>
+                            </button>
+                        </div>
                     </div>
 
                     <button
@@ -250,34 +322,63 @@ const timezones = [
                         :disabled="isSaving"
                         class="mt-6 rounded-lg bg-equitab-navy px-4 py-2.5 text-sm font-medium text-white hover:bg-equitab-navy-light disabled:opacity-60"
                     >
-                        {{ isSaving ? 'Sauvegarde...' : 'Sauvegarder' }}
+                        {{ isSaving ? "Sauvegarde..." : "Sauvegarder" }}
                     </button>
                 </div>
 
-                <div v-if="activeTab === 'privacy'" class="rounded-xl border border-gray-100 bg-white p-6">
-                    <h2 class="mb-5 font-semibold text-equitab-navy">Confidentialité</h2>
+                <div
+                    v-if="activeTab === 'privacy'"
+                    class="rounded-xl border border-gray-100 bg-white p-6"
+                >
+                    <h2 class="mb-5 font-semibold text-equitab-navy">
+                        Confidentialité
+                    </h2>
 
                     <div class="space-y-4">
-                        <label
+                        <div
                             v-for="(label, key) in {
-                                show_real_name: 'Afficher mon vrai nom dans les groupes publics',
-                                allow_direct_contact: 'Autoriser les membres à me contacter directement',
+                                show_real_name:
+                                    'Afficher mon vrai nom dans les groupes publics',
+                                allow_direct_contact:
+                                    'Autoriser les membres à me contacter directement',
                             }"
                             :key="key"
                             class="flex items-center justify-between rounded-lg border border-gray-100 p-4 cursor-pointer hover:bg-gray-50"
                         >
-                            <span class="text-sm text-gray-700">{{ label }}</span>
-                            <div
-                                class="relative h-6 w-11 rounded-full transition-colors cursor-pointer"
-                                :class="form[key as keyof typeof form] ? 'bg-equitab-emerald' : 'bg-gray-200'"
-                                @click="(form[key as keyof typeof form] as boolean) = !(form[key as keyof typeof form] as boolean)"
+                            <span class="text-sm text-gray-700">{{
+                                label
+                            }}</span>
+                            <button
+                                type="button"
+                                role="switch"
+                                :aria-label="label"
+                                :aria-checked="
+                                    Boolean(form[key as keyof typeof form])
+                                "
+                                class="relative h-7 w-12 shrink-0 rounded-full transition-colors cursor-pointer"
+                                :class="
+                                    form[key as keyof typeof form]
+                                        ? 'bg-equitab-emerald'
+                                        : 'bg-gray-200'
+                                "
+                                @click="
+                                    (form[
+                                        key as keyof typeof form
+                                    ] as boolean) = !(form[
+                                        key as keyof typeof form
+                                    ] as boolean)
+                                "
                             >
                                 <div
                                     class="absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform"
-                                    :class="form[key as keyof typeof form] ? 'translate-x-5' : 'translate-x-0.5'"
+                                    :class="
+                                        form[key as keyof typeof form]
+                                            ? 'translate-x-5'
+                                            : 'translate-x-0.5'
+                                    "
                                 />
-                            </div>
-                        </label>
+                            </button>
+                        </div>
                     </div>
 
                     <button
@@ -285,26 +386,34 @@ const timezones = [
                         :disabled="isSaving"
                         class="mt-6 rounded-lg bg-equitab-navy px-4 py-2.5 text-sm font-medium text-white hover:bg-equitab-navy-light disabled:opacity-60"
                     >
-                        {{ isSaving ? 'Sauvegarde...' : 'Sauvegarder' }}
+                        {{ isSaving ? "Sauvegarde..." : "Sauvegarder" }}
                     </button>
                 </div>
 
-                <div v-if="activeTab === 'danger'" class="rounded-xl border border-red-100 bg-white p-6">
+                <div
+                    v-if="activeTab === 'danger'"
+                    class="rounded-xl border border-red-100 bg-white p-6"
+                >
                     <div class="flex items-center gap-2 mb-5">
                         <AlertTriangle class="h-5 w-5 text-red-500" />
-                        <h2 class="font-semibold text-red-600">Zone de danger</h2>
+                        <h2 class="font-semibold text-red-600">
+                            Zone de danger
+                        </h2>
                     </div>
 
                     <p class="mb-4 text-sm text-gray-500">
-                        La suppression de votre compte est irréversible. Toutes vos données seront définitivement effacées,
-                        y compris vos groupes, paiements et messages.
+                        La suppression de votre compte est irréversible. Toutes
+                        vos données seront définitivement effacées, y compris
+                        vos groupes, paiements et messages.
                     </p>
 
                     <div class="rounded-xl border border-red-100 bg-red-50 p-4">
                         <p class="mb-3 text-sm font-medium text-red-700">
-                            Confirmez votre mot de passe pour supprimer votre compte
+                            Confirmez votre mot de passe pour supprimer votre
+                            compte
                         </p>
                         <input
+                            aria-label="Mot de passe actuel pour confirmer la suppression"
                             v-model="deletePassword"
                             type="password"
                             placeholder="Votre mot de passe actuel"
@@ -316,7 +425,11 @@ const timezones = [
                             class="mt-3 flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 disabled:opacity-50"
                         >
                             <Trash2 class="h-4 w-4" />
-                            {{ isDeleting ? 'Suppression...' : 'Supprimer définitivement mon compte' }}
+                            {{
+                                isDeleting
+                                    ? "Suppression..."
+                                    : "Supprimer définitivement mon compte"
+                            }}
                         </button>
                     </div>
                 </div>
@@ -324,3 +437,39 @@ const timezones = [
         </div>
     </DashboardLayout>
 </template>
+<style scoped>
+.preferences-layout {
+    display: flex;
+    gap: 28px;
+}
+.preferences-tabs {
+    width: 185px;
+    flex: none;
+}
+.preferences-tabs nav {
+    display: grid;
+    gap: 6px;
+}
+.preferences-tabs button {
+    border-radius: 15px;
+    font-size: 12px;
+}
+@media (max-width: 800px) {
+    .preferences-layout {
+        flex-direction: column;
+    }
+    .preferences-tabs {
+        width: 100%;
+    }
+    .preferences-tabs nav {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+    .preferences-tabs button {
+        border: 1px solid #dededb;
+    }
+    .p-6 {
+        padding: 20px;
+    }
+}
+</style>

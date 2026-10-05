@@ -6,7 +6,7 @@ import Footer from '@/Components/Footer.vue';
 
 <template>
     <Head title="Politique de confidentialité — Equitab" />
-    <div class="min-h-screen bg-gray-50">
+    <div class="eq-experience eq-workspace min-h-screen">
         <NavbarWithSearch />
 
         <div class="mx-auto max-w-3xl px-6 py-16">

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { type Component } from "vue";
+import { Link } from "@inertiajs/vue3";
 
 interface Props {
     label: string;
@@ -15,30 +16,56 @@ withDefaults(defineProps<Props>(), {
 });
 
 const variantStyles = {
-    default: "text-equitab-navy",
-    success: "text-equitab-emerald",
-    info: "text-blue-600",
+    default: "text-eq-ink",
+    success: "text-eq-green",
+    info: "text-eq-ink",
 };
 </script>
 
 <template>
-    <div class="rounded-xl border border-gray-100 bg-white p-6">
+    <div class="eq-panel metric-card p-6" :class="'metric-' + variant">
         <div class="flex items-center justify-between">
-            <p class="text-sm font-medium text-gray-500">{{ label }}</p>
-            <component :is="icon" class="h-4 w-4 text-gray-400" />
+            <p class="text-sm font-medium text-eq-muted">{{ label }}</p>
+            <component
+                :is="icon"
+                class="ml-2 h-4 w-4 shrink-0 text-eq-muted"
+                aria-hidden="true"
+            />
         </div>
-        <p class="mt-2 text-2xl font-semibold" :class="variantStyles[variant]">
+        <p
+            class="mt-5 text-3xl tracking-tight font-medium"
+            :class="variantStyles[variant]"
+        >
             {{ value }}
         </p>
-        <a
+        <Link
             v-if="sublabel && subhref"
             :href="subhref"
-            class="mt-1 text-xs text-gray-400 hover:text-gray-600"
+            class="mt-2 inline-flex text-xs text-eq-muted hover:text-eq-green hover:underline"
         >
-            {{ sublabel }} ->
-        </a>
-        <p v-else-if="sublabel && !subhref" class="mt-1 text-xs text-gray-400">
+            {{ sublabel }} →
+        </Link>
+        <p v-else-if="sublabel && !subhref" class="mt-2 text-xs text-eq-muted">
             {{ sublabel }}
         </p>
     </div>
 </template>
+<style scoped>
+.metric-success {
+    background: #e7eddb;
+    border-color: #d6deca;
+}
+.metric-info {
+    background: #efedf7;
+    border-color: #e0ddeb;
+}
+.metric-card {
+    min-width: 0;
+}
+.metric-card > div > p {
+    font-size: 11px;
+}
+.metric-card > p {
+    overflow-wrap: anywhere;
+}
+</style>

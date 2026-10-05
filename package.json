@@ -3,6 +3,7 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
+        "preview:design": "node scripts/preview-redesign.mjs",
         "build": "vite build",
         "emails": "node resources/emails/compile.cjs"
     },

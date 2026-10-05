@@ -1,8 +1,15 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { Head } from '@inertiajs/vue3';
-import DashboardLayout from '@/Layouts/DashboardLayout.vue';
-import { CheckCircle, Clock, AlertCircle, Download, Flag } from 'lucide-vue-next';
+import { ref, computed } from "vue";
+import { Head, Link } from "@inertiajs/vue3";
+import DashboardLayout from "@/Layouts/DashboardLayout.vue";
+import {
+    CheckCircle,
+    Clock,
+    AlertCircle,
+    Flag,
+    ArrowUpRight,
+} from "lucide-vue-next";
+import ExperienceDialog from "@/Components/Experience/ExperienceDialog.vue";
 
 interface Payment {
     id: number;
@@ -26,76 +33,80 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const activeFilter = ref<'all' | 'completed' | 'pending' | 'failed'>('all');
+const activeFilter = ref<"all" | "completed" | "pending" | "failed">("all");
 const showDisputeModal = ref(false);
 const isSubmittingDispute = ref(false);
 const selectedPaymentId = ref<number | null>(null);
 
 const disputeForm = ref({
-    reason: 'no_access',
-    description: '',
+    reason: "no_access",
+    description: "",
 });
 
 const filteredPayments = computed(() => {
-    if (activeFilter.value === 'all') return props.payments.data;
-    return props.payments.data.filter(p => p.status === activeFilter.value);
+    if (activeFilter.value === "all") return props.payments.data;
+    return props.payments.data.filter((p) => p.status === activeFilter.value);
 });
 
 const totalPaid = computed(() =>
     props.payments.data
-        .filter(p => p.status === 'completed')
-        .reduce((sum, p) => sum + p.amount, 0)
+        .filter((p) => p.status === "completed")
+        .reduce((sum, p) => sum + p.amount, 0),
 );
 
 function formatAmount(cents: number): string {
-    return new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' }).format(cents / 100);
+    return new Intl.NumberFormat("fr-CA", {
+        style: "currency",
+        currency: "CAD",
+    }).format(cents / 100);
 }
 
 function statusIcon(status: string) {
-    if (status === 'completed') return CheckCircle;
-    if (status === 'pending') return Clock;
+    if (status === "completed") return CheckCircle;
+    if (status === "pending") return Clock;
     return AlertCircle;
 }
 
 function statusClass(status: string): string {
     const classes: Record<string, string> = {
-        completed: 'text-equitab-emerald',
-        pending: 'text-amber-500',
-        failed: 'text-red-500',
+        completed: "text-equitab-emerald",
+        pending: "text-amber-500",
+        failed: "text-red-500",
     };
-    return classes[status] ?? 'text-gray-400';
+    return classes[status] ?? "text-gray-400";
 }
 
 function statusBgClass(status: string): string {
     const classes: Record<string, string> = {
-        completed: 'bg-equitab-emerald/10',
-        pending: 'bg-amber-50',
-        failed: 'bg-red-50',
+        completed: "bg-equitab-emerald/10",
+        pending: "bg-amber-50",
+        failed: "bg-red-50",
     };
-    return classes[status] ?? 'bg-gray-50';
+    return classes[status] ?? "bg-gray-50";
 }
 
 function statusLabel(status: string): string {
     const labels: Record<string, string> = {
-        completed: 'Payé',
-        pending: 'En attente',
-        failed: 'Échoué',
-        refunded: 'Remboursé',
+        completed: "Payé",
+        pending: "En attente",
+        failed: "Échoué",
+        refunded: "Remboursé",
     };
     return labels[status] ?? status;
 }
 
 function openDispute(paymentId: number): void {
     selectedPaymentId.value = paymentId;
-    disputeForm.value = { reason: 'no_access', description: '' };
+    disputeForm.value = { reason: "no_access", description: "" };
     showDisputeModal.value = true;
 }
 
 function getCsrfToken(): string {
     return decodeURIComponent(
-        document.cookie.split('; ')
-            .find(r => r.startsWith('XSRF-TOKEN='))
-            ?.split('=')[1] ?? ''
+        document.cookie
+            .split("; ")
+            .find((r) => r.startsWith("XSRF-TOKEN="))
+            ?.split("=")[1] ?? "",
     );
 }
 
@@ -103,15 +114,18 @@ async function submitDispute(): Promise<void> {
     if (!selectedPaymentId.value) return;
     isSubmittingDispute.value = true;
     try {
-        const response = await fetch(`/api/payments/${selectedPaymentId.value}/dispute`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-XSRF-TOKEN': getCsrfToken(),
+        const response = await fetch(
+            `/api/payments/${selectedPaymentId.value}/dispute`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                    "X-XSRF-TOKEN": getCsrfToken(),
+                },
+                body: JSON.stringify(disputeForm.value),
             },
-            body: JSON.stringify(disputeForm.value),
-        });
+        );
         const data = await response.json();
         if (response.ok) {
             showDisputeModal.value = false;
@@ -122,11 +136,14 @@ async function submitDispute(): Promise<void> {
     }
 }
 
-const filters: { key: 'all' | 'completed' | 'pending' | 'failed'; label: string }[] = [
-    { key: 'all', label: 'Tous' },
-    { key: 'completed', label: 'Payés' },
-    { key: 'pending', label: 'En attente' },
-    { key: 'failed', label: 'Échoués' },
+const filters: {
+    key: "all" | "completed" | "pending" | "failed";
+    label: string;
+}[] = [
+    { key: "all", label: "Tous" },
+    { key: "completed", label: "Payés" },
+    { key: "pending", label: "En attente" },
+    { key: "failed", label: "Échoués" },
 ];
 </script>
 
@@ -134,23 +151,50 @@ const filters: { key: 'all' | 'completed' | 'pending' | 'failed'; label: string 
     <Head title="Paiements — Equitab" />
 
     <DashboardLayout>
-        <div class="mb-6 flex items-center justify-between">
-            <h1 class="text-2xl font-semibold text-equitab-navy">Mes paiements</h1>
-            <div class="text-right">
-                <p class="text-xs text-gray-400">Total payé ce mois</p>
-                <p class="text-lg font-semibold text-equitab-navy">{{ formatAmount(totalPaid) }}</p>
+        <div class="eq-page-heading">
+            <div>
+                <p class="eq-eyebrow">L’ESSENTIEL, AU CLAIR</p>
+                <h1>Chacun sa part.</h1>
+                <p>
+                    Votre historique de paiements. Les montants, les dates et
+                    les statuts, simplement.
+                </p>
+            </div>
+            <Link href="/dashboard/profile" class="eq-link"
+                >Mon compte de versement <ArrowUpRight :size="16"
+            /></Link>
+        </div>
+        <div class="payment-summary">
+            <div>
+                <p>Montant payé · page actuelle</p>
+                <strong>{{ formatAmount(totalPaid) }}</strong
+                ><span>CAD · paiements confirmés affichés ci-dessous</span>
+            </div>
+            <div>
+                <p>Votre historique</p>
+                <strong>{{ payments.total }}</strong
+                ><span
+                    >paiement{{ payments.total > 1 ? "s" : "" }} au total</span
+                >
             </div>
         </div>
 
-        <div class="mb-4 flex gap-2">
+        <div
+            class="eq-pills mb-5"
+            role="group"
+            aria-label="Filtrer les paiements de cette page"
+        >
             <button
                 v-for="filter in filters"
                 :key="filter.key"
+                :aria-pressed="activeFilter === filter.key"
                 @click="activeFilter = filter.key"
                 class="rounded-full px-4 py-1.5 text-sm font-medium transition-colors"
-                :class="activeFilter === filter.key
-                    ? 'bg-equitab-navy text-white'
-                    : 'bg-white border border-gray-200 text-gray-500 hover:border-equitab-navy hover:text-equitab-navy'"
+                :class="
+                    activeFilter === filter.key
+                        ? 'bg-equitab-navy text-white'
+                        : 'bg-white border border-gray-200 text-gray-500 hover:border-equitab-navy hover:text-equitab-navy'
+                "
             >
                 {{ filter.label }}
             </button>
@@ -171,7 +215,7 @@ const filters: { key: 'all' | 'completed' | 'pending' | 'failed'; label: string 
                 <div
                     v-for="payment in filteredPayments"
                     :key="payment.id"
-                    class="flex items-center gap-4 px-6 py-4"
+                    class="payment-row flex items-center gap-4 px-6 py-5"
                 >
                     <div
                         class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
@@ -189,9 +233,11 @@ const filters: { key: 'all' | 'completed' | 'pending' | 'failed'; label: string 
                             {{ payment.groupName }}
                         </p>
                         <p class="text-xs text-gray-400">
-                            {{ payment.status === 'completed' && payment.paidAt
-                                ? `Payé le ${payment.paidAt}`
-                                : `Échéance : ${payment.dueDate}` }}
+                            {{
+                                payment.status === "completed" && payment.paidAt
+                                    ? `Payé le ${payment.paidAt}`
+                                    : `Échéance : ${payment.dueDate}`
+                            }}
                         </p>
                     </div>
 
@@ -202,10 +248,14 @@ const filters: { key: 'all' | 'completed' | 'pending' | 'failed'; label: string 
                         <span
                             class="rounded-full px-2 py-0.5 text-xs font-medium"
                             :class="{
-                                'bg-equitab-emerald/10 text-equitab-emerald': payment.status === 'completed',
-                                'bg-amber-50 text-amber-700': payment.status === 'pending',
-                                'bg-red-50 text-red-600': payment.status === 'failed',
-                                'bg-gray-100 text-gray-500': payment.status === 'refunded',
+                                'bg-equitab-emerald/10 text-equitab-emerald':
+                                    payment.status === 'completed',
+                                'bg-amber-50 text-amber-700':
+                                    payment.status === 'pending',
+                                'bg-red-50 text-red-600':
+                                    payment.status === 'failed',
+                                'bg-gray-100 text-gray-500':
+                                    payment.status === 'refunded',
                             }"
                         >
                             {{ statusLabel(payment.status) }}
@@ -215,22 +265,20 @@ const filters: { key: 'all' | 'completed' | 'pending' | 'failed'; label: string 
                     <div class="flex shrink-0 items-center gap-2">
                         <button
                             v-if="payment.status === 'completed'"
-                            class="rounded-lg border border-gray-200 p-2 text-gray-400 hover:border-equitab-emerald hover:text-equitab-emerald"
-                            title="Télécharger le reçu"
-                        >
-                            <Download class="h-4 w-4" />
-                        </button>
-
-                        <button
-                            v-if="payment.status === 'completed'"
                             @click="openDispute(payment.id)"
                             class="rounded-lg border border-red-100 p-2 text-red-400 hover:border-red-400 hover:text-red-500"
                             title="Signaler un problème"
+                            :aria-label="
+                                'Signaler un problème pour ' + payment.groupName
+                            "
                         >
                             <Flag class="h-4 w-4" />
                         </button>
 
-                        <div v-if="payment.status !== 'completed'" class="w-9" />
+                        <div
+                            v-if="payment.status !== 'completed'"
+                            class="w-9"
+                        />
                     </div>
                 </div>
             </div>
@@ -240,64 +288,174 @@ const filters: { key: 'all' | 'completed' | 'pending' | 'failed'; label: string 
                 class="flex items-center justify-between border-t border-gray-100 px-6 py-4"
             >
                 <p class="text-sm text-gray-400">
-                    {{ payments.total }} paiement{{ payments.total > 1 ? 's' : '' }} au total
+                    {{ payments.total }} paiement{{
+                        payments.total > 1 ? "s" : ""
+                    }}
+                    au total
                 </p>
-                <span class="text-sm text-gray-400">
-                    Page {{ payments.current_page }} / {{ payments.last_page }}
-                </span>
-            </div>
-        </div>
-
-        <div v-if="showDisputeModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div class="absolute inset-0 bg-black/40" @click="showDisputeModal = false" />
-            <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-                <h3 class="font-semibold text-equitab-navy mb-1">Signaler un problème</h3>
-                <p class="text-sm text-gray-500 mb-4">Décrivez le problème rencontré — nous répondrons sous 48h.</p>
-
-                <div class="space-y-3">
-                    <div>
-                        <label class="text-sm font-medium text-gray-700">Raison</label>
-                        <select
-                            v-model="disputeForm.reason"
-                            class="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-equitab-emerald focus:outline-none"
-                        >
-                            <option value="no_access">Je n'ai pas reçu les identifiants d'accès</option>
-                            <option value="invalid_credentials">Les identifiants fournis sont invalides</option>
-                            <option value="service_down">Le service a été suspendu ou annulé</option>
-                            <option value="other">Autre raison</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="text-sm font-medium text-gray-700">Description</label>
-                        <textarea
-                            v-model="disputeForm.description"
-                            rows="3"
-                            placeholder="Décrivez votre problème en détail..."
-                            class="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-equitab-emerald focus:outline-none"
-                        />
-                    </div>
-
-                    <div class="rounded-lg bg-amber-50 p-3 text-xs text-amber-700">
-                        Si votre problème est confirmé, vous serez remboursé intégralement sous 48h.
-                    </div>
-                </div>
-
-                <div class="mt-5 flex gap-3">
-                    <button
-                        @click="showDisputeModal = false"
-                        class="flex-1 rounded-lg border border-gray-200 py-2.5 text-sm text-gray-600 hover:bg-gray-50"
+                <div class="flex flex-wrap items-center gap-3 text-xs">
+                    <Link
+                        v-if="payments.current_page > 1"
+                        :href="
+                            '/dashboard/payments?page=' +
+                            (payments.current_page - 1)
+                        "
+                        class="eq-link"
+                        >Précédent</Link
+                    ><span class="text-sm text-gray-400">
+                        Page {{ payments.current_page }} /
+                        {{ payments.last_page }} </span
+                    ><Link
+                        v-if="payments.current_page < payments.last_page"
+                        :href="
+                            '/dashboard/payments?page=' +
+                            (payments.current_page + 1)
+                        "
+                        class="eq-link"
+                        >Suivant</Link
                     >
-                        Annuler
-                    </button>
-                    <button
-                        @click="submitDispute"
-                        :disabled="!disputeForm.reason || !disputeForm.description || isSubmittingDispute"
-                        class="flex-1 rounded-lg bg-red-500 py-2.5 text-sm font-medium text-white hover:bg-red-600 disabled:opacity-50"
-                    >
-                        {{ isSubmittingDispute ? 'Envoi...' : 'Soumettre' }}
-                    </button>
                 </div>
             </div>
         </div>
+
+        <ExperienceDialog
+            :open="showDisputeModal"
+            title="Signaler un problème"
+            @close="showDisputeModal = false"
+        >
+            <p class="text-sm text-gray-500 mb-4">
+                Décrivez le problème rencontré pour transmettre votre demande à
+                l’équipe.
+            </p>
+
+            <div class="space-y-3">
+                <div>
+                    <label
+                        for="dispute-reason"
+                        class="text-sm font-medium text-gray-700"
+                        >Raison</label
+                    >
+                    <select
+                        id="dispute-reason"
+                        v-model="disputeForm.reason"
+                        class="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-equitab-emerald focus:outline-none"
+                    >
+                        <option value="no_access">
+                            Je n'ai pas reçu les identifiants d'accès
+                        </option>
+                        <option value="invalid_credentials">
+                            Les identifiants fournis sont invalides
+                        </option>
+                        <option value="service_down">
+                            Le service a été suspendu ou annulé
+                        </option>
+                        <option value="other">Autre raison</option>
+                    </select>
+                </div>
+                <div>
+                    <label
+                        for="dispute-description"
+                        class="text-sm font-medium text-gray-700"
+                        >Description</label
+                    >
+                    <textarea
+                        id="dispute-description"
+                        v-model="disputeForm.description"
+                        rows="3"
+                        placeholder="Décrivez votre problème en détail..."
+                        class="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-equitab-emerald focus:outline-none"
+                    />
+                </div>
+
+                <div class="rounded-lg bg-amber-50 p-3 text-xs text-amber-700">
+                    Votre demande sera examinée selon les conditions du service.
+                    Le remboursement n’est pas automatique.
+                </div>
+            </div>
+
+            <div class="mt-5 flex gap-3">
+                <button
+                    @click="showDisputeModal = false"
+                    class="flex-1 rounded-lg border border-gray-200 py-2.5 text-sm text-gray-600 hover:bg-gray-50"
+                >
+                    Annuler
+                </button>
+                <button
+                    @click="submitDispute"
+                    :disabled="
+                        !disputeForm.reason ||
+                        !disputeForm.description ||
+                        isSubmittingDispute
+                    "
+                    class="flex-1 rounded-lg bg-red-500 py-2.5 text-sm font-medium text-white hover:bg-red-600 disabled:opacity-50"
+                >
+                    {{ isSubmittingDispute ? "Envoi..." : "Soumettre" }}
+                </button>
+            </div>
+        </ExperienceDialog>
     </DashboardLayout>
 </template>
+<style scoped>
+.payment-summary {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+.payment-summary > div {
+    border-radius: 24px;
+    border: 1px solid #d7ddcd;
+    background: #e7eddb;
+    padding: 28px;
+}
+.payment-summary > div + div {
+    border-color: #dededb;
+    background: #f0efe9;
+}
+.payment-summary p {
+    color: #626959;
+    font-size: 11px;
+}
+.payment-summary strong {
+    display: block;
+    font-size: 42px;
+    letter-spacing: -0.055em;
+    font-weight: 500;
+    margin: 16px 0 8px;
+}
+.payment-summary span {
+    color: #686b70;
+    font-size: 10px;
+}
+.payment-row > div:last-child button {
+    min-width: 44px;
+    display: grid;
+    place-items: center;
+}
+@media (max-width: 600px) {
+    .payment-summary {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    .payment-summary > div {
+        padding: 23px;
+    }
+    .payment-summary strong {
+        font-size: 36px;
+    }
+    .payment-row {
+        padding: 18px;
+        display: grid;
+        grid-template-columns: 40px minmax(0, 1fr);
+        gap: 12px;
+    }
+    .payment-row > div:nth-child(3) {
+        grid-column: 2;
+        text-align: left;
+    }
+    .payment-row > div:last-child {
+        grid-column: 1;
+        grid-row: 2;
+    }
+}
+</style>

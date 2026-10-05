@@ -1,147 +1,254 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { Users, Calendar } from 'lucide-vue-next';
-import VerifiedBadge from '@/Components/VerifiedBadge.vue';
-import TierBadge from '@/Components/TierBadge.vue';
-import StripeCardForm from '@/Components/StripeCardForm.vue';
-
+import { ref, computed } from "vue";
+import { ArrowUpRight, Users, Calendar, ShieldCheck } from "lucide-vue-next";
+import TierBadge from "@/Components/TierBadge.vue";
+import StripeCardForm from "@/Components/StripeCardForm.vue";
+import CollectionCard from "@/Components/Experience/CollectionCard.vue";
+import ExperienceDialog from "@/Components/Experience/ExperienceDialog.vue";
 interface Props {
     groupId: number;
     ownerName: string;
     ownerIdentityStatus: string;
     ownerActiveGroupsCount: number;
-    ownerTrustScore: number;
-    tier: 'standard' | 'premium' | 'famille';
+    ownerTrustScore: number | null;
+    tier: "standard" | "premium" | "famille";
     pricePerMember: number;
     spotsAvailable: number;
     maxMembers: number;
     createdAt: string;
     subscriptionName: string;
+    subscriptionSlug?: string;
     description?: string | null;
+    motion?: boolean;
+    index?: number;
 }
-
 const props = defineProps<Props>();
-
+const detailOpen = ref(false);
 const showForm = ref(false);
 const subscribed = ref(false);
-
-const isVerified = computed(() => props.ownerIdentityStatus === 'verified');
-
-const formattedPrice = computed(() =>
-    new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' }).format(
-        props.pricePerMember / 100
-    ),
+const loading = ref(false);
+const error = ref("");
+const isVerified = computed(() => props.ownerIdentityStatus === "verified");
+const slug = computed(
+    () =>
+        props.subscriptionSlug ||
+        props.subscriptionName
+            .toLowerCase()
+            .replace(/\+/g, "-plus")
+            .replace(/\s+/g, "-"),
 );
-
 const prorationData = ref<{
     amount_today: number;
     amount_recurring: number;
     next_billing_date: string;
 } | null>(null);
-
 async function openSubscribeForm(): Promise<void> {
-    const response = await fetch(`/api/groups/${props.groupId}/proration`, {
-        headers: { 'Accept': 'application/json' },
-    });
-    prorationData.value = await response.json();
-    showForm.value = true;
+    if (loading.value || props.spotsAvailable <= 0) return;
+    loading.value = true;
+    error.value = "";
+    try {
+        const response = await fetch(
+            "/api/groups/" + props.groupId + "/proration",
+            { headers: { Accept: "application/json" } },
+        );
+        const data = await response.json();
+        if (!response.ok) {
+            error.value =
+                data.message ||
+                "Impossible de charger les montants. Veuillez réessayer.";
+            return;
+        }
+        if (
+            !Number.isFinite(data.amount_today) ||
+            !Number.isFinite(data.amount_recurring)
+        )
+            throw new Error("Invalid amounts");
+        prorationData.value = data;
+        showForm.value = true;
+    } catch {
+        error.value =
+            "Les montants ne sont pas disponibles. Réessayez dans un instant.";
+    } finally {
+        loading.value = false;
+    }
 }
-
-function onSuccess(_subscriptionId: string): void {
+function close() {
+    detailOpen.value = false;
+    showForm.value = false;
+    error.value = "";
+}
+function onSuccess() {
     showForm.value = false;
     subscribed.value = true;
 }
 </script>
-
 <template>
-    <div class="flex flex-col rounded-xl border border-gray-100 p-5">
-        <div class="flex items-start justify-between gap-3">
-            <div>
-                <p class="font-semibold text-equitab-navy">{{ ownerName }}</p>
-                <div class="mt-1 flex items-center gap-2">
-                    <VerifiedBadge :is-verified="isVerified" />
-                    <TierBadge :tier="tier" />
-                </div>
-                <div class="mt-3 flex items-center gap-2">
-                    <div class="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden">
-                        <div
-                            class="h-full rounded-full transition-all"
-                            :class="{
-                                'bg-equitab-emerald': ownerTrustScore >= 70,
-                                'bg-amber-400': ownerTrustScore >= 40 && ownerTrustScore < 70,
-                                'bg-red-400': ownerTrustScore < 40,
-                            }"
-                            :style="{ width: ownerTrustScore + '%' }"
-                        />
-                    </div>
-                    <span class="text-xs font-medium shrink-0"
-                        :class="{
-                            'text-equitab-emerald': ownerTrustScore >= 70,
-                            'text-amber-500': ownerTrustScore >= 40 && ownerTrustScore < 70,
-                            'text-red-500': ownerTrustScore < 40,
-                        }"
-                    >
-                        {{ ownerTrustScore }}% confiance
-                    </span>
-                </div>
-            </div>
-
-            <span
-                class="inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium"
-                :class="spotsAvailable <= 1 ? 'bg-red-50 text-red-600' : 'bg-equitab-emerald/10 text-equitab-emerald'"
+    <CollectionCard
+        :id="'group-' + groupId"
+        :name="subscriptionName"
+        :slug="slug"
+        category="À PARTAGER ENSEMBLE"
+        eyebrow="UN GROUPE À DÉCOUVRIR"
+        :price="pricePerMember"
+        price-label="Part estimée après votre arrivée"
+        :members="maxMembers - spotsAvailable"
+        :capacity="maxMembers"
+        :owner="ownerName"
+        :motion="motion"
+        :index="index"
+    >
+        <template #action
+            ><button
+                type="button"
+                :aria-label="'Découvrir le groupe de ' + ownerName"
+                @click="detailOpen = true"
             >
-                {{ spotsAvailable }} place{{ spotsAvailable > 1 ? 's' : '' }} restante{{ spotsAvailable > 1 ? 's' : '' }}
-            </span>
-        </div>
-
-        <p
-            v-if="description"
-            class="mt-3 rounded-lg bg-gray-50 px-3 py-2 text-xs text-gray-600"
-        >
-            {{ description }}
-        </p>
-
-        <div class="mt-4 flex items-center gap-4 text-sm text-gray-500">
-            <span class="flex items-center gap-1">
-                <Users class="h-4 w-4" />
-                {{ ownerActiveGroupsCount }} partage{{ ownerActiveGroupsCount > 1 ? 's' : '' }} actif{{ ownerActiveGroupsCount > 1 ? 's' : '' }}
-            </span>
-            <span class="flex items-center gap-1">
-                <Calendar class="h-4 w-4" />
-                Depuis le {{ createdAt }}
-            </span>
-        </div>
-
-        <div class="mt-4 flex items-center justify-between border-t border-gray-100 pt-4">
-            <div>
-                <p class="text-2xl font-semibold text-equitab-navy">
-                    {{ formattedPrice }}<span class="text-sm font-normal text-gray-500"> / mois</span>
-                </p>
-                <p class="text-xs text-gray-500">
-                    {{ spotsAvailable }} place{{ spotsAvailable > 1 ? 's' : '' }} sur {{ maxMembers }}
-                </p>
+                Découvrir
+                <span class="eq-round-arrow"
+                    ><ArrowUpRight :size="18" aria-hidden="true"
+                /></span></button
+        ></template>
+    </CollectionCard>
+    <ExperienceDialog
+        :open="detailOpen"
+        :title="subscriptionName + ' · avec ' + ownerName"
+        @close="close"
+    >
+        <div class="group-details">
+            <div class="group-badges">
+                <span :class="{ verified: isVerified }"
+                    ><ShieldCheck :size="15" aria-hidden="true" />{{
+                        isVerified
+                            ? "Identité vérifiée"
+                            : "Identité non vérifiée"
+                    }}</span
+                ><TierBadge :tier="tier" />
             </div>
-
-            <div v-if="subscribed" class="text-sm font-medium text-equitab-emerald">
-                Abonnement actif
-            </div>
+            <p v-if="description" class="group-description">
+                {{ description }}
+            </p>
+            <dl>
+                <div>
+                    <dt><Users :size="15" /> Places disponibles</dt>
+                    <dd>
+                        {{ Math.max(0, spotsAvailable) }} / {{ maxMembers }}
+                    </dd>
+                </div>
+                <div>
+                    <dt>Partages actifs du propriétaire</dt>
+                    <dd>{{ ownerActiveGroupsCount }}</dd>
+                </div>
+                <div v-if="createdAt">
+                    <dt><Calendar :size="15" /> Groupe créé le</dt>
+                    <dd>{{ createdAt }}</dd>
+                </div>
+                <div
+                    v-if="
+                        ownerTrustScore !== null &&
+                        Number.isFinite(ownerTrustScore)
+                    "
+                >
+                    <dt>Score du propriétaire</dt>
+                    <dd>{{ ownerTrustScore }} %</dd>
+                </div>
+            </dl>
+            <p class="group-note">
+                Consultez les conditions de partage de {{ subscriptionName }}.
+                Une identité vérifiée ne garantit pas la prestation. Votre part
+                peut évoluer selon le nombre de membres.
+            </p>
+            <p v-if="error" role="alert" class="group-error">{{ error }}</p>
+            <p v-if="subscribed" role="status">Abonnement actif</p>
             <button
                 v-else-if="!showForm"
+                type="button"
+                class="eq-button w-full"
+                :disabled="loading || spotsAvailable <= 0"
                 @click="openSubscribeForm"
-                class="rounded-md bg-equitab-emerald px-5 py-2.5 text-sm font-medium text-white hover:bg-equitab-emerald-dark"
             >
-                S'abonner
+                {{
+                    loading
+                        ? "Chargement des montants…"
+                        : spotsAvailable <= 0
+                          ? "Ce groupe est complet"
+                          : "Voir le récapitulatif de paiement"
+                }}
             </button>
-        </div>
-
-        <div v-show="showForm" class="mt-4">
             <StripeCardForm
+                v-if="showForm && prorationData"
                 :group-id="groupId"
-                :price-per-member="pricePerMember"
+                :price-per-member="prorationData.amount_recurring"
+                :amount-today="prorationData.amount_today"
+                :next-billing-date="prorationData.next_billing_date"
                 :subscription-name="subscriptionName"
                 @success="onSuccess"
                 @cancel="showForm = false"
             />
         </div>
-    </div>
+    </ExperienceDialog>
 </template>
+<style scoped>
+.group-badges {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+.group-badges > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #f2f2ed;
+    color: #686b70;
+    font-size: 11px;
+    padding: 8px 12px;
+    border-radius: 22px;
+}
+.group-badges .verified {
+    background: #edf3e5;
+    color: #465a37;
+}
+.group-description {
+    margin: 20px 0;
+    font-size: 13px;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+}
+dl {
+    margin-block: 22px;
+}
+dl > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    gap: 18px;
+    padding: 12px 0;
+    border-bottom: 1px solid #e7e7e3;
+    font-size: 11px;
+}
+dt {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: #686b70;
+}
+dd {
+    text-align: right;
+    font-weight: 550;
+    flex: none;
+}
+.group-note {
+    font-size: 11px;
+    line-height: 1.8;
+    color: #686b70;
+    margin-block: 20px;
+}
+.group-error {
+    font-size: 12px;
+    padding: 12px;
+    border-radius: 10px;
+    color: #a1392f;
+    background: #fff0ed;
+    margin-bottom: 16px;
+}
+</style>

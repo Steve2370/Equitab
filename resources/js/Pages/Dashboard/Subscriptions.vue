@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { Head, Link, router } from '@inertiajs/vue3';
-import DashboardLayout from '@/Layouts/DashboardLayout.vue';
-import CredentialsModal from '@/Components/CredentialsModal.vue';
-import { useToast } from '@/composables/useToast';
-import { Users, Calendar, Plus, ChevronRight, Clock, Key, Link2 } from 'lucide-vue-next';
+import { ref } from "vue";
+import { Head, Link, router } from "@inertiajs/vue3";
+import DashboardLayout from "@/Layouts/DashboardLayout.vue";
+import CredentialsModal from "@/Components/CredentialsModal.vue";
+import { useToast } from "@/composables/useToast";
+import { Plus, ArrowUpRight, Key, Link2 } from "lucide-vue-next";
 
+import CollectionCard from "@/Components/Experience/CollectionCard.vue";
+import ExperienceDialog from "@/Components/Experience/ExperienceDialog.vue";
 const toast = useToast();
 
 interface JoinedSubscription {
@@ -37,7 +39,7 @@ interface Props {
 
 defineProps<Props>();
 
-const activeTab = ref<'joined' | 'owned'>('joined');
+const activeTab = ref<"joined" | "owned">("joined");
 const showCredentials = ref(false);
 const selectedGroup = ref<{ id: number; name: string } | null>(null);
 
@@ -46,43 +48,28 @@ function openCredentials(groupId: number, subscriptionName: string): void {
     showCredentials.value = true;
 }
 
-function formatPrice(cents: number): string {
-    return new Intl.NumberFormat('fr-CA', {
-        style: 'currency',
-        currency: 'CAD',
-    }).format(cents / 100);
-}
-
 function statusLabel(status: string): string {
     const labels: Record<string, string> = {
-        active: 'Actif',
-        pending_payment: 'En attente',
-        suspended: 'Suspendu',
-        open: 'Ouvert',
-        full: 'Complet',
-        closed: 'Fermé',
+        active: "Actif",
+        pending_payment: "En attente",
+        suspended: "Suspendu",
+        open: "Ouvert",
+        full: "Complet",
+        closed: "Fermé",
     };
     return labels[status] ?? status;
-}
-
-function statusClass(status: string): string {
-    const classes: Record<string, string> = {
-        active: 'bg-equitab-emerald/10 text-equitab-emerald',
-        pending_payment: 'bg-amber-50 text-amber-700',
-        suspended: 'bg-red-50 text-red-600',
-        open: 'bg-blue-50 text-blue-600',
-        full: 'bg-gray-100 text-gray-600',
-        closed: 'bg-gray-100 text-gray-400',
-    };
-    return classes[status] ?? 'bg-gray-100 text-gray-500';
 }
 
 const copiedLink = ref<number | null>(null);
 
 async function copyInviteLink(groupId: number, link: string): Promise<void> {
-    await navigator.clipboard.writeText(link);
-    copiedLink.value = groupId;
-    setTimeout(() => copiedLink.value = null, 2000);
+    try {
+        await navigator.clipboard.writeText(link);
+        copiedLink.value = groupId;
+        setTimeout(() => (copiedLink.value = null), 2000);
+    } catch {
+        toast.error("Le lien n’a pas pu être copié. Réessayez.");
+    }
 }
 
 const closeModal = ref<{ show: boolean; groupId: number | null }>({
@@ -92,247 +79,288 @@ const closeModal = ref<{ show: boolean; groupId: number | null }>({
 
 function confirmCloseGroup(): void {
     if (!closeModal.value.groupId) return;
-    router.patch(`/groups/${closeModal.value.groupId}/close`, {}, {
-        onSuccess: () => {
-            toast.success('Groupe fermé avec succès.');
-            closeModal.value = { show: false, groupId: null };
+    router.patch(
+        `/groups/${closeModal.value.groupId}/close`,
+        {},
+        {
+            onSuccess: () => {
+                toast.success("Groupe fermé avec succès.");
+                closeModal.value = { show: false, groupId: null };
+            },
+            onError: () => {
+                toast.error("Une erreur est survenue.");
+            },
         },
-        onError: () => {
-            toast.error('Une erreur est survenue.');
-        }
-    });
+    );
 }
 </script>
 
 <template>
-    <Head title="Abonnements - Equitab" />
-
+    <Head title="Ma collection — Equitab" />
     <DashboardLayout>
-        <div class="mb-6 flex items-center justify-between">
-            <h1 class="text-2xl font-semibold text-equitab-navy">Mes abonnements</h1>
+        <div class="eq-page-heading">
+            <div>
+                <p class="eq-eyebrow">LE PLAISIR AU QUOTIDIEN</p>
+                <h1>Votre collection.</h1>
+                <p>
+                    Vos abonnements, vos accès et les personnes avec qui les
+                    partager.
+                </p>
+            </div>
             <Link
-                :href="activeTab === 'joined' ? '/' : '/dashboard/groups/create'"
-                class="flex items-center gap-2 rounded-md bg-equitab-emerald px-4 py-2 text-sm font-medium text-white hover:bg-equitab-emerald-dark"
+                :href="
+                    activeTab === 'joined'
+                        ? '/services'
+                        : '/dashboard/groups/create'
+                "
+                class="eq-button"
+                ><Plus :size="16" />{{
+                    activeTab === "joined"
+                        ? "Rejoindre un groupe"
+                        : "Partager un abonnement"
+                }}</Link
             >
-                <Plus class="h-4 w-4" />
-                {{ activeTab === 'joined' ? 'Rejoindre un abonnement' : 'Partager un abonnement' }}
-            </Link>
         </div>
-
-        <div class="mb-6 flex gap-1 rounded-xl border border-gray-100 bg-white p-1">
+        <div
+            class="eq-pills mb-8"
+            role="group"
+            aria-label="Afficher mes abonnements"
+        >
             <button
+                :aria-pressed="activeTab === 'joined'"
                 @click="activeTab = 'joined'"
-                class="flex-1 rounded-lg py-2.5 text-sm font-medium transition-colors"
-                :class="activeTab === 'joined' ? 'bg-equitab-navy text-white' : 'text-gray-500 hover:text-gray-900'"
             >
-                Abonnements rejoints
-                <span class="ml-1.5 rounded-full bg-equitab-emerald/20 px-2 py-0.5 text-xs text-equitab-emerald">
-                    {{ joinedSubscriptions.length }}
-                </span>
-            </button>
-            <button
+                J’ai rejoint · {{ joinedSubscriptions.length }}</button
+            ><button
+                :aria-pressed="activeTab === 'owned'"
                 @click="activeTab = 'owned'"
-                class="flex-1 rounded-lg py-2.5 text-sm font-medium transition-colors"
-                :class="activeTab === 'owned' ? 'bg-equitab-navy text-white' : 'text-gray-500 hover:text-gray-900'"
             >
-                Abonnements partagés
-                <span class="ml-1.5 rounded-full bg-equitab-emerald/20 px-2 py-0.5 text-xs text-equitab-emerald">
-                    {{ ownedSubscriptions.length }}
-                </span>
+                Je partage · {{ ownedSubscriptions.length }}
             </button>
         </div>
-
         <div v-if="activeTab === 'joined'">
             <div
                 v-if="joinedSubscriptions.length === 0"
-                class="rounded-xl border border-dashed border-gray-200 py-16 text-center"
+                class="eq-panel collection-empty"
             >
-                <p class="text-gray-400">Vous n'avez pas encore rejoint d'abonnement.</p>
-                <Link
-                    href="/"
-                    class="mt-4 inline-flex items-center gap-2 text-sm font-medium text-equitab-emerald hover:underline"
-                >
-                    Parcourir les abonnements disponibles →
-                </Link>
+                <h2>Votre première découverte vous attend.</h2>
+                <p>Retrouvez ici les abonnements que vous rejoindrez.</p>
+                <Link href="/services" class="eq-button"
+                    >Explorer les services <ArrowUpRight :size="16"
+                /></Link>
             </div>
-
-            <div v-else class="space-y-3">
-                <div
+            <div v-else class="member-collection-grid">
+                <CollectionCard
                     v-for="sub in joinedSubscriptions"
                     :key="sub.id"
-                    class="flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-5 transition-shadow hover:shadow-sm"
+                    :name="sub.subscriptionName"
+                    :slug="sub.subscriptionSlug"
+                    category="DANS VOTRE QUOTIDIEN"
+                    eyebrow="ABONNEMENT REJOINT"
+                    :status="statusLabel(sub.status)"
+                    :price="sub.pricePerMember"
+                    price-label="Votre part"
+                    :owner="sub.ownerName"
                 >
-                    <button
-                        @click="openCredentials(sub.id, sub.subscriptionName)"
-                        class="shrink-0 flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-gray-600 hover:border-equitab-emerald hover:text-equitab-emerald"
+                    <template #meta
+                        ><p class="subscription-date">
+                            {{
+                                sub.joinedAt
+                                    ? "Rejoint le " + sub.joinedAt
+                                    : "Date d’arrivée à confirmer"
+                            }}
+                        </p></template
                     >
-                        <Key class="h-3.5 w-3.5" />
-                        Identifiants
-                    </button>
-
-                    <div
-                        class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-lg font-bold text-white"
-                        :style="{ background: 'linear-gradient(135deg, #0B1929, #10B981)' }"
+                    <template #action
+                        ><button
+                            @click="
+                                openCredentials(sub.id, sub.subscriptionName)
+                            "
+                            :aria-label="
+                                'Identifiants de ' + sub.subscriptionName
+                            "
+                        >
+                            <Key :size="15" /> Mes accès
+                        </button></template
                     >
-                        {{ sub.subscriptionName.charAt(0) }}
-                    </div>
-
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2">
-                            <p class="font-semibold text-equitab-navy">{{ sub.subscriptionName }}</p>
-                            <span class="rounded-full px-2 py-0.5 text-xs font-medium" :class="statusClass(sub.status)">
-                                {{ statusLabel(sub.status) }}
-                            </span>
-                        </div>
-                        <div class="mt-1 flex items-center gap-3 text-xs text-gray-400">
-                            <span class="flex items-center gap-1">
-                                <Users class="h-3.5 w-3.5" />
-                                Partagé par {{ sub.ownerName }}
-                            </span>
-                            <span class="flex items-center gap-1">
-                                <Calendar class="h-3.5 w-3.5" />
-                                Rejoint le {{ sub.joinedAt }}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="text-right shrink-0">
-                        <p class="text-lg font-semibold text-equitab-navy">
-                            {{ formatPrice(sub.pricePerMember) }}
-                            <span class="text-xs font-normal text-gray-400">/ mois</span>
-                        </p>
-                    </div>
-
                     <Link
-                        :href="`/groups/service/${sub.subscriptionSlug}`"
-                        class="shrink-0 rounded-lg border border-gray-200 p-2 text-gray-400 hover:border-equitab-emerald hover:text-equitab-emerald"
-                    >
-                        <ChevronRight class="h-4 w-4" />
-                    </Link>
-                </div>
+                        :href="
+                            '/groups/service/' +
+                            encodeURIComponent(sub.subscriptionSlug)
+                        "
+                        class="subscription-secondary"
+                        >Voir les groupes <ArrowUpRight :size="14"
+                    /></Link>
+                </CollectionCard>
             </div>
         </div>
-
-        <div v-if="activeTab === 'owned'">
+        <div v-else>
             <div
                 v-if="ownedSubscriptions.length === 0"
-                class="rounded-xl border border-dashed border-gray-200 py-16 text-center"
+                class="eq-panel collection-empty"
             >
-                <p class="text-gray-400">Vous ne partagez aucun abonnement pour le moment.</p>
-                <p class="mt-2 text-sm text-gray-400">Créez un groupe pour partager vos frais d'abonnement.</p>
+                <h2>Faites de la place à votre groupe.</h2>
+                <p>
+                    Proposez votre abonnement et invitez des membres à partager
+                    les frais.
+                </p>
+                <Link href="/dashboard/groups/create" class="eq-button"
+                    >Créer un groupe <Plus :size="16"
+                /></Link>
             </div>
-
-            <div v-else class="space-y-3">
-                <div
+            <div v-else class="member-collection-grid">
+                <CollectionCard
                     v-for="sub in ownedSubscriptions"
                     :key="sub.id"
-                    class="flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-5 transition-shadow hover:shadow-sm"
+                    :name="sub.subscriptionName"
+                    :slug="
+                        sub.subscriptionName
+                            .toLowerCase()
+                            .replace(/\+/g, '-plus')
+                            .replace(/\s+/g, '-')
+                    "
+                    category="VOTRE GROUPE"
+                    eyebrow="ABONNEMENT PARTAGÉ"
+                    :status="statusLabel(sub.status)"
+                    :price="sub.pricePerMember"
+                    price-label="Part actuelle par membre"
+                    :members="sub.membersCount"
+                    :capacity="sub.maxMembers"
+                    owner="vous"
                 >
-                    <button
-                        @click="openCredentials(sub.id, sub.subscriptionName)"
-                        class="shrink-0 flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-gray-600 hover:border-equitab-emerald hover:text-equitab-emerald"
+                    <template #meta
+                        ><p class="subscription-date">
+                            {{
+                                sub.renewalDate
+                                    ? "Renouvellement le " + sub.renewalDate
+                                    : "Échéance à confirmer"
+                            }}
+                        </p></template
                     >
-                        <Key class="h-3.5 w-3.5" />
-                        Identifiants
-                    </button>
-
-                    <div
-                        class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-lg font-bold text-white"
-                        :style="{ background: 'linear-gradient(135deg, #10B981, #0B1929)' }"
+                    <template #action
+                        ><button
+                            @click="
+                                openCredentials(sub.id, sub.subscriptionName)
+                            "
+                            :aria-label="
+                                'Gérer les identifiants de ' +
+                                sub.subscriptionName
+                            "
+                        >
+                            <Key :size="15" /> Gérer les accès
+                        </button></template
                     >
-                        {{ sub.subscriptionName.charAt(0) }}
+                    <div class="subscription-actions">
+                        <button
+                            v-if="sub.inviteLink"
+                            @click="copyInviteLink(sub.id, sub.inviteLink)"
+                            class="subscription-secondary"
+                        >
+                            <Link2 :size="14" />{{
+                                copiedLink === sub.id
+                                    ? "Lien copié !"
+                                    : "Copier l’invitation"
+                            }}</button
+                        ><button
+                            v-if="sub.status === 'open'"
+                            @click="
+                                closeModal = { show: true, groupId: sub.id }
+                            "
+                            class="subscription-close"
+                        >
+                            Fermer le groupe
+                        </button>
                     </div>
-
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2">
-                            <p class="font-semibold text-equitab-navy">{{ sub.subscriptionName }}</p>
-                            <span class="rounded-full px-2 py-0.5 text-xs font-medium" :class="statusClass(sub.status)">
-                                {{ statusLabel(sub.status) }}
-                            </span>
-                        </div>
-                        <div class="mt-1 flex items-center gap-3 text-xs text-gray-400">
-                            <span class="flex items-center gap-1">
-                                <Users class="h-3.5 w-3.5" />
-                                {{ sub.membersCount }} / {{ sub.maxMembers }} membres
-                            </span>
-                            <span class="flex items-center gap-1">
-                                <Clock class="h-3.5 w-3.5" />
-                                Renouvellement le {{ sub.renewalDate }}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="text-right shrink-0">
-                        <p class="text-xs text-gray-400">par membre</p>
-                        <p class="text-lg font-semibold text-equitab-navy">
-                            {{ formatPrice(sub.pricePerMember) }}
-                            <span class="text-xs font-normal text-gray-400">/ mois</span>
-                        </p>
-                    </div>
-
-                    <div class="flex shrink-0 flex-col items-end gap-1">
-                        <div class="flex gap-1">
-                            <div
-                                v-for="i in sub.maxMembers"
-                                :key="i"
-                                class="h-2 w-2 rounded-full"
-                                :class="i <= sub.membersCount ? 'bg-equitab-emerald' : 'bg-gray-200'"
-                            />
-                        </div>
-                        <p class="text-xs text-gray-400">
-                            {{ sub.maxMembers - sub.membersCount }} place{{ sub.maxMembers - sub.membersCount > 1 ? 's' : '' }} libre{{ sub.maxMembers - sub.membersCount > 1 ? 's' : '' }}
-                        </p>
-                    </div>
-
-                    <button
-                        v-if="sub.inviteLink"
-                        @click="copyInviteLink(sub.id, sub.inviteLink)"
-                        class="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:border-equitab-emerald hover:text-equitab-emerald"
-                    >
-                        <Link2 class="h-3.5 w-3.5" />
-                        {{ copiedLink === sub.id ? 'Copié !' : 'Copier le lien' }}
-                    </button>
-
-                    <button
-                        v-if="sub.status === 'open'"
-                        @click="closeModal = { show: true, groupId: sub.id }"
-                        class="flex items-center gap-1.5 rounded-lg border border-red-100 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50"
-                    >
-                        Fermer le groupe
-                    </button>
-                </div>
+                </CollectionCard>
             </div>
         </div>
-
-        <div v-if="closeModal.show" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div class="absolute inset-0 bg-black/40" @click="closeModal.show = false" />
-            <div class="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
-                <h3 class="font-semibold text-equitab-navy text-lg mb-2">Fermer ce groupe ?</h3>
-                <p class="text-sm text-gray-500 mb-6">
-                    Tous les membres actifs seront désabonnés immédiatement. Cette action est irréversible.
-                </p>
-                <div class="flex gap-3">
-                    <button
-                        @click="closeModal.show = false"
-                        class="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50"
-                    >
-                        Annuler
-                    </button>
-                    <button
-                        @click="confirmCloseGroup"
-                        class="flex-1 rounded-xl bg-red-500 py-2.5 text-sm font-medium text-white hover:bg-red-600"
-                    >
-                        Fermer le groupe
-                    </button>
-                </div>
-            </div>
-        </div>
-
+        <ExperienceDialog
+            :open="closeModal.show"
+            title="Fermer ce groupe ?"
+            @close="closeModal.show = false"
+            ><p class="mb-6 text-sm leading-7 text-eq-muted">
+                Tous les membres actifs seront désabonnés immédiatement. Cette
+                action est irréversible.
+            </p>
+            <div class="flex flex-wrap gap-3">
+                <button
+                    @click="closeModal.show = false"
+                    class="eq-button eq-button-secondary"
+                >
+                    Annuler</button
+                ><button
+                    @click="confirmCloseGroup"
+                    class="eq-button !bg-red-700"
+                >
+                    Fermer le groupe
+                </button>
+            </div></ExperienceDialog
+        >
         <CredentialsModal
             v-if="showCredentials && selectedGroup"
             :group-id="selectedGroup.id"
             :subscription-name="selectedGroup.name"
-            @close="showCredentials = false; selectedGroup = null"
+            @close="
+                showCredentials = false;
+                selectedGroup = null;
+            "
         />
     </DashboardLayout>
 </template>
+<style scoped>
+.member-collection-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+}
+.subscription-date {
+    font-size: 10px;
+    color: #686b70;
+    line-height: 1.7;
+    margin-bottom: 18px;
+}
+.subscription-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    color: #686b70;
+    min-height: 44px;
+}
+.subscription-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 5px;
+}
+.subscription-close {
+    color: #a33e37;
+    font-size: 10px;
+    min-height: 44px;
+}
+.collection-empty {
+    padding: 60px 30px;
+    text-align: center;
+}
+.collection-empty h2 {
+    font-size: 25px;
+    letter-spacing: -0.04em;
+}
+.collection-empty p {
+    color: #686b70;
+    font-size: 13px;
+    line-height: 1.8;
+    margin: 14px 0 24px;
+}
+@media (min-width: 1500px) {
+    .member-collection-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+@media (max-width: 650px) {
+    .member-collection-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+</style>

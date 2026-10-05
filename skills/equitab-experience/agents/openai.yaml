@@ -1,0 +1,4 @@
+interface:
+  display_name: "EquitAb Experience"
+  short_description: "Cartes expressives et parcours EquitAb responsives"
+  default_prompt: "Utilise $equitab-experience pour concevoir les cartes et les parcours d’EquitAb à partir de ma demande, avec une identité propre, des interactions soignées et des montants lisibles."

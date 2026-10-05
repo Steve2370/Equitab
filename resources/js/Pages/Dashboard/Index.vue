@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
-import DashboardLayout from '@/Layouts/DashboardLayout.vue';
-import MetricCard from '@/Components/Dashboard/MetricCard.vue';
-import TrustScoreGauge from '@/Components/Dashboard/TrustScoreGauge.vue';
-import SubscriptionCard from '@/Components/Dashboard/SubscriptionCard.vue';
-import BadgeChip from '@/Components/Dashboard/BadgeChip.vue';
+import { computed } from "vue";
+import { Head, Link } from "@inertiajs/vue3";
+import DashboardLayout from "@/Layouts/DashboardLayout.vue";
+import MetricCard from "@/Components/Dashboard/MetricCard.vue";
+import TrustScoreGauge from "@/Components/Dashboard/TrustScoreGauge.vue";
+import SubscriptionCard from "@/Components/Dashboard/SubscriptionCard.vue";
+import BadgeChip from "@/Components/Dashboard/BadgeChip.vue";
+import ServiceArtwork from "@/Components/Experience/ServiceArtwork.vue";
 import {
     TrendingDown,
     Wallet,
@@ -14,7 +15,7 @@ import {
     Clock,
     AlertCircle,
     Flame,
-} from 'lucide-vue-next';
+} from "lucide-vue-next";
 
 interface Payment {
     id: number;
@@ -36,7 +37,7 @@ interface Subscription {
 interface Badge {
     id: number;
     label: string;
-    icon: 'award' | 'clock' | 'users';
+    icon: "award" | "clock" | "users";
 }
 
 interface Props {
@@ -52,44 +53,56 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-    trustScore: 0,
     currentStreak: 0,
     subscriptions: () => [],
     badges: () => [],
 });
 
-const firstName = computed(() => props.userName.split(' ')[0]);
+const firstName = computed(() => props.userName.split(" ")[0]);
 
 const formattedSavings = computed(() =>
-    new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' }).format(props.totalSavings)
+    new Intl.NumberFormat("fr-CA", {
+        style: "currency",
+        currency: "CAD",
+    }).format(props.totalSavings),
 );
 
 const formattedSpend = computed(() =>
-    new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' }).format(props.monthlySpend)
+    new Intl.NumberFormat("fr-CA", {
+        style: "currency",
+        currency: "CAD",
+    }).format(props.monthlySpend),
 );
 
 function formatAmount(cents: number): string {
-    return new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' }).format(cents / 100);
+    return new Intl.NumberFormat("fr-CA", {
+        style: "currency",
+        currency: "CAD",
+    }).format(cents / 100);
 }
 
 function statusIcon(status: string) {
-    return status === 'completed' ? CheckCircle : status === 'pending' ? Clock : AlertCircle;
+    return status === "completed"
+        ? CheckCircle
+        : status === "pending"
+          ? Clock
+          : AlertCircle;
 }
 
 function statusClass(status: string): string {
     const classes: Record<string, string> = {
-        completed: 'text-equitab-emerald',
-        pending: 'text-amber-500',
-        failed: 'text-red-500',
+        completed: "text-equitab-emerald",
+        pending: "text-amber-500",
+        failed: "text-red-500",
     };
-    return classes[status] ?? 'text-gray-400';
+    return classes[status] ?? "text-gray-400";
 }
 
 function statusLabel(status: string): string {
     const labels: Record<string, string> = {
-        completed: 'Payé',
-        pending: 'En attente',
-        failed: 'Échoué',
+        completed: "Payé",
+        pending: "En attente",
+        failed: "Échoué",
     };
     return labels[status] ?? status;
 }
@@ -99,15 +112,20 @@ function statusLabel(status: string): string {
     <Head title="Tableau de bord - Equitab" />
 
     <DashboardLayout>
-        <div class="mb-8 flex items-start justify-between gap-4">
+        <div class="eq-page-heading">
             <div>
-                <h1 class="text-2xl font-semibold text-equitab-navy">
-                    Bonjour, <span class="text-equitab-emerald">{{ firstName }}</span>
+                <p class="eq-eyebrow mb-3 text-eq-muted">
+                    Votre quotidien, en plus léger
+                </p>
+                <h1 class="eq-title text-3xl text-eq-ink sm:text-4xl">
+                    Bonjour, {{ firstName }}.
                 </h1>
                 <p class="mt-1 text-sm text-gray-500">
                     {{ activeSubscriptionsCount }}
-                    abonnement{{ activeSubscriptionsCount > 1 ? 's' : '' }}
-                    actif{{ activeSubscriptionsCount > 1 ? 's' : '' }}
+                    abonnement{{
+                        activeSubscriptionsCount > 1 ? "s" : ""
+                    }}
+                    actif{{ activeSubscriptionsCount > 1 ? "s" : "" }}
                 </p>
             </div>
 
@@ -120,9 +138,9 @@ function statusLabel(status: string): string {
             </span>
         </div>
 
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <MetricCard
-                label="Économies réalisées"
+                label="Économies mensuelles"
                 :value="formattedSavings"
                 :icon="TrendingDown"
                 variant="success"
@@ -130,28 +148,51 @@ function statusLabel(status: string): string {
                 subhref="/dashboard/subscriptions"
             />
             <MetricCard
-                label="Dépenses ce mois-ci"
+                label="Budget mensuel"
                 :value="formattedSpend"
                 :icon="Wallet"
                 sublabel="Voir mes paiements"
                 subhref="/dashboard/payments"
             />
             <MetricCard
-                label="Renouvellements à venir"
+                label="Échéances affichées"
                 :value="`${upcomingPayments.length}`"
                 :icon="RefreshCcw"
                 variant="info"
-                :sublabel="upcomingPayments.length > 0 ? `Prochain : ${upcomingPayments[0]?.dueDate}` : 'Aucun pour le moment'"
+                :sublabel="
+                    upcomingPayments.length > 0
+                        ? `Prochain : ${upcomingPayments[0]?.dueDate}`
+                        : 'Aucun pour le moment'
+                "
             />
             <div class="rounded-xl border border-gray-100 bg-white p-5">
-                <TrustScoreGauge :score="trustScore" />
+                <TrustScoreGauge
+                    v-if="trustScore !== undefined"
+                    :score="trustScore"
+                />
+                <template v-else>
+                    <p class="text-sm font-medium text-eq-muted">
+                        Votre profil
+                    </p>
+                    <p class="mt-2 text-lg font-semibold text-eq-ink">
+                        Identité et compte
+                    </p>
+                    <Link
+                        href="/dashboard/profile"
+                        class="eq-link mt-2 !text-xs"
+                        >Voir mes informations →</Link
+                    >
+                </template>
             </div>
         </div>
 
         <div v-if="subscriptions.length > 0" class="mt-8">
             <div class="mb-3 flex items-center justify-between">
-                <h2 class="font-semibold text-equitab-navy">Tes abonnements</h2>
-                <Link href="/dashboard/subscriptions" class="text-sm text-equitab-emerald hover:underline">
+                <h2 class="font-semibold text-eq-ink">Vos abonnements</h2>
+                <Link
+                    href="/dashboard/subscriptions"
+                    class="text-sm text-equitab-emerald hover:underline"
+                >
                     Voir tout →
                 </Link>
             </div>
@@ -167,6 +208,58 @@ function statusLabel(status: string): string {
             </div>
         </div>
 
+        <div
+            v-else-if="activeSubscriptionsCount === 0"
+            class="eq-panel dashboard-discovery mt-8"
+        >
+            <div>
+                <p class="eq-eyebrow text-eq-muted">Votre premier partage</p>
+                <h2 class="mt-3 text-xl font-semibold text-eq-ink">
+                    Faites de la place à ce que vous aimez.
+                </h2>
+                <p class="mt-2 text-sm leading-6 text-eq-muted">
+                    Trouvez un abonnement ou proposez les places de votre propre
+                    groupe.
+                </p>
+            </div>
+            <Link href="/services" class="eq-button shrink-0"
+                >Explorer les services</Link
+            >
+            <div class="dashboard-discovery-art" aria-hidden="true">
+                <ServiceArtwork
+                    scene="world"
+                    category="VOTRE PROCHAIN UNIVERS"
+                    tagline="De belles découvertes vous attendent."
+                    :motion="false"
+                />
+            </div>
+        </div>
+        <div v-else class="eq-panel dashboard-discovery mt-8">
+            <div>
+                <h2 class="text-lg font-semibold text-eq-ink">
+                    Vos abonnements, au même endroit.
+                </h2>
+                <p class="mt-2 text-sm text-eq-muted">
+                    Retrouvez les détails de vos
+                    {{ activeSubscriptionsCount }} abonnement(s) et de vos
+                    groupes.
+                </p>
+            </div>
+            <Link
+                href="/dashboard/subscriptions"
+                class="eq-button eq-button-secondary"
+                >Gérer mes abonnements</Link
+            >
+            <div class="dashboard-discovery-art" aria-hidden="true">
+                <ServiceArtwork
+                    scene="music"
+                    category="VOTRE COLLECTION"
+                    tagline="Le plaisir de se retrouver."
+                    :motion="false"
+                />
+            </div>
+        </div>
+
         <div v-if="badges.length > 0" class="mt-6 flex flex-wrap gap-2">
             <BadgeChip
                 v-for="badge in badges"
@@ -177,8 +270,10 @@ function statusLabel(status: string): string {
         </div>
 
         <div class="mt-8 rounded-xl border border-gray-100 bg-white">
-            <div class="flex items-center justify-between border-b border-gray-100 px-6 py-4">
-                <h2 class="font-semibold text-equitab-navy">Paiements récents</h2>
+            <div
+                class="flex items-center justify-between border-b border-gray-100 px-6 py-4"
+            >
+                <h2 class="font-semibold text-eq-ink">Prochaines échéances</h2>
                 <Link
                     href="/dashboard/payments"
                     class="text-sm text-equitab-emerald hover:underline"
@@ -194,7 +289,9 @@ function statusLabel(status: string): string {
                 <div class="rounded-full bg-gray-50 p-4">
                     <CheckCircle class="h-8 w-8 text-gray-300" />
                 </div>
-                <p class="mt-3 text-sm text-gray-400">Aucun paiement en attente.</p>
+                <p class="mt-3 text-sm text-gray-400">
+                    Aucun paiement en attente.
+                </p>
                 <Link
                     href="/"
                     class="mt-2 text-sm font-medium text-equitab-emerald hover:underline"
@@ -211,11 +308,13 @@ function statusLabel(status: string): string {
                 >
                     <div
                         class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
-                        :class="payment.status === 'completed'
-                            ? 'bg-equitab-emerald/10'
-                            : payment.status === 'pending'
-                            ? 'bg-amber-50'
-                            : 'bg-red-50'"
+                        :class="
+                            payment.status === 'completed'
+                                ? 'bg-equitab-emerald/10'
+                                : payment.status === 'pending'
+                                  ? 'bg-amber-50'
+                                  : 'bg-red-50'
+                        "
                     >
                         <component
                             :is="statusIcon(payment.status)"
@@ -229,9 +328,11 @@ function statusLabel(status: string): string {
                             {{ payment.groupName }}
                         </p>
                         <p class="text-xs text-gray-400">
-                            {{ payment.status === 'completed' && payment.paidAt
-                                ? `Payé le ${payment.paidAt}`
-                                : `Échéance : ${payment.dueDate}` }}
+                            {{
+                                payment.status === "completed" && payment.paidAt
+                                    ? `Payé le ${payment.paidAt}`
+                                    : `Échéance : ${payment.dueDate}`
+                            }}
                         </p>
                     </div>
 
@@ -250,19 +351,22 @@ function statusLabel(status: string): string {
             </div>
         </div>
 
-        <div class="mt-6 rounded-xl border border-dashed border-equitab-emerald/30 bg-equitab-emerald/5 p-6">
-            <div class="flex items-center justify-between">
+        <div
+            class="mt-6 rounded-xl border border-dashed border-equitab-emerald/30 bg-equitab-emerald/5 p-6"
+        >
+            <div class="flex flex-wrap items-center justify-between gap-5">
                 <div>
                     <p class="font-semibold text-equitab-navy">
                         Partagez vos abonnements et économisez
                     </p>
                     <p class="mt-1 text-sm text-gray-500">
-                        Créez un groupe et invitez vos proches à partager les frais.
+                        Créez un groupe et invitez vos proches à partager les
+                        frais.
                     </p>
                 </div>
                 <Link
-                    href="/dashboard/subscriptions"
-                    class="shrink-0 rounded-md bg-equitab-emerald px-4 py-2 text-sm font-medium text-white hover:bg-equitab-emerald-dark"
+                    href="/dashboard/groups/create"
+                    class="eq-button shrink-0"
                 >
                     Commencer
                 </Link>
@@ -270,3 +374,38 @@ function statusLabel(status: string): string {
         </div>
     </DashboardLayout>
 </template>
+<style scoped>
+.dashboard-discovery {
+    display: grid;
+    grid-template-columns: 1fr 240px;
+    padding: 28px;
+    gap: 20px 28px;
+    align-items: center;
+    overflow: hidden;
+}
+.dashboard-discovery > div:first-child {
+    grid-column: 1;
+}
+.dashboard-discovery > a {
+    grid-column: 1;
+    justify-self: start;
+}
+.dashboard-discovery-art {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    transform: rotate(5deg);
+}
+@media (max-width: 700px) {
+    .dashboard-discovery {
+        grid-template-columns: 1fr;
+        padding: 24px;
+    }
+    .dashboard-discovery-art {
+        grid-column: 1;
+        grid-row: 1;
+        width: min(100%, 300px);
+        justify-self: center;
+        transform: none;
+    }
+}
+</style>
