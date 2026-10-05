@@ -2,9 +2,7 @@
 import { ref, computed } from "vue";
 import { Head, router, Link } from "@inertiajs/vue3";
 import DashboardLayout from "@/Layouts/DashboardLayout.vue";
-import { getBrandGradient } from "@/config/brandGradients";
-import ServiceArtwork from "@/Components/Experience/ServiceArtwork.vue";
-import { servicePresentation } from "@/config/servicePresentation";
+import ServiceBrandMark from "@/Components/Experience/ServiceBrandMark.vue";
 import {
     Users,
     Eye,
@@ -80,11 +78,6 @@ const annualSavings = computed(() => {
 const netCostAfterSharing = computed(() => {
     if (!form.value.total_price) return 0;
     return form.value.total_price - monthlyEarnings.value;
-});
-
-const gradient = computed(() => {
-    if (!selectedSubscription.value) return { from: "#0B1929", to: "#10B981" };
-    return getBrandGradient(selectedSubscription.value.slug);
 });
 
 const totalPriceDollars = computed({
@@ -307,19 +300,17 @@ const visibilityOptions = [
                         @click="selectSubscription(sub)"
                         class="service-choice text-left"
                     >
-                        <ServiceArtwork
-                            :scene="
-                                servicePresentation(sub.slug, sub.category)
-                                    .scene
-                            "
-                            :palette="
-                                servicePresentation(sub.slug, sub.category)
-                                    .palette
-                            "
-                            :category="sub.category"
-                            tagline="À vous de commencer l’histoire."
-                            :motion="false"
-                        />
+                        <div
+                            class="flex items-center justify-between gap-3 px-5 pt-5"
+                        >
+                            <ServiceBrandMark
+                                :slug="sub.slug"
+                                :name="sub.name"
+                            />
+                            <span class="text-right text-xs text-eq-muted">{{
+                                sub.category
+                            }}</span>
+                        </div>
                         <div class="min-w-0 p-5">
                             <p class="truncate font-semibold text-equitab-navy">
                                 {{ sub.name }}
@@ -346,14 +337,10 @@ const visibilityOptions = [
             <div v-if="step === 2 && selectedSubscription" class="space-y-4">
                 <div class="rounded-xl border border-gray-100 bg-white p-6">
                     <div class="mb-4 flex items-center gap-3">
-                        <div
-                            class="flex h-10 w-10 items-center justify-center rounded-xl text-lg font-bold text-white"
-                            :style="{
-                                background: `linear-gradient(135deg, ${gradient.from}, ${gradient.to})`,
-                            }"
-                        >
-                            {{ selectedSubscription.name.charAt(0) }}
-                        </div>
+                        <ServiceBrandMark
+                            :slug="selectedSubscription.slug"
+                            :name="selectedSubscription.name"
+                        />
                         <div>
                             <p class="font-semibold text-equitab-navy">
                                 {{ selectedSubscription.name }}
@@ -501,7 +488,7 @@ const visibilityOptions = [
                                 </p>
                             </div>
                             <div
-                                class="mt-3 rounded-lg bg-blue-50 p-3 text-xs text-blue-700"
+                                class="mt-3 rounded-lg border border-eq-line bg-white p-3 text-xs text-eq-muted"
                             >
                                 Estimations pour un groupe complet, hors frais
                                 éventuels. 💡 Ce prix est dynamique, donc il
@@ -612,7 +599,7 @@ const visibilityOptions = [
                     </div>
 
                     <div
-                        class="mb-4 rounded-lg bg-blue-50 p-3 text-xs text-blue-700"
+                        class="mb-4 rounded-lg border border-eq-line bg-white p-3 text-xs text-eq-muted"
                     >
                         <p>
                             Ces informations sont
@@ -804,10 +791,10 @@ const visibilityOptions = [
 }
 .service-choice {
     min-width: 0;
-    border: 1px solid #dededb;
+    border: 1px solid #dce5df;
     border-radius: 24px;
     background: #fff;
-    box-shadow: 0 15px 30px -30px #25273277;
+    box-shadow: 0 15px 30px -30px #303b3777;
     transition: border-color 0.2s;
 }
 .service-choice:hover {

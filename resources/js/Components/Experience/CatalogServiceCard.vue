@@ -53,6 +53,7 @@ function reset() {
         @pointerleave="reset"
     >
         <ServiceArtwork
+            :slug="slug"
             :scene="presentation.scene"
             :palette="presentation.palette"
             :category="category"
@@ -65,9 +66,6 @@ function reset() {
                     <p>À PARTAGER ENSEMBLE</p>
                     <h3>{{ name }}</h3>
                 </div>
-                <span class="category-mark" aria-hidden="true">{{
-                    name.charAt(0)
-                }}</span>
             </div>
             <div class="catalog-value">
                 <div>
@@ -222,11 +220,11 @@ function reset() {
         background 0.2s;
 }
 .catalog-card-link:hover .catalog-arrow {
-    background: #53663e;
+    background: #187a57;
     transform: rotate(8deg);
 }
 .catalog-card-link:focus-visible {
-    outline: 3px solid #6b58c8;
+    outline: 3px solid #187a57;
     outline-offset: 4px;
     border-radius: 6px;
 }

@@ -105,7 +105,7 @@ defineProps<Props>();
                 />
             </div>
             <div
-                class="mt-8 flex items-start gap-3 rounded-xl bg-[#edf1e7] p-5 text-xs leading-6 text-eq-muted"
+                class="mt-8 flex items-start gap-3 rounded-xl bg-[#eaf5ef] p-5 text-xs leading-6 text-eq-muted"
             >
                 <Info :size="18" class="mt-1 shrink-0" aria-hidden="true" />
                 <p>

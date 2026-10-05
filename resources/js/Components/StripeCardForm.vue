@@ -40,7 +40,7 @@ onMounted(async() => {
             base: {
                 fontFamily: 'Montserrat, sans-serif',
                 fontSize: '16px',
-                color: '#0B1929',
+                color: '#303b37',
                 '::placeholder': { color: '#9CA3AF' },
             },
             invalid: { color: '#EF4444' },

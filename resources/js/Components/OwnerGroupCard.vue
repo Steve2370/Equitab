@@ -206,7 +206,7 @@ function onSuccess() {
 }
 .group-badges .verified {
     background: #edf3e5;
-    color: #465a37;
+    color: #187a57;
 }
 .group-description {
     margin: 20px 0;

@@ -68,7 +68,7 @@ function closeMenu() {
 
 <template>
     <div
-        class="eq-experience eq-workspace min-h-screen"
+        class="eq-experience eq-workspace eq-member-space min-h-screen"
         @keydown.esc="closeMenu"
     >
         <a href="#dashboard-content" class="eq-skip eq-button"
@@ -163,7 +163,7 @@ function closeMenu() {
             <div class="mt-auto border-t border-eq-line p-4">
                 <div class="flex items-center gap-3">
                     <div
-                        class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#e9efdf] text-sm font-semibold"
+                        class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-eq-line bg-white text-sm font-semibold"
                     >
                         <img
                             v-if="user?.avatar"
@@ -221,7 +221,7 @@ function closeMenu() {
 </template>
 <style scoped>
 .workspace-sidebar {
-    background: #efefe9;
+    background: #fff;
 }
 .workspace-sidebar :deep(.collection-wordmark) {
     font-size: 32px;
@@ -231,14 +231,15 @@ function closeMenu() {
     height: 25px;
 }
 .workspace-share {
-    background: #e0e9cf;
+    background: #fff;
+    border: 1px solid var(--color-eq-line);
 }
 .workspace-sidebar nav a {
     border-radius: 15px;
     font-size: 12px;
 }
 .workspace-sidebar nav a[aria-current] {
-    box-shadow: 0 5px 12px -8px #25273277;
+    box-shadow: 0 5px 12px -8px #303b3777;
 }
 @media (max-width: 1023px) {
     .workspace-sidebar nav {

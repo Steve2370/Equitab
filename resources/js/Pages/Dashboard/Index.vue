@@ -6,7 +6,6 @@ import MetricCard from "@/Components/Dashboard/MetricCard.vue";
 import TrustScoreGauge from "@/Components/Dashboard/TrustScoreGauge.vue";
 import SubscriptionCard from "@/Components/Dashboard/SubscriptionCard.vue";
 import BadgeChip from "@/Components/Dashboard/BadgeChip.vue";
-import ServiceArtwork from "@/Components/Experience/ServiceArtwork.vue";
 import {
     TrendingDown,
     Wallet,
@@ -131,7 +130,7 @@ function statusLabel(status: string): string {
 
             <span
                 v-if="currentStreak > 0"
-                class="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 text-sm font-medium text-amber-600"
+                class="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-eq-line bg-white px-3 py-1.5 text-sm font-medium text-equitab-emerald"
             >
                 <Flame class="h-4 w-4" />
                 {{ currentStreak }} mois d'affilée
@@ -225,14 +224,6 @@ function statusLabel(status: string): string {
             <Link href="/services" class="eq-button shrink-0"
                 >Explorer les services</Link
             >
-            <div class="dashboard-discovery-art" aria-hidden="true">
-                <ServiceArtwork
-                    scene="world"
-                    category="VOTRE PROCHAIN UNIVERS"
-                    tagline="De belles découvertes vous attendent."
-                    :motion="false"
-                />
-            </div>
         </div>
         <div v-else class="eq-panel dashboard-discovery mt-8">
             <div>
@@ -250,14 +241,6 @@ function statusLabel(status: string): string {
                 class="eq-button eq-button-secondary"
                 >Gérer mes abonnements</Link
             >
-            <div class="dashboard-discovery-art" aria-hidden="true">
-                <ServiceArtwork
-                    scene="music"
-                    category="VOTRE COLLECTION"
-                    tagline="Le plaisir de se retrouver."
-                    :motion="false"
-                />
-            </div>
         </div>
 
         <div v-if="badges.length > 0" class="mt-6 flex flex-wrap gap-2">
@@ -352,7 +335,7 @@ function statusLabel(status: string): string {
         </div>
 
         <div
-            class="mt-6 rounded-xl border border-dashed border-equitab-emerald/30 bg-equitab-emerald/5 p-6"
+            class="mt-6 rounded-xl border border-dashed border-eq-line bg-white p-6"
         >
             <div class="flex flex-wrap items-center justify-between gap-5">
                 <div>
@@ -377,35 +360,19 @@ function statusLabel(status: string): string {
 <style scoped>
 .dashboard-discovery {
     display: grid;
-    grid-template-columns: 1fr 240px;
+    grid-template-columns: minmax(0, 1fr) auto;
     padding: 28px;
     gap: 20px 28px;
     align-items: center;
     overflow: hidden;
 }
-.dashboard-discovery > div:first-child {
-    grid-column: 1;
-}
 .dashboard-discovery > a {
-    grid-column: 1;
     justify-self: start;
-}
-.dashboard-discovery-art {
-    grid-column: 2;
-    grid-row: 1 / span 2;
-    transform: rotate(5deg);
 }
 @media (max-width: 700px) {
     .dashboard-discovery {
         grid-template-columns: 1fr;
         padding: 24px;
-    }
-    .dashboard-discovery-art {
-        grid-column: 1;
-        grid-row: 1;
-        width: min(100%, 300px);
-        justify-self: center;
-        transform: none;
     }
 }
 </style>

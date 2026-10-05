@@ -1,4 +1,4 @@
-// Original, silent motion graphics. Rebuild with Node, @napi-rs/canvas and ffmpeg.
+// Original, silent motion graphics. Rebuild with Node, @napi-rs/canvas, sharp and ffmpeg.
 // EQUITAB_RENDER_MODULES may point to an existing node_modules directory.
 import { createRequire } from "node:module";
 import { mkdir, writeFile } from "node:fs/promises";
@@ -6,13 +6,63 @@ import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
+import {
+    serviceBrand,
+    serviceLogoSource,
+} from "../resources/js/config/servicePresentation.ts";
 const require = createRequire(import.meta.url);
-const { createCanvas } = require(
+const { createCanvas, loadImage } = require(
     process.env.EQUITAB_RENDER_MODULES
         ? resolve(process.env.EQUITAB_RENDER_MODULES, "@napi-rs/canvas")
         : "@napi-rs/canvas",
 );
+const sharp = require(
+    process.env.EQUITAB_RENDER_MODULES
+        ? resolve(process.env.EQUITAB_RENDER_MODULES, "sharp")
+        : "sharp",
+);
+async function loadOriginalAsset(path) {
+    // Preserve SVG stylesheet classes and gradients when compositing into video.
+    // Canvas's direct SVG decoder does not render all supplied marks faithfully.
+    if (path.endsWith(".svg")) {
+        return loadImage(
+            await sharp(path)
+                .resize({ width: 1024, height: 1024, fit: "inside" })
+                .png()
+                .toBuffer(),
+        );
+    }
+    return loadImage(path);
+}
 const root = fileURLToPath(new URL("../", import.meta.url));
+const originalLogo = await loadOriginalAsset(
+    resolve(root, "public/Images/EquitabLogo.svg"),
+);
+// Same original assets and framing as ServiceBrandMark on the home page.
+// Keep supplied raster assets as-is when no SVG was provided (Disney+).
+const serviceMarks = Object.fromEntries(
+    await Promise.all(
+        Object.entries({
+            music: "spotify",
+            cinema: "netflix",
+            world: "disney",
+        }).map(async ([kind, slug]) => {
+            const brand = serviceBrand(slug);
+            const source = serviceLogoSource(brand);
+            if (!brand || !source)
+                throw new Error(`Missing story service asset: ${slug}`);
+            return [
+                kind,
+                {
+                    brand,
+                    image: await loadOriginalAsset(
+                        resolve(root, "public" + decodeURIComponent(source)),
+                    ),
+                },
+            ];
+        }),
+    ),
+);
 const out = resolve(root, "public/media");
 await mkdir(out, { recursive: true });
 const W = 1200,
@@ -22,7 +72,7 @@ const W = 1200,
 const canvas = createCanvas(W, H),
     c = canvas.getContext("2d");
 const INK = "#29312e",
-    PAPER = "#eef0e9";
+    PAPER = "#e7f3ed";
 function round(x, y, w, h, r, fill, stroke) {
     c.beginPath();
     c.roundRect(x, y, w, h, r);
@@ -48,6 +98,30 @@ function circle(x, y, r, fill, stroke) {
         c.lineWidth = 1.5;
         c.stroke();
     }
+}
+function containedImage(image, x, y, width, height, scale = 1) {
+    const fit = Math.min(width / image.width, height / image.height) * scale;
+    const w = image.width * fit,
+        h = image.height * fit;
+    c.save();
+    c.beginPath();
+    c.rect(x, y, width, height);
+    c.clip();
+    c.drawImage(image, x + (width - w) / 2, y + (height - h) / 2, w, h);
+    c.restore();
+}
+function serviceMark(kind, right, top, scale = 0.8) {
+    const { brand, image } = serviceMarks[kind];
+    const frameWidth = brand.logoWide ? 80 : 28;
+    const frameHeight = brand.logoWide ? 34 : 28;
+    const width = frameWidth + 22,
+        height = frameHeight + 16;
+    c.save();
+    c.translate(right - width * scale, top);
+    c.scale(scale, scale);
+    round(0, 0, width, height, 12, "#fff", "#10101010");
+    containedImage(image, 11, 8, frameWidth, frameHeight, brand.logoScale ?? 1);
+    c.restore();
 }
 function text(
     value,
@@ -76,7 +150,7 @@ function shadow(on = true) {
     c.shadowBlur = on ? 30 : 0;
     c.shadowOffsetY = on ? 18 : 0;
 }
-function check(x, y, size = 1, color = "#455c35") {
+function check(x, y, size = 1, color = "#187a57") {
     c.save();
     c.translate(x, y);
     c.scale(size, size);
@@ -129,7 +203,7 @@ function art(kind, x, y, s = 1) {
         c.save();
         c.rotate(-0.15);
         shadow();
-        round(-95, -85, 134, 155, 5, "#dcee9e");
+        round(-95, -85, 134, 155, 5, "#1ed760");
         shadow(false);
         text("ON", -77, -48, 26, "#294a35", 700);
         text("REJOUE.", -77, -17, 26, "#294a35", 700);
@@ -141,9 +215,8 @@ function art(kind, x, y, s = 1) {
         shadow(false);
         for (let r = 36; r < 83; r += 4)
             circle(38, 9, r, null, r % 8 ? "#334039" : "#24322a");
-        circle(38, 9, 31, "#ddeeaa");
-        text("e.", 38, 23, 43, "#324a31", 500, "center", "Georgia");
-        circle(38, 9, 4, "#21382b");
+        circle(38, 9, 31, "#fff");
+        containedImage(serviceMarks.music.image, 16, -13, 44, 44);
     } else if (kind === "cinema") {
         for (const [x, y, s] of [
             [-32, -27, 0.85],
@@ -163,9 +236,9 @@ function art(kind, x, y, s = 1) {
             shadow(false);
             for (let n = 0; n < 5; n++) {
                 const a = (n * Math.PI * 2) / 5;
-                circle(Math.sin(a) * 45, Math.cos(a) * 45, 18, "#9a463c");
+                circle(Math.sin(a) * 45, Math.cos(a) * 45, 18, "#75080e");
             }
-            circle(0, 0, 8, "#8a3f37");
+            circle(0, 0, 8, "#75080e");
             c.restore();
         }
         c.save();
@@ -183,7 +256,7 @@ function art(kind, x, y, s = 1) {
             0,
             0,
             75,
-            gradient(-10, -18, 109, ["#e5e9ff", "#959bd3", "#394c77"]),
+            gradient(-10, -18, 109, ["#e1fff7", "#65d8cc", "#005458"]),
         );
         shadow(false);
         c.save();
@@ -215,24 +288,21 @@ function card(kind, x, y, rotation, scale = 1, alpha = 1) {
     shadow(false);
     const color =
         kind === "music"
-            ? "#2d573e"
+            ? "#087d38"
             : kind === "cinema"
-              ? "#da7357"
-              : "#6570aa";
+              ? "#ae0710"
+              : "#006c70";
     round(-131, -167, 262, 232, 17, color);
     text(
-        kind === "music"
-            ? "MUSIQUE"
-            : kind === "cinema"
-              ? "FILMS & SÉRIES"
-              : "DÉCOUVERTES",
+        serviceMarks[kind].brand.name.toUpperCase(),
         -111,
         -140,
         10,
-        kind === "cinema" ? "#47271e" : "#eef1dc",
+        "#fff",
         600,
     );
     art(kind, 0, -35, 0.94);
+    serviceMark(kind, 114, -155);
     text(
         kind === "music"
             ? "Votre prochaine écoute."
@@ -258,6 +328,7 @@ function background(t) {
     glow.addColorStop(1, PAPER);
     c.fillStyle = glow;
     c.fillRect(0, 0, W, H);
+    c.drawImage(originalLogo, 36, 30, 142, 33);
     c.save();
     c.translate(600, 365);
     c.rotate(-0.1);
@@ -269,17 +340,17 @@ function background(t) {
         c.stroke();
     }
     c.restore();
-    circle(147, 200 + Math.sin(t) * 6, 4, "#bfcca7");
-    circle(1040, 470 + Math.cos(t) * 8, 5, "#bfc3d7");
-    star(960, 131 + Math.sin(t * 0.7) * 8, 14, "#c0cba9");
+    circle(147, 200 + Math.sin(t) * 6, 4, "#a1d2b7");
+    circle(1040, 470 + Math.cos(t) * 8, 5, "#b8d4c7");
+    star(960, 131 + Math.sin(t * 0.7) * 8, 14, "#35af7f");
 }
 function choose(t) {
     card("cinema", 348, 343 + Math.sin(t) * 7, -0.17, 0.87);
     card("world", 852, 341 + Math.cos(t) * 7, 0.17, 0.87);
     card("music", 600, 327 + Math.sin(t + 0.5) * 10, 0.015 * Math.sin(t), 1.08);
-    round(454, 544, 292, 43, 22, "#e1eaca", "#d1ddba");
-    circle(476, 565, 5, "#6f8a4d");
-    text("Trouvez ce qui vous ressemble.", 493, 571, 15, "#415238");
+    round(454, 544, 292, 43, 22, "#dff3e9", "#b8ddc9");
+    circle(476, 565, 5, "#35af7f");
+    text("Trouvez ce qui vous ressemble.", 493, 571, 15, "#187a57");
 }
 function avatar(x, y, label, color, scale = 1) {
     c.save();
@@ -289,7 +360,7 @@ function avatar(x, y, label, color, scale = 1) {
     circle(0, 0, 37, color, "#fff");
     shadow(false);
     text(label, 0, 9, 24, "#35413c", 600, "center");
-    circle(26, 25, 12, "#e7edda", "#fff");
+    circle(26, 25, 12, "#dff3e9", "#fff");
     check(26, 25, 0.65);
     c.restore();
 }
@@ -304,7 +375,7 @@ function group(t) {
         c.beginPath();
         c.moveTo(600, 343);
         c.quadraticCurveTo(x, 343, x, y);
-        c.strokeStyle = "#c0cdb1";
+        c.strokeStyle = "#aed4bf";
         c.lineWidth = 2;
         c.setLineDash([5, 7]);
         c.lineDashOffset = -t * 10;
@@ -314,18 +385,18 @@ function group(t) {
     card("music", 584, 338, Math.sin(t) * 0.03, 0.88);
     avatar(287 + (1 - ease) * 180, 304, "A", "#e6d8f0", ease);
     avatar(897 - (1 - ease) * 180, 266, "B", "#f0c9ad", ease);
-    avatar(867 - (1 - ease) * 130, 491, "C", "#d7e3bf", ease);
+    avatar(867 - (1 - ease) * 130, 491, "C", "#b8e7cc", ease);
     round(166, 403, 228, 78, 17, "#fff", "#dce1d5");
     text("Un groupe, en commun.", 185, 434, 17, INK, 600);
     text("Des personnes réunies autour", 185, 456, 12, "#717b6d");
     text("d’un même abonnement.", 185, 474, 12, "#717b6d");
-    round(487, 533, 226, 43, 22, "#e1eaca", "#d1ddba");
+    round(487, 533, 226, 43, 22, "#dff3e9", "#b8ddc9");
     text(
         "Partagez les frais du groupe.",
         600,
         560,
         14,
-        "#415238",
+        "#187a57",
         500,
         "center",
     );
@@ -346,8 +417,8 @@ function budget(t) {
     ];
     for (let i = 0; i < 3; i++) {
         const y = -59 + i * 74;
-        round(-181, y, 362, 67, 12, i === 1 ? "#e9efdb" : "#f6f7f1");
-        circle(-153, y + 32, 15, i === 1 ? "#c8d99e" : "#e2e8d8");
+        round(-181, y, 362, 67, 12, i === 1 ? "#dff3e9" : "#f6f7f1");
+        circle(-153, y + 32, 15, i === 1 ? "#a0ddbb" : "#d1e8dc");
         check(-153, y + 32, 0.7);
         text(lines[i][0], -124, y + 28, 16, INK, 600);
         text(lines[i][1], -124, y + 48, 12, "#78816d");
@@ -356,14 +427,14 @@ function budget(t) {
     c.restore();
     avatar(318, 255, "A", "#e6d8f0");
     avatar(856, 244, "B", "#f0c9ad");
-    avatar(875, 456, "C", "#d7e3bf");
-    round(404, 547, 394, 44, 22, "#e1eaca", "#d1ddba");
+    avatar(875, 456, "C", "#b8e7cc");
+    round(404, 547, 394, 44, 22, "#dff3e9", "#b8ddc9");
     text(
         "Les abonnements partagés, l’esprit plus léger.",
         600,
         575,
         15,
-        "#415238",
+        "#187a57",
         500,
         "center",
     );
@@ -386,7 +457,7 @@ function render(t) {
     for (let i = 0; i < 3; i++) {
         round(552 + i * 35, 681, 26, 3, 2, "#d7dece");
         if (i === phase)
-            round(552 + i * 35, 681, 26 * (local / 6), 3, 2, "#6f8651");
+            round(552 + i * 35, 681, 26 * (local / 6), 3, 2, "#187a57");
     }
 }
 const ffmpeg = spawn(

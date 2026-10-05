@@ -135,9 +135,9 @@ const year = new Date().getFullYear();
     color: #686b70;
 }
 .collection-footer :deep(.text-eq-lime) {
-    color: #465a37;
+    color: #187a57;
 }
 .collection-footer :deep(.border-white\/20) {
-    border-color: #dededb;
+    border-color: #dce5df;
 }
 </style>

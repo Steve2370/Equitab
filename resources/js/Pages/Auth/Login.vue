@@ -236,13 +236,13 @@ function submit() {
     display: grid;
     grid-template-columns: 7fr 3fr;
     min-height: 100svh;
-    color: #282e2b;
-    background: #f8f8f4;
+    color: #303b37;
+    background: #f6f8f6;
     font-family: "Montserrat", sans-serif;
     -webkit-font-smoothing: antialiased;
 }
 .collection-login :where(a, button, input):focus-visible {
-    outline: 3px solid #6b58c8;
+    outline: 3px solid #187a57;
     outline-offset: 4px;
 }
 .login-skip {
@@ -264,8 +264,8 @@ function submit() {
     grid-row: 1;
     min-width: 0;
     padding: 36px clamp(30px, 4.4vw, 80px) 20px;
-    background: #eef0e9;
-    border-right: 1px solid #dce0d5;
+    background: #e7f3ed;
+    border-right: 1px solid #d3e6dc;
 }
 .login-story-nav {
     display: flex;
@@ -276,7 +276,7 @@ function submit() {
 .login-story-nav > span {
     font-size: 8px;
     letter-spacing: 0.14em;
-    color: #6d7868;
+    color: #65756d;
 }
 .login-story-heading {
     position: relative;
@@ -285,7 +285,7 @@ function submit() {
 .login-story-heading > p:first-child {
     font-size: 9px;
     letter-spacing: 0.13em;
-    color: #6a7a5e;
+    color: #187a57;
     font-weight: 600;
 }
 .login-story-heading h2 {
@@ -306,7 +306,7 @@ function submit() {
     right: -73px;
     top: 19px;
     font-size: 50px;
-    color: #9fac78;
+    color: #35af7f;
     transform: rotate(12deg);
 }
 .story-heading-description {
@@ -315,7 +315,7 @@ function submit() {
     bottom: 7px;
     font-size: 12px;
     line-height: 1.8;
-    color: #74816a;
+    color: #65756d;
 }
 .login-panel {
     grid-column: 2;
@@ -356,7 +356,7 @@ function submit() {
     width: 5px;
     height: 5px;
     border-radius: 50%;
-    background: #7e955d;
+    background: #35af7f;
 }
 h1 {
     font-size: clamp(32px, 2.6vw, 42px);
@@ -382,7 +382,7 @@ h1 em {
     min-height: 49px;
     gap: 11px;
     margin-top: 28px;
-    border: 1px solid #d8ddd2;
+    border: 1px solid #dce5df;
     border-radius: 12px;
     background: #ffffff70;
     font-size: 11px;
@@ -393,7 +393,7 @@ h1 em {
 }
 .google-login:hover {
     background: white;
-    border-color: #a1ae94;
+    border-color: #82bea4;
 }
 .login-divider {
     display: flex;
@@ -406,7 +406,7 @@ h1 em {
 .login-divider span {
     flex: 1;
     height: 1px;
-    background: #dfe2d8;
+    background: #dce5df;
 }
 .login-field {
     margin-top: 19px;
@@ -422,14 +422,14 @@ h1 em {
     display: flex;
     align-items: center;
     min-height: 49px;
-    border: 1px solid #d8ddd2;
+    border: 1px solid #dce5df;
     border-radius: 12px;
     background: #fff;
 }
 .login-input > svg {
     flex: none;
     margin-left: 14px;
-    color: #919b88;
+    color: #788f82;
 }
 .login-input input {
     display: block;
@@ -447,11 +447,32 @@ h1 em {
 .login-input input::placeholder {
     color: #8a9182;
 }
+/* Preserve autofill without its disconnected blue browser surface. */
+.login-input input:autofill {
+    background: #fff;
+    color: var(--color-eq-ink);
+    box-shadow: 0 0 0 1000px #fff inset;
+}
+.login-input input:-webkit-autofill,
+.login-input input:-webkit-autofill:hover,
+.login-input input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--color-eq-ink);
+    caret-color: var(--color-eq-ink);
+    -webkit-box-shadow: 0 0 0 1000px #fff inset;
+    box-shadow: 0 0 0 1000px #fff inset;
+}
+@media (forced-colors: active) {
+    .login-input input:-webkit-autofill {
+        -webkit-text-fill-color: CanvasText;
+        -webkit-box-shadow: none;
+        box-shadow: none;
+    }
+}
 .login-input input[aria-invalid="true"] {
     outline: 1px solid #be5147;
 }
 .login-input:focus-within {
-    border-color: #829b67;
+    border-color: #35af7f;
 }
 .login-input button {
     flex: none;
@@ -459,7 +480,7 @@ h1 em {
     height: 45px;
     display: grid;
     place-items: center;
-    color: #7c8772;
+    color: #657b6e;
     border-radius: 10px;
     cursor: pointer;
 }
@@ -477,13 +498,13 @@ h1 em {
     align-items: center;
     min-height: 40px;
     gap: 7px;
-    color: #6a7660;
+    color: #65756d;
     cursor: pointer;
 }
 .login-options input {
     width: 14px;
     height: 14px;
-    accent-color: #506438;
+    accent-color: #187a57;
 }
 .login-options a {
     display: flex;
@@ -503,9 +524,9 @@ h1 em {
     min-height: 51px;
     padding: 13px 18px;
     margin-top: 15px;
-    background: #d5e6b5;
-    color: #2b3c25;
-    border: 1px solid #cbdda9;
+    background: #187a57;
+    color: #ffffff;
+    border: 1px solid #187a57;
     border-radius: 12px;
     font-size: 12px;
     font-weight: 600;
@@ -513,7 +534,7 @@ h1 em {
     transition: background 0.2s;
 }
 .login-submit:hover {
-    background: #c7dca1;
+    background: #126344;
 }
 .login-submit:disabled {
     opacity: 0.65;
@@ -527,7 +548,7 @@ h1 em {
     line-height: 1.8;
 }
 .login-register a {
-    color: #34462d;
+    color: #187a57;
     font-weight: 600;
     text-decoration: underline;
     text-underline-offset: 3px;
@@ -542,7 +563,7 @@ h1 em {
     text-decoration: underline;
 }
 .login-panel-bottom p a {
-    color: #46543b;
+    color: #187a57;
 }
 .login-panel-bottom > div {
     display: flex;
@@ -565,8 +586,8 @@ h1 em {
     line-height: 1.6;
 }
 .login-status {
-    background: #e6edda;
-    border: 1px solid #cfdbbf;
+    background: #e7f3ed;
+    border: 1px solid #cbe6d9;
     padding: 12px;
     border-radius: 10px;
     font-size: 11px;
@@ -689,7 +710,7 @@ h1 em {
         width: 44px;
         height: 44px;
         justify-content: center;
-        border: 1px solid #d8ddd2;
+        border: 1px solid #dce5df;
         border-radius: 50%;
     }
     .login-back svg {

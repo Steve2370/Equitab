@@ -1,9 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
 import {
     servicePresentation,
     indicativeShare,
     formatCad,
+    serviceBrand,
+    serviceLogoSource,
 } from "../resources/js/config/servicePresentation.ts";
 
 test("monthly cents are divided by full-group capacity without dividing twice", () => {
@@ -58,4 +61,73 @@ test("unknown services have a usable, non-crashing visual fallback", () => {
         servicePresentation("service-inconnu", "Autre catégorie").scene,
         "world",
     );
+});
+test("service identities are distinct and support real catalogue aliases", () => {
+    assert.equal(serviceBrand("netflix").accent, "#e50914");
+    assert.equal(serviceBrand("spotify").accent, "#1ed760");
+    assert.equal(serviceBrand("Disney+").name, "Disney+");
+    assert.equal(serviceBrand("canal").name, "CANAL+");
+    assert.equal(serviceBrand("canal-plus").name, "CANAL+");
+    assert.equal(serviceBrand("NordVPN").logo, "nordvpn");
+    assert.equal(serviceBrand("Microsoft 365").name, "Microsoft 365");
+    assert.equal(serviceBrand("nouveau-service"), null);
+    assert.equal(serviceBrand("__proto__"), null);
+});
+test("each seeded service has a palette and every configured logo exists locally", () => {
+    for (const slug of [
+        "netflix",
+        "disney",
+        "youtube-premium",
+        "crave",
+        "crunchyroll",
+        "paramount",
+        "canal",
+        "amazon-prime",
+        "spotify",
+        "apple-music",
+        "deezer",
+        "tidal",
+        "xbox-game-pass",
+        "nintendo",
+        "nordvpn",
+        "cyberghost",
+        "envato",
+        "google-one",
+        "microsoft-365",
+        "apple-one-family",
+        "duolingo",
+        "readly",
+    ]) {
+        const brand = serviceBrand(slug);
+        assert.ok(brand, slug);
+        assert.match(brand.accent, /^#[0-9a-f]{6}$/i);
+        const source = serviceLogoSource(brand);
+        if (source)
+            assert.ok(
+                existsSync(new URL(`../public${source}`, import.meta.url)),
+                source,
+            );
+    }
+});
+test("user-supplied images take priority without renaming or losing special characters", () => {
+    for (const [slug, file] of [
+        ["Disney+", "Disney+.png"],
+        ["canal-plus", "canal.png"],
+        ["deezer", "deezer-logo.png"],
+        ["cyberghost", "cyberghost.png"],
+        [
+            "xbox-game-pass",
+            "Xbox_Game_Pass_2020_logo_-_colored_version.svg.webp",
+        ],
+    ]) {
+        assert.equal(
+            serviceLogoSource(serviceBrand(slug)),
+            `/Images/services/${file}`,
+        );
+    }
+    assert.equal(
+        serviceLogoSource(serviceBrand("spotify")),
+        "/Images/services/spotify.svg",
+    );
+    assert.equal(serviceLogoSource(serviceBrand("nouveau-service")), null);
 });

@@ -27,7 +27,7 @@ interface Category {
 }
 const props = defineProps<{ categories: Category[] }>();
 const page = usePage<{ auth: { user: { name: string } | null } }>();
-const { motion, requested, reducedMotion } = useExperienceMotion();
+const { motion } = useExperienceMotion();
 const activeCategory = ref<number | null>(null);
 const queryFromPage = () =>
     new URL(page.url, "http://equitab.local").searchParams.get("search") ?? "";
@@ -131,33 +131,7 @@ function resetFilters() {
                             À chaque envie, son univers.
                         </h2>
                     </div>
-                    <div class="catalog-motion">
-                        <span id="catalog-motion-label">Animations</span
-                        ><button
-                            type="button"
-                            role="switch"
-                            :aria-checked="motion"
-                            aria-labelledby="catalog-motion-label"
-                            :aria-describedby="
-                                reducedMotion
-                                    ? 'catalog-motion-note'
-                                    : undefined
-                            "
-                            :disabled="reducedMotion"
-                            @click="requested = !requested"
-                        >
-                            <span />
-                        </button>
-                    </div>
                 </div>
-                <p
-                    v-if="reducedMotion"
-                    id="catalog-motion-note"
-                    class="motion-note"
-                >
-                    Les mouvements sont réduits selon les préférences de votre
-                    appareil.
-                </p>
                 <div class="catalog-tools">
                     <div
                         class="catalog-filters"
@@ -291,7 +265,7 @@ function resetFilters() {
             <div class="catalog-width">
                 <div class="catalog-footer-top">
                     <Link href="/" aria-label="Equitab — accueil"
-                        ><EquitabWordmark
+                        ><EquitabWordmark light
                     /></Link>
                     <p>La suite se partage.</p>
                     <Link
@@ -322,13 +296,13 @@ function resetFilters() {
 <style scoped>
 .services-collection {
     min-height: 100vh;
-    background: #f5f4f0;
-    color: #252732;
+    background: #f6f8f6;
+    color: #303b37;
     font-family: "Montserrat", sans-serif;
     -webkit-font-smoothing: antialiased;
 }
 .services-collection :where(a, button, input):focus-visible {
-    outline: 3px solid #6b58c8;
+    outline: 3px solid #187a57;
     outline-offset: 4px;
 }
 .catalog-width {
@@ -343,7 +317,7 @@ function resetFilters() {
     transform: translateY(-180%);
     padding: 14px 20px;
     background: white;
-    border: 2px solid #252732;
+    border: 2px solid #303b37;
     border-radius: 10px;
 }
 .catalog-skip:focus {
@@ -376,7 +350,7 @@ function resetFilters() {
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: #849b5e;
+    background: #35af7f;
 }
 h1 {
     font-size: clamp(40px, 4.5vw, 62px);
@@ -395,7 +369,7 @@ h1 svg {
     left: 0;
     bottom: -9px;
     width: 100%;
-    color: #9cab76;
+    color: #35af7f;
 }
 .catalog-intro-aside {
     justify-self: end;
@@ -430,7 +404,7 @@ h1 svg {
     width: 43px;
     height: 43px;
     border-radius: 50%;
-    background: #dce5cb;
+    background: #dff3e9;
     font-family: Georgia, serif;
     font-style: italic;
     font-size: 29px;
@@ -438,7 +412,7 @@ h1 svg {
 }
 .catalog-tokens > span:last-child {
     width: 52px;
-    background: #e2dfee;
+    background: #e7f3ed;
     font-family: inherit;
     font-style: normal;
     font-size: 12px;
@@ -450,7 +424,7 @@ h1 svg {
 }
 .catalog-section {
     scroll-margin-top: 24px;
-    border-top: 1px solid #dededb;
+    border-top: 1px solid #dce5df;
     padding-top: 28px;
 }
 .catalog-section-heading {
@@ -465,53 +439,6 @@ h1 svg {
     letter-spacing: -0.05em;
     margin-top: 9px;
     line-height: 1.3;
-}
-.catalog-motion {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 10px;
-}
-.catalog-motion button {
-    width: 48px;
-    height: 44px;
-    position: relative;
-    display: flex;
-    align-items: center;
-    padding: 3px;
-    border-radius: 30px;
-    cursor: pointer;
-}
-.catalog-motion button::before {
-    content: "";
-    position: absolute;
-    inset: 10px 0;
-    border-radius: 20px;
-    background: #bdbfb9;
-}
-.catalog-motion button[aria-checked="true"]::before {
-    background: #d0e89e;
-}
-.catalog-motion button > span {
-    position: relative;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: #313b29;
-    transition: transform 0.2s;
-}
-.catalog-motion button[aria-checked="true"] > span {
-    transform: translateX(24px);
-}
-.catalog-motion button:disabled {
-    opacity: 0.65;
-    cursor: default;
-}
-.motion-note {
-    font-size: 10px;
-    color: #70766b;
-    text-align: right;
-    margin-top: 7px;
 }
 .catalog-tools {
     display: flex;
@@ -541,9 +468,9 @@ h1 svg {
         color 0.2s;
 }
 .catalog-filters button[aria-pressed="true"] {
-    background: #252732;
+    background: #303b37;
     color: white;
-    border-color: #252732;
+    border-color: #303b37;
 }
 .catalog-filters button:hover:not([aria-pressed="true"]) {
     background: #e8e8e0;
@@ -570,7 +497,7 @@ h1 svg {
     background: none;
     box-shadow: none;
     padding: 10px 0;
-    color: #252732;
+    color: #303b37;
 }
 .catalog-search input::placeholder {
     color: #747b70;
@@ -603,7 +530,7 @@ h1 svg {
     width: 5px;
     height: 5px;
     border-radius: 50%;
-    background: #829560;
+    background: #35af7f;
     margin: 0 6px 2px 0;
 }
 .catalog-context > span {
@@ -660,8 +587,8 @@ h1 svg {
     font-size: 10px;
     line-height: 1.85;
     padding: 18px 20px;
-    background: #eceee5;
-    border: 1px solid #e2e5d9;
+    background: #edf4ef;
+    border: 1px solid #dce5df;
     border-radius: 13px;
 }
 .catalog-price-note svg {
@@ -699,9 +626,9 @@ h1 svg {
     gap: 23px;
     min-height: 48px;
     padding: 12px 20px;
-    border: 1px solid #cbd5ba;
+    border: 1px solid #b6d7c6;
     border-radius: 30px;
-    background: #e0e9cd;
+    background: #dff3e9;
     margin-top: 20px;
     font-size: 11px;
 }
@@ -727,7 +654,7 @@ h1 svg {
     height: 54px;
     border: 1px solid #626966;
     border-radius: 50%;
-    color: #dae9b6;
+    color: #b3e8cd;
 }
 .catalog-footer-bottom {
     display: flex;
@@ -848,11 +775,6 @@ h1 svg {
     .catalog-section-heading h2 {
         font-size: 24px;
         max-width: 225px;
-    }
-    .catalog-motion {
-        flex-direction: column;
-        gap: 0;
-        font-size: 9px;
     }
     .catalog-tools {
         gap: 14px;

@@ -101,9 +101,9 @@ function close() {
 </template>
 <style scoped>
 .collection-header {
-    background: #f5f4f0ed;
+    background: #f6f8f6ed;
     backdrop-filter: blur(16px);
-    color: #252732;
+    color: #303b37;
 }
 .collection-nav {
     width: min(1180px, calc(100% - 80px));
@@ -113,7 +113,7 @@ function close() {
     align-items: center;
     justify-content: space-between;
     gap: 24px;
-    border-bottom: 1px solid #dededb;
+    border-bottom: 1px solid #dce5df;
 }
 .desktop-navigation {
     display: flex;
@@ -155,12 +155,12 @@ function close() {
     min-height: 44px;
     padding: 10px 18px;
     border-radius: 25px;
-    background: #282c30;
+    background: #187a57;
     color: #fff;
     font-size: 11px;
 }
 .navigation-cta:hover {
-    background: #465438;
+    background: #126344;
 }
 .menu-trigger {
     display: none;
@@ -182,7 +182,7 @@ function close() {
     font-size: 13px;
 }
 .collection-header :where(a, button):focus-visible {
-    outline: 3px solid #6b58c8;
+    outline: 3px solid #187a57;
     outline-offset: 4px;
 }
 @media (max-width: 1000px) {

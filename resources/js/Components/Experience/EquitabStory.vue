@@ -4,6 +4,9 @@ import { Pause, Play, ArrowUpRight } from "lucide-vue-next";
 import { Link } from "@inertiajs/vue3";
 import { useExperienceMotion } from "@/composables/useExperienceMotion";
 const { motion, reducedMotion } = useExperienceMotion();
+// Refresh both media files together after the service-logo update.
+const storyVideoUrl = "/media/equitab-story.mp4?v=20261005-logos";
+const storyPosterUrl = "/media/equitab-story-poster.png?v=20261005-logos";
 const video = ref<HTMLVideoElement | null>(null);
 const frame = ref<HTMLElement | null>(null);
 const playing = ref(false);
@@ -94,7 +97,7 @@ onBeforeUnmount(() => {
                 playsinline
                 loop
                 preload="metadata"
-                poster="/media/equitab-story-poster.png"
+                :poster="storyPosterUrl"
                 aria-label="Animation explicative Equitab, sans son"
                 aria-describedby="story-transcript"
                 @play="playing = true"
@@ -104,18 +107,18 @@ onBeforeUnmount(() => {
                 @loadedmetadata="metadataLoaded"
             >
                 <source
-                    src="/media/equitab-story.mp4"
+                    :src="storyVideoUrl"
                     type="video/mp4"
                     @error="failed = true"
                 /></video
             ><img
                 v-if="failed"
-                src="/media/equitab-story-poster.png"
+                :src="storyPosterUrl"
                 alt="Des cartes d’abonnements réunies pour être partagées."
                 width="1200"
                 height="720"
                 class="story-poster"
-            /><span class="story-edition">LE PLAISIR DE PARTAGER / 001</span>
+            />
             <div class="story-player-control">
                 <span>{{
                     reducedMotion
@@ -188,7 +191,7 @@ onBeforeUnmount(() => {
     min-width: 0;
     aspect-ratio: 5/3;
     overflow: hidden;
-    background: #eef0e9;
+    background: #e7f3ed;
     border-radius: 22px;
 }
 .story-video,
@@ -197,14 +200,6 @@ onBeforeUnmount(() => {
     height: 100%;
     object-fit: contain;
     display: block;
-}
-.story-edition {
-    position: absolute;
-    left: 16px;
-    top: 16px;
-    font-size: 8px;
-    color: #747e6c;
-    letter-spacing: 0.12em;
 }
 .story-player-control {
     position: absolute;
@@ -235,7 +230,7 @@ onBeforeUnmount(() => {
 }
 .story-player-control button:focus-visible,
 .story-bottom a:focus-visible {
-    outline: 3px solid #6b58c8;
+    outline: 3px solid #187a57;
     outline-offset: 4px;
 }
 .story-steps {
@@ -257,7 +252,7 @@ onBeforeUnmount(() => {
     cursor: pointer;
 }
 .story-step-button:focus-visible {
-    outline: 3px solid #6b58c8;
+    outline: 3px solid #187a57;
     outline-offset: 4px;
 }
 .story-step-button:disabled {
@@ -317,11 +312,6 @@ onBeforeUnmount(() => {
     }
 }
 @media (max-width: 600px) {
-    .story-edition {
-        top: 10px;
-        left: 10px;
-        font-size: 6px;
-    }
     .story-player-control {
         bottom: 5px;
         right: 5px;

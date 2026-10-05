@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import type { ArtworkScene } from "@/config/servicePresentation";
-withDefaults(
+import { serviceBrand } from "@/config/servicePresentation";
+import { computed } from "vue";
+import ServiceBrandMark from "./ServiceBrandMark.vue";
+const props = withDefaults(
     defineProps<{
         scene: ArtworkScene;
         category: string;
@@ -8,23 +11,39 @@ withDefaults(
         index?: string;
         palette?: string;
         motion?: boolean;
+        slug?: string;
     }>(),
-    { index: "", palette: "", motion: true },
+    { index: "", palette: "", motion: true, slug: "" },
+);
+const brand = computed(() => serviceBrand(props.slug));
+const brandStyle = computed(() =>
+    brand.value
+        ? {
+              "--service-accent": brand.value.accent,
+              "--service-deep": brand.value.deep,
+              "--service-ink": brand.value.ink,
+          }
+        : undefined,
 );
 </script>
 <template>
     <div
         class="artwork-host"
+        :style="brandStyle"
+        :data-service="slug || undefined"
         :class="[
             'theme-' + scene,
             'palette-' + palette,
-            { 'motion-enabled': motion },
+            { 'motion-enabled': motion, 'service-branded': !!brand },
         ]"
     >
         <div class="card-scene">
             <div class="scene-topline">
                 <span>{{ category }}</span
-                ><span class="edition-label">COLLECTION / {{ index }}</span>
+                ><ServiceBrandMark v-if="brand" :slug="slug" />
+                <span v-else class="edition-label"
+                    >COLLECTION / {{ index }}</span
+                >
             </div>
             <slot />
             <div class="scene-object" aria-hidden="true">
@@ -33,7 +52,7 @@ withDefaults(
                         <span>ON<br />REJOUE.</span><i />
                     </div>
                     <div class="vinyl">
-                        <div class="vinyl-label"><span>e.</span><i /></div>
+                        <div class="vinyl-label"><span>33</span><i /></div>
                     </div>
                     <div class="sound-bars">
                         <i
@@ -182,6 +201,65 @@ withDefaults(
         #1e265b
     );
     color: #ececff;
+}
+.artwork-host.service-branded .card-scene {
+    background: radial-gradient(
+        ellipse at 18% 0%,
+        var(--service-accent),
+        var(--service-deep) 85%
+    );
+    color: #fff;
+}
+.artwork-host.service-branded .scene-topline {
+    justify-content: space-between;
+    top: 14px;
+}
+.artwork-host.service-branded .scene-topline > span:first-child {
+    color: var(--service-ink);
+}
+.artwork-host.service-branded .scene-caption {
+    text-shadow: 0 1px 8px #000;
+}
+.artwork-host.service-branded .scene-object {
+    top: 45px;
+}
+.artwork-host.service-branded .record-sleeve,
+.artwork-host.service-branded .vinyl-label {
+    background: var(--service-accent);
+    color: var(--service-ink);
+}
+.artwork-host.service-branded .record-sleeve i {
+    border-color: currentColor;
+    box-shadow:
+        8px 0 0 -1px var(--service-accent),
+        9px 0 0 currentColor;
+}
+.artwork-host.service-branded .cinema-ticket {
+    color: var(--service-deep);
+    background: #fff5ec;
+}
+.artwork-host.service-branded .film-reel i,
+.artwork-host.service-branded .film-reel b {
+    background: var(--service-deep);
+}
+.artwork-host.service-branded .planet {
+    background: radial-gradient(
+        circle at 28% 22%,
+        #fff,
+        var(--service-accent) 34%,
+        var(--service-deep) 78%
+    );
+}
+.artwork-host.service-branded .cloud-folder {
+    background: color-mix(in srgb, var(--service-accent) 20%, white);
+    color: var(--service-deep);
+}
+.artwork-host.service-branded .book-cover {
+    background: var(--service-accent);
+    color: var(--service-ink);
+}
+.artwork-host.service-branded .game-buttons i {
+    background: var(--service-accent);
 }
 .scene-topline {
     position: absolute;

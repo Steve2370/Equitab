@@ -3,20 +3,21 @@
 @theme {
     --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
 
-    --color-equitab-navy: #0b1929;
-    --color-equitab-navy-light: #16263b;
-    --color-equitab-emerald: #10b981;
-    --color-equitab-emerald-dark: #059669;
+    --color-equitab-navy: #303b37;
+    --color-equitab-navy-light: #263e34;
+    --color-equitab-emerald: #187a57;
+    --color-equitab-emerald-dark: #126344;
 }
 
-/* Shared experience, scoped to preserve existing payment and admin screens. */
+/* EquitAb: original logo green; darker action/text tone for legibility. */
 @theme {
-    --color-eq-ink: #252732;
+    --color-eq-brand: #35af7f;
+    --color-eq-ink: #303b37;
     --color-eq-muted: #686b70;
-    --color-eq-paper: #f5f4f0;
-    --color-eq-line: #dededb;
-    --color-eq-green: #465a37;
-    --color-eq-lime: #d6eea5;
+    --color-eq-paper: #f6f8f6;
+    --color-eq-line: #dce5df;
+    --color-eq-green: #187a57;
+    --color-eq-lime: #dff3e9;
 }
 .eq-experience {
     background: var(--color-eq-paper);
@@ -46,7 +47,7 @@
     padding: 12px 22px;
     border: 1px solid transparent;
     border-radius: 28px;
-    background: var(--color-eq-ink);
+    background: var(--color-eq-green);
     color: white;
     font-size: 13px;
     font-weight: 600;
@@ -57,7 +58,7 @@
     cursor: pointer;
 }
 .eq-button:hover {
-    background: #465438;
+    background: #126344;
 }
 .eq-button:disabled {
     cursor: wait;
@@ -69,7 +70,7 @@
     color: var(--color-eq-ink);
 }
 .eq-button-secondary:hover {
-    background: #edf1e7;
+    background: #eaf5ef;
 }
 .eq-link {
     display: inline-flex;
@@ -87,7 +88,7 @@
     border: 1px solid var(--color-eq-line);
     border-radius: 24px;
     background: white;
-    box-shadow: 0 12px 28px -28px #25273266;
+    box-shadow: 0 12px 28px -28px #303b3766;
 }
 .eq-input {
     width: 100%;
@@ -104,7 +105,7 @@
 }
 .eq-experience
     :where(a, button, input, select, textarea, summary):focus-visible {
-    outline: 3px solid #6b58c8;
+    outline: 3px solid #187a57;
     outline-offset: 4px;
 }
 .eq-skip {
@@ -117,8 +118,8 @@
     top: 12px;
 }
 .eq-experience ::selection {
-    background: #deedb4;
-    color: #183d33;
+    background: #dff3e9;
+    color: #174c39;
 }
 @media (max-width: 640px) {
     .eq-container {
@@ -135,11 +136,26 @@
 }
 
 /* Member screens keep the same collection language without decorative motion. */
+.eq-member-space {
+    --color-eq-paper: #fff;
+    --color-eq-lime: #fff;
+    background: #fff;
+}
+/* Keep member surfaces white; labels and icons still identify alert states. */
+.eq-member-space
+    :where(
+        [class~="bg-equitab-emerald/5"],
+        [class~="bg-equitab-emerald/10"],
+        .bg-amber-50,
+        [class~="bg-amber-50/50"]
+    ) {
+    background-color: #fff;
+}
 .eq-workspace {
-    --color-equitab-navy: #252732;
+    --color-equitab-navy: #303b37;
     --color-equitab-navy-light: #3d4148;
-    --color-equitab-emerald: #465a37;
-    --color-equitab-emerald-dark: #35442a;
+    --color-equitab-emerald: #187a57;
+    --color-equitab-emerald-dark: #126344;
 }
 .eq-workspace :where(.text-gray-400, .text-gray-500) {
     color: #686b70;
@@ -196,13 +212,13 @@
 .eq-pills button {
     min-height: 44px;
     padding: 10px 18px;
-    border: 1px solid #dededb;
+    border: 1px solid #dce5df;
     border-radius: 30px;
     font-size: 12px;
 }
 .eq-pills button[aria-pressed="true"] {
-    background: #252732;
-    border-color: #252732;
+    background: #303b37;
+    border-color: #303b37;
     color: white;
 }
 .eq-round-arrow {
@@ -211,7 +227,7 @@
     width: 38px;
     height: 38px;
     border-radius: 50%;
-    background: #252732;
+    background: #303b37;
     color: #fff;
     flex: none;
 }
@@ -237,5 +253,118 @@
         animation: none !important;
         transition: none !important;
         scroll-behavior: auto !important;
+    }
+}
+
+/* Admin lists become labelled records on small screens, never tiny tables. */
+.admin-table-region {
+    max-width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--color-eq-line);
+    background: white;
+    border-radius: 22px;
+}
+.admin-table {
+    width: 100%;
+    font-size: 12px;
+    text-align: left;
+}
+.admin-table th {
+    background: #eef4f0;
+    padding: 17px 20px;
+    color: #52665a;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+.admin-table td {
+    padding: 20px;
+    border-top: 1px solid #e7eee9;
+}
+.admin-table tbody tr:hover {
+    background: #f8fbf9;
+}
+.admin-table td p + p {
+    margin-top: 4px;
+}
+.admin-table td p {
+    overflow-wrap: anywhere;
+}
+.admin-table td[data-label="Actions"] > div {
+    flex-wrap: wrap;
+}
+.admin-empty {
+    padding: 48px 24px;
+    text-align: center;
+    color: var(--color-eq-muted);
+    font-size: 13px;
+}
+.admin-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 16px;
+    font-size: 12px;
+    margin-top: 24px;
+}
+.admin-count {
+    padding: 9px 15px;
+    background: #e7f3ed;
+    border: 1px solid #cde6d8;
+    border-radius: 30px;
+    font-size: 12px;
+    color: #187a57;
+}
+@media (max-width: 1100px) {
+    .admin-table-region {
+        overflow: hidden;
+    }
+    .admin-table,
+    .admin-table tbody {
+        display: block;
+    }
+    .admin-table thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+    .admin-table tbody tr {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px 16px;
+        padding: 22px 18px;
+        border-bottom: 1px solid #e0e9e3;
+    }
+    .admin-table td {
+        display: block;
+        padding: 0;
+        border: 0;
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+    .admin-table td::before {
+        content: attr(data-label);
+        display: block;
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: #65756d;
+        margin-bottom: 7px;
+    }
+    .admin-table td:first-child,
+    .admin-table td[data-label="Actions"],
+    .admin-table .admin-full-cell {
+        grid-column: 1/-1;
+    }
+    .admin-table td[data-label="Actions"] > div {
+        justify-content: flex-start;
+    }
+    .admin-table .admin-detail-row {
+        display: block;
+        background: #edf5f0;
     }
 }

@@ -63,7 +63,7 @@ createInertiaApp({
                 h(
                     "div",
                     {
-                        class: "bg-[#deedb4] px-4 py-2 text-center text-[11px] font-medium text-[#183d33]",
+                        class: "bg-[#dff3e9] px-4 py-2 text-center text-[11px] font-medium text-[#174c39]",
                     },
                     [
                         "Aperçu de la refonte · Données et prix fictifs · Aucune transaction · ",

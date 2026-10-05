@@ -3,8 +3,7 @@ import { computed, onMounted, onBeforeUnmount, ref } from "vue";
 export function useExperienceMotion() {
     // Start still: do not animate before the system preference has been read.
     const reducedMotion = ref(true);
-    const requested = ref(true);
-    const motion = computed(() => requested.value && !reducedMotion.value);
+    const motion = computed(() => !reducedMotion.value);
     let preference: MediaQueryList | undefined;
     function changed(event: MediaQueryListEvent) {
         reducedMotion.value = event.matches;
@@ -15,5 +14,5 @@ export function useExperienceMotion() {
         preference.addEventListener("change", changed);
     });
     onBeforeUnmount(() => preference?.removeEventListener("change", changed));
-    return { motion, requested, reducedMotion };
+    return { motion, reducedMotion };
 }

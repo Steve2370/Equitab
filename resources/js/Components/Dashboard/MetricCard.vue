@@ -51,16 +51,10 @@ const variantStyles = {
     </div>
 </template>
 <style scoped>
-.metric-success {
-    background: #e7eddb;
-    border-color: #d6deca;
-}
-.metric-info {
-    background: #efedf7;
-    border-color: #e0ddeb;
-}
 .metric-card {
     min-width: 0;
+    background: #fff;
+    border-color: var(--color-eq-line);
 }
 .metric-card > div > p {
     font-size: 11px;

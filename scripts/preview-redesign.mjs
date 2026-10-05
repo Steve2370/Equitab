@@ -36,6 +36,13 @@ const categories = [
                 monthly_price: 2400,
                 max_members: 6,
             },
+            {
+                id: 13,
+                name: "CANAL+",
+                slug: "canal",
+                monthly_price: 2000,
+                max_members: 4,
+            },
         ],
     },
     {
@@ -53,6 +60,13 @@ const categories = [
                 id: 5,
                 name: "Apple Music",
                 slug: "apple-music",
+                monthly_price: 1800,
+                max_members: 6,
+            },
+            {
+                id: 14,
+                name: "Deezer",
+                slug: "deezer",
                 monthly_price: 1800,
                 max_members: 6,
             },
@@ -111,6 +125,13 @@ categories.push(
                 slug: "nordvpn",
                 monthly_price: 1800,
                 max_members: 6,
+            },
+            {
+                id: 15,
+                name: "CyberGhost",
+                slug: "cyberghost",
+                monthly_price: 1400,
+                max_members: 7,
             },
         ],
     },
@@ -204,10 +225,11 @@ function pageFor(url) {
     const empty = url.searchParams.has("empty");
     const signedIn =
         url.pathname.startsWith("/dashboard") ||
+        url.pathname.startsWith("/admin") ||
         url.searchParams.has("signedin");
     const props = {
         auth: { user: signedIn ? demoUser : null },
-        isAdmin: false,
+        isAdmin: url.pathname.startsWith("/admin"),
         errors: {},
         canLogin: true,
         canRegister: true,
@@ -307,6 +329,22 @@ function pageFor(url) {
             totalSavings: populated ? 37 : 0,
             monthlySpend: populated ? 15 : 0,
             activeSubscriptionsCount: populated ? 3 : 0,
+            ...(populated && url.searchParams.has("details")
+                ? {
+                      currentStreak: 3,
+                      trustScore: 82,
+                      badges: [
+                          { id: 1, label: "Exemple de badge", icon: "users" },
+                      ],
+                      subscriptions: featuredServices.map((s) => ({
+                          id: s.id,
+                          serviceName: s.name,
+                          category: "Exemple d’abonnement",
+                          brandColor: "#b589d6",
+                          daysUntilNextPayment: 7,
+                      })),
+                  }
+                : {}),
             upcomingPayments: populated
                 ? [
                       {
@@ -333,15 +371,13 @@ function pageFor(url) {
                   })),
             ownedSubscriptions: empty
                 ? []
-                : demoGroups
-                      .slice(0, 2)
-                      .map((g) => ({
-                          ...g,
-                          membersCount: g.currentMembers,
-                          status: "open",
-                          renewalDate: "1 nov. 2026",
-                          inviteLink: origin + "/invite/demo",
-                      })),
+                : demoGroups.slice(0, 2).map((g) => ({
+                      ...g,
+                      membersCount: g.currentMembers,
+                      status: "open",
+                      renewalDate: "1 nov. 2026",
+                      inviteLink: origin + "/invite/demo",
+                  })),
         });
     } else if (url.pathname === "/dashboard/payments") {
         component = "Dashboard/Payments";
@@ -398,6 +434,121 @@ function pageFor(url) {
             identityVerified: !url.searchParams.has("unverified"),
             connectActive: !url.searchParams.has("unverified"),
         });
+    } else if (url.pathname.startsWith("/admin")) {
+        // Admin demonstration only: the server still rejects every write.
+        const adminUsers = ["Camille", "Alex", "Sam"].map((name, i) => ({
+            id: i + 1,
+            name: name + " Démo",
+            email: name.toLowerCase() + "@example.test",
+            identityStatus: i === 0 ? "verified" : "pending",
+            connectStatus: i === 0 ? "active" : "not_started",
+            trustScore: i === 0 ? 92 : null,
+            groupsOwned: 1,
+            groupsJoined: 2,
+            createdAt: "01 oct. 2026",
+            status: i === 2 ? "suspended" : "active",
+            isSuspended: i === 2,
+            suspendedUntil: null,
+            suspensionReason: i === 2 ? "Exemple de suspension" : null,
+        }));
+        const paginated = (items) => {
+            const current = Number(url.searchParams.get("page")) === 2 ? 2 : 1;
+            return {
+                data: empty ? [] : items.slice((current - 1) * 2, current * 2),
+                total: empty ? 0 : items.length,
+                current_page: current,
+                last_page: empty ? 1 : 2,
+                prev_page_url: current === 2 ? url.pathname + "?page=1" : null,
+                next_page_url:
+                    !empty && current === 1 ? url.pathname + "?page=2" : null,
+            };
+        };
+        if (url.pathname === "/admin") {
+            component = "Admin/Index";
+            Object.assign(props, {
+                stats: {
+                    totalUsers: empty ? 0 : 128,
+                    verifiedUsers: empty ? 0 : 94,
+                    totalGroups: empty ? 0 : 32,
+                    activeGroups: empty ? 0 : 24,
+                    totalPayments: empty ? 0 : 286,
+                    totalRevenue: empty ? 0 : 171600,
+                    equitabEarnings: empty ? 0 : 8580,
+                    openDisputes: empty ? 0 : 3,
+                },
+            });
+        } else if (url.pathname === "/admin/users") {
+            component = "Admin/Users";
+            Object.assign(props, { users: paginated(adminUsers) });
+        } else if (url.pathname === "/admin/groups") {
+            component = "Admin/Groups";
+            Object.assign(props, {
+                groups: paginated(
+                    demoGroups.map((g) => ({
+                        ...g,
+                        name: g.subscriptionName + " · entre amis",
+                        ownerEmail: "proprietaire@example.test",
+                        status: "open",
+                        visibility: "public",
+                        membersCount: g.currentMembers,
+                        totalPrice: g.pricePerMember * g.currentMembers,
+                        createdAt: "01 oct. 2026",
+                        members: adminUsers.map((u, i) => ({
+                            id: u.id,
+                            name: u.name,
+                            email: u.email,
+                            avatar: null,
+                            role: i === 0 ? "owner" : "member",
+                            status: "active",
+                            joinedAt: "01 oct. 2026",
+                        })),
+                    })),
+                ),
+            });
+        } else if (url.pathname === "/admin/payments") {
+            component = "Admin/Payments";
+            Object.assign(props, {
+                totalEarnings: empty ? 0 : 65,
+                payments: paginated(
+                    demoGroups.map((g, i) => ({
+                        id: g.id,
+                        userName: adminUsers[i].name,
+                        userEmail: adminUsers[i].email,
+                        groupName: g.subscriptionName + " · entre amis",
+                        subscriptionName: g.subscriptionName,
+                        amount: g.pricePerMember,
+                        equitabFee: g.pricePerMember * 0.05,
+                        currency: "CAD",
+                        paidAt: "01 oct. 2026 · 10:30",
+                    })),
+                ),
+            });
+        } else if (url.pathname === "/admin/disputes") {
+            component = "Admin/Disputes";
+            Object.assign(props, {
+                disputes: paginated(
+                    demoGroups.map((g, i) => ({
+                        id: g.id,
+                        userName: adminUsers[i].name,
+                        userEmail: adminUsers[i].email,
+                        groupName: g.subscriptionName + " · entre amis",
+                        subscriptionName: g.subscriptionName,
+                        reason: "invalid_credentials",
+                        description:
+                            "Exemple fictif : les identifiants reçus ne donnent pas accès au service.",
+                        status: ["open", "under_review", "resolved_rejected"][
+                            i
+                        ],
+                        amount: g.pricePerMember,
+                        adminNotes: null,
+                        createdAt: "02 oct. 2026",
+                    })),
+                ),
+            });
+        } else if (url.pathname === "/admin/messages") {
+            component = "Admin/Messages";
+            Object.assign(props, { users: empty ? [] : adminUsers });
+        }
     } else if (url.pathname === "/charte") component = "Legal/Trust";
     else if (url.pathname === "/conditions") component = "Legal/Terms";
     else if (url.pathname === "/confidentialite") component = "Legal/Privacy";

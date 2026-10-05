@@ -76,7 +76,7 @@ import EquitabStory from "@/Components/Experience/EquitabStory.vue";
     grid-column: 1;
     grid-row: 1;
     padding: 46px 7%;
-    background: #e9eddf;
+    background: #e7f3ed;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -93,23 +93,23 @@ import EquitabStory from "@/Components/Experience/EquitabStory.vue";
 .auth-story-content > p:not(.eq-eyebrow) {
     font-size: 13px;
     line-height: 1.9;
-    color: #646b60;
+    color: #65756d;
     margin-bottom: 25px;
 }
 .eq-auth-content :deep(input:not([type="checkbox"])) {
     min-height: 48px;
     background: white;
-    border-color: #dcded6;
+    border-color: #dce5df;
     border-radius: 12px;
 }
 .eq-auth-content :deep(button[type="submit"]) {
     min-height: 50px;
     border-radius: 28px;
-    background: #d6eea5;
-    color: #252732;
+    background: #187a57;
+    color: #fff;
 }
 .eq-auth-content :deep(.text-equitab-emerald) {
-    color: #465a37;
+    color: #187a57;
 }
 .eq-auth-content :deep(.text-gray-400) {
     color: #686b70;

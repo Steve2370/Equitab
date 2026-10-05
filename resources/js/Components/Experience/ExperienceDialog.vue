@@ -64,17 +64,17 @@ onBeforeUnmount(() => {
 <style scoped>
 .experience-dialog {
     margin: auto;
-    border: 1px solid #dededb;
+    border: 1px solid #dce5df;
     border-radius: 26px;
     width: min(520px, calc(100% - 32px));
     max-height: calc(100dvh - 40px);
     padding: 0;
     overflow: auto;
-    color: #252732;
+    color: #303b37;
     background: #fff;
 }
 .experience-dialog::backdrop {
-    background: #25273288;
+    background: #303b3788;
     backdrop-filter: blur(5px);
 }
 .experience-dialog-inner {
@@ -97,7 +97,7 @@ header button {
     place-items: center;
     width: 44px;
     height: 44px;
-    border: 1px solid #dededb;
+    border: 1px solid #dce5df;
     border-radius: 50%;
     flex: none;
 }

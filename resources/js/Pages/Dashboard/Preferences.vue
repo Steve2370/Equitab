@@ -466,7 +466,7 @@ const timezones = [
         gap: 8px;
     }
     .preferences-tabs button {
-        border: 1px solid #dededb;
+        border: 1px solid #dce5df;
     }
     .p-6 {
         padding: 20px;

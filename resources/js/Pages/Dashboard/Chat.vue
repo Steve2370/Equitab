@@ -472,7 +472,7 @@ onUnmounted(() => {
     min-height: 440px;
     overflow: hidden;
     background: white;
-    border: 1px solid #dededb;
+    border: 1px solid #dce5df;
     border-radius: 25px;
 }
 .chat-list {
@@ -481,7 +481,7 @@ onUnmounted(() => {
     display: flex;
     flex-direction: column;
     border-right: 1px solid #e2e2df;
-    background: #fafaf7;
+    background: #fff;
 }
 .chat-thread {
     display: flex;
@@ -490,7 +490,7 @@ onUnmounted(() => {
     min-width: 0;
 }
 .chat-messages {
-    background: #f6f5f1;
+    background: #fff;
     min-height: 0;
 }
 .chat-bubble {
@@ -533,7 +533,7 @@ onUnmounted(() => {
         width: 40px;
         flex: none;
         border-radius: 50%;
-        background: #f0f0e9;
+        background: #fff;
     }
     .chat-thread-header {
         padding: 15px;

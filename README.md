@@ -540,6 +540,11 @@ sélectionnables et d’une explication textuelle. Elle ne démarre pas automati
 sur mobile ni avec la préférence système de réduction des mouvements, et se met
 en pause hors écran ou lorsque la page est masquée. Le fichier préexistant
 `public/Images/Equitab.mp4` n’a pas été modifié.
+L’étiquette superposée « Le plaisir de partager / 001 » a été retirée. Le rendu
+de l’animation charge les mêmes logos et réglages de cadrage que l’accueil depuis
+`servicePresentation.ts` : SVG Netflix et Spotify, image Disney+ fournie.
+Après un changement de ces fichiers, régénérer la vidéo et son affiche avec
+`scripts/render-equitab-story.mjs` (Node compatible TypeScript, canvas, sharp et ffmpeg).
 
 Le catalogue utilise les catégories du serveur et conserve les liens vers les
 groupes. Les parts restent indicatives, calculées en cents pour un groupe complet.
@@ -577,8 +582,8 @@ démonstration ni information de confiance n’est ajouté aux données réelles
 Les détails de groupe et les confirmations utilisent un dialogue natif, avec
 Échap, focus contenu et retour au déclencheur. Le formulaire Stripe n’est monté
 qu’après demande explicite et réception du récapitulatif. Les appels existants
-et règles métier côté serveur ne sont pas réécrits. L’administration et l’écran
-de confirmation de transaction ne font pas partie de cette passe visuelle.
+et règles métier côté serveur ne sont pas réécrits. L’écran de confirmation
+de transaction ne fait pas partie de cette passe visuelle.
 
 Scénarios de l’aperçu :
 
@@ -595,6 +600,63 @@ Tous les accès privés et récapitulatifs de paiement `/api/…` sont bloqués 
 l’aperçu, hormis les lectures des conversations fictives. Les formulaires,
 redirections Stripe et mutations financières doivent être testés séparément
 dans un environnement applicatif de test avant mise en ligne.
+
+#### Identité EquitAb et administration
+
+La marque utilise les fichiers originaux `public/Images/EquitabLogo.svg` et
+`EquitabLogoblanc.svg`, sans recréation du symbole. Les accents suivent le vert
+`#35AF7F` et le gris du logo ; les textes et actions utilisent un vert plus sombre
+pour leur contraste. Les pages réelles n’affichent plus de bascule « Animations » :
+les mouvements suivent automatiquement `prefers-reduced-motion`. La vidéo conserve
+sa pause explicite et ses règles de lecture hors écran/mobile.
+
+Les champs de connexion conservent l’autoremplissage du navigateur, avec une surface
+blanche cohérente via `:autofill` et `:-webkit-autofill`. Le rendu exact de
+l’autoremplissage natif reste à vérifier dans le navigateur utilisé en production.
+
+Les 22 services du catalogue initial ont une palette identifiée dans
+`resources/js/config/servicePresentation.ts`. Les marques disponibles sont servies
+localement depuis `public/Images/services/`, avec un nom lisible en repli en cas
+d’absence ou d’échec de chargement. Les pictogrammes monochromes proviennent de
+[Simple Icons 15.18.0](https://github.com/simple-icons/simple-icons/tree/15.18.0/icons)
+(Netflix, Spotify, YouTube, Apple Music, Tidal, Crunchyroll, Paramount+, NordVPN,
+Envato, Google, Apple, Duolingo), et de
+[Simple Icons 13.0.0](https://github.com/simple-icons/simple-icons/tree/13.0.0/icons)
+(Nintendo et Amazon Prime). Google One et Apple One emploient la marque mère.
+La licence CC0 du jeu est conservée dans `public/Images/services/LICENSE.txt` ;
+elle n’accorde pas de droit sur les marques ni ne démontre un partenariat.
+Les noms remplacent les logos non sourcés, sans symbole inventé.
+Les cinq images fournies pour Disney+, CANAL+, Deezer, CyberGhost et Xbox Game Pass
+sont prioritaires dans ce même dossier. Leurs noms et fichiers originaux sont
+conservés ; leur cadrage est ajusté uniquement à l’affichage. La licence du jeu
+Simple Icons ne couvre pas ces fichiers fournis séparément.
+Les repères de marque ont été consultés chez
+[Netflix](https://brand.netflix.com/en/assets/logos) et
+[Spotify](https://developer.spotify.com/documentation/design).
+
+Les six écrans Admin partagent maintenant la même navigation et une présentation
+responsive : vue d’ensemble, utilisateurs, groupes, paiements, litiges, messagerie.
+Les listes deviennent des fiches étiquetées sur petit écran ; la pagination utilise
+les URL renvoyées par Laravel. Les confirmations utilisent le dialogue natif
+(Échap, focus contenu, retour au déclencheur). La messagerie demande une vérification
+des destinataires et du contenu avant l’envoi. Les routes, droits et règles de
+facturation côté serveur restent inchangés. Un score absent n’est plus affiché à 0 %.
+
+L’aperçu comprend `/admin`, `/admin/users`, `/admin/groups`, `/admin/payments`,
+`/admin/disputes` et `/admin/messages`, toujours avec des données fictives.
+`?empty=1` expose les états vides ; `?page=2` permet de vérifier la pagination
+des listes. Aucun remboursement, envoi de courriel, suspension ou effacement de
+compte n’est exécuté pendant ces vérifications.
+
+#### Mon espace : surfaces blanches
+
+La déclinaison membre utilise un fond blanc, des cartes blanches et le vert EquitAb
+pour les actions. Les statistiques n’ont plus de fonds mauves ou multicolores.
+Les abonnements et le choix de service emploient des logos sur fond blanc,
+sans scènes illustrées ni dégradés. Les couleurs des alertes restent fonctionnelles.
+Le catalogue public conserve les animations et les couleurs propres aux services.
+L’aperçu `/dashboard?details=1` expose aussi les cartes compactes, un score et un
+badge explicitement fictifs ; `/dashboard?empty=1` vérifie le premier usage.
 
 ### Cartes de test Stripe
 | Carte | Résultat |

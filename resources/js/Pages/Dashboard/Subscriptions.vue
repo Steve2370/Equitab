@@ -152,6 +152,7 @@ function confirmCloseGroup(): void {
             <div v-else class="member-collection-grid">
                 <CollectionCard
                     v-for="sub in joinedSubscriptions"
+                    presentation="workspace"
                     :key="sub.id"
                     :name="sub.subscriptionName"
                     :slug="sub.subscriptionSlug"
@@ -211,6 +212,7 @@ function confirmCloseGroup(): void {
             <div v-else class="member-collection-grid">
                 <CollectionCard
                     v-for="sub in ownedSubscriptions"
+                    presentation="workspace"
                     :key="sub.id"
                     :name="sub.subscriptionName"
                     :slug="

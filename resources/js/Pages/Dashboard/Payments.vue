@@ -404,13 +404,13 @@ const filters: {
 }
 .payment-summary > div {
     border-radius: 24px;
-    border: 1px solid #d7ddcd;
-    background: #e7eddb;
+    border: 1px solid var(--color-eq-line);
+    background: #fff;
     padding: 28px;
 }
 .payment-summary > div + div {
-    border-color: #dededb;
-    background: #f0efe9;
+    border-color: #dce5df;
+    background: #fff;
 }
 .payment-summary p {
     color: #626959;

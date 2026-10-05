@@ -39,7 +39,7 @@ const props = defineProps<{
     catalogServices: CatalogService[];
     openGroups: OpenGroup[];
 }>();
-const { motion, requested, reducedMotion } = useExperienceMotion();
+const { motion } = useExperienceMotion();
 const query = ref("");
 const filter = ref("all");
 const role = ref<"join" | "share">("join");
@@ -189,6 +189,7 @@ const faqs = [
                     <div class="hero-art-first">
                         <ServiceArtwork
                             scene="music"
+                            slug="spotify"
                             category="LA BANDE-SON"
                             tagline="À écouter ensemble."
                             :motion="false"
@@ -197,6 +198,7 @@ const faqs = [
                     <div class="hero-art-second">
                         <ServiceArtwork
                             scene="cinema"
+                            slug="netflix"
                             category="LE GRAND ÉCRAN"
                             tagline="Les bonnes histoires se partagent."
                             :motion="false"
@@ -211,20 +213,6 @@ const faqs = [
                     <div>
                         <p class="eq-eyebrow">LA COLLECTION / 001</p>
                         <h2>De quoi vous retrouver.</h2>
-                    </div>
-                    <div class="motion-control">
-                        <span id="home-motion-label">Animations</span
-                        ><button
-                            role="switch"
-                            :aria-checked="motion"
-                            aria-labelledby="home-motion-label"
-                            :disabled="reducedMotion"
-                            @click="requested = !requested"
-                        >
-                            <span /></button
-                        ><span v-if="reducedMotion" class="sr-only"
-                            >Réduites selon votre appareil</span
-                        >
                     </div>
                 </div>
                 <div class="collection-controls">
@@ -460,7 +448,7 @@ const faqs = [
     width: 5px;
     height: 5px;
     border-radius: 50%;
-    background: #899467;
+    background: #35af7f;
     margin-right: 5px;
     vertical-align: middle;
 }
@@ -492,7 +480,7 @@ h1 em,
 .hero-art {
     height: 420px;
     position: relative;
-    background: #e8ecdf;
+    background: #e7f3ed;
     border-radius: 50% 50% 24px 24px;
     margin: 0 20px;
 }
@@ -523,7 +511,7 @@ h1 em,
 }
 .hero-sticker {
     position: absolute;
-    background: #e4f4ac;
+    background: #dff3e9;
     width: 90px;
     height: 90px;
     border-radius: 50%;
@@ -536,7 +524,7 @@ h1 em,
     bottom: 43px;
     left: 21px;
     transform: rotate(-12deg);
-    border: 1px solid #cad49a;
+    border: 1px solid #acd9bf;
 }
 .hero-art > p {
     position: absolute;
@@ -545,7 +533,7 @@ h1 em,
     font-size: 10px;
 }
 .home-catalog {
-    border-top: 1px solid #dededb;
+    border-top: 1px solid #dce5df;
     padding-top: 32px;
     scroll-margin-top: 24px;
 }
@@ -566,33 +554,6 @@ h2 {
     font-weight: 500;
     letter-spacing: -0.055em;
     margin-top: 14px;
-}
-.motion-control {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 10px;
-}
-.motion-control button {
-    width: 45px;
-    min-height: 28px;
-    border-radius: 30px;
-    padding: 4px;
-    background: #dddeda;
-}
-.motion-control button[aria-checked="true"] {
-    background: #d6eea5;
-}
-.motion-control button > span {
-    display: block;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: #303832;
-    transition: transform 0.2s;
-}
-.motion-control button[aria-checked="true"] > span {
-    transform: translateX(17px);
 }
 .collection-controls {
     display: flex;
@@ -643,14 +604,14 @@ h2 {
     gap: 9px;
     flex: none;
     min-height: 44px;
-    color: #252732;
+    color: #303b37;
     font-size: 11px;
 }
 .home-principles {
     display: grid;
     grid-template-columns: 1.4fr 1fr 1fr 1fr;
     gap: 44px;
-    border-top: 1px solid #dededb;
+    border-top: 1px solid #dce5df;
     margin-top: 38px;
     padding-block: 40px 60px;
 }
@@ -673,13 +634,13 @@ h2 {
 }
 .home-principles article > svg {
     box-sizing: content-box;
-    background: #eeefe7;
-    border: 1px solid #dadfd1;
+    background: #edf4ef;
+    border: 1px solid #dce5df;
     padding: 10px;
     border-radius: 14px;
 }
 .home-how {
-    background: #e9eddf;
+    background: #e7f3ed;
     padding: 65px 0;
     scroll-margin-top: 30px;
 }
@@ -710,7 +671,7 @@ h2 {
 .how-steps p {
     font-size: 12px;
     line-height: 1.9;
-    color: #646b60;
+    color: #65756d;
 }
 .home-faq {
     display: grid;
@@ -719,7 +680,7 @@ h2 {
     padding-block: 75px;
 }
 .home-faq details {
-    border-bottom: 1px solid #dededb;
+    border-bottom: 1px solid #dce5df;
 }
 .home-faq summary {
     display: flex;
@@ -743,7 +704,7 @@ h2 {
     padding-bottom: 24px;
 }
 .home-finale {
-    background: #e7eddb;
+    background: #e7f3ed;
     padding: 44px 50px;
     border-radius: 28px;
     margin-bottom: 60px;
@@ -758,7 +719,7 @@ h2 {
     right: 70px;
     top: 40px;
     font-size: 140px;
-    color: #657348;
+    color: #187a57;
 }
 .home-empty {
     text-align: center;
@@ -840,10 +801,6 @@ h2 {
     }
     .collection-top {
         align-items: start;
-    }
-    .motion-control {
-        flex-direction: column;
-        gap: 5px;
     }
     .eq-pills {
         gap: 6px;

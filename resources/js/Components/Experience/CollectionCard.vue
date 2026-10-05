@@ -3,6 +3,7 @@ import { computed, ref } from "vue";
 import { Link } from "@inertiajs/vue3";
 import { ArrowUpRight, Check, Users } from "lucide-vue-next";
 import ServiceArtwork from "./ServiceArtwork.vue";
+import ServiceBrandMark from "./ServiceBrandMark.vue";
 import { formatCad, servicePresentation } from "@/config/servicePresentation";
 const props = withDefaults(
     defineProps<{
@@ -20,6 +21,7 @@ const props = withDefaults(
         action?: string;
         motion?: boolean;
         index?: number;
+        presentation?: "discovery" | "workspace";
     }>(),
     {
         category: "À partager",
@@ -28,6 +30,7 @@ const props = withDefaults(
         priceLabel: "Part actuelle",
         action: "Découvrir",
         motion: false,
+        presentation: "discovery",
     },
 );
 const art = computed(() => servicePresentation(props.slug, props.category));
@@ -71,6 +74,8 @@ function reset() {
         @pointerleave="reset"
     >
         <ServiceArtwork
+            v-if="presentation === 'discovery'"
+            :slug="slug"
             :scene="art.scene"
             :palette="art.palette"
             :category="category"
@@ -78,6 +83,10 @@ function reset() {
             :motion="motion"
             :index="index ? String(index).padStart(2, '0') : ''"
         />
+        <div v-else class="workspace-card-identity">
+            <ServiceBrandMark :slug="slug" :name="name" />
+            <span>{{ category }}</span>
+        </div>
         <div class="collection-card-content">
             <div class="collection-card-title">
                 <div>
@@ -143,6 +152,19 @@ function reset() {
     </article>
 </template>
 <style scoped>
+.workspace-card-identity {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 22px 22px 0;
+    color: var(--color-eq-muted);
+    font-size: 9px;
+    letter-spacing: 0.07em;
+}
+.workspace-card-identity > span:last-child {
+    text-align: right;
+}
 .collection-card {
     min-width: 0;
     background: #fff;
@@ -187,8 +209,8 @@ h3 {
     font-size: 10px;
     padding: 7px 9px;
     border-radius: 30px;
-    background: #eef3e7;
-    color: #4d6140;
+    background: #e7f3ed;
+    color: #187a57;
 }
 .collection-card-status::before {
     content: "•";
