@@ -3,13 +3,15 @@
 namespace Tests\Feature;
 
 use App\Features\Group\Services\GroupService;
+use App\Features\Payment\Contracts\OwnerStripeGatewayInterface;
 use App\Features\Payment\Contracts\PaymentGatewayInterface;
+use App\Features\Payment\DTO\OwnerConnectState;
+use App\Features\Payment\DTO\OwnerIdentityState;
 use App\Models\Group;
 use App\Models\Subscription;
 use App\Models\User;
 use Exception;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
+use Tests\Feature\Auth\AccountSecurityTestCase;
 
 /**
  * Couvre le finding critique P0 « autorisation manquante à la
@@ -19,10 +21,8 @@ use Tests\TestCase;
  * dans GroupService, seul point d'entrée pour créer/rejoindre un groupe
  * (web ET API partagent ce même service).
  */
-class GroupAuthorizationTest extends TestCase
+class GroupAuthorizationTest extends AccountSecurityTestCase
 {
-    use RefreshDatabase;
-
     private function mockGateway(): void
     {
         $this->mock(PaymentGatewayInterface::class, function ($mock) {
@@ -83,7 +83,15 @@ class GroupAuthorizationTest extends TestCase
         $owner = User::factory()->create([
             'identity_status' => 'verified',
             'stripe_connect_status' => 'active',
+            'stripe_connect_account_id' => 'acct_authorized_owner',
+            'stripe_identity_session_id' => 'vs_authorized_owner',
         ]);
+        $this->mock(OwnerStripeGatewayInterface::class, function ($mock) {
+            $mock->shouldReceive('retrieveAccount')->once()->with('acct_authorized_owner')
+                ->andReturn(new OwnerConnectState('acct_authorized_owner', true, true, true));
+            $mock->shouldReceive('retrieveIdentity')->once()->with('vs_authorized_owner')
+                ->andReturn(new OwnerIdentityState('vs_authorized_owner', 'verified'));
+        });
         $subscription = Subscription::factory()->create();
 
         $group = app(GroupService::class)->create($owner, $this->validGroupData($subscription));
@@ -195,7 +203,7 @@ class GroupAuthorizationTest extends TestCase
         $response = $this->actingAs($user, 'sanctum')
             ->postJson("/api/groups/{$group->id}/join");
 
-        $response->assertStatus(422);
+        $response->assertForbidden();
         $this->assertDatabaseMissing('group_members', [
             'group_id' => $group->id,
             'user_id' => $user->id,

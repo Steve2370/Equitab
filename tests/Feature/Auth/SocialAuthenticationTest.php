@@ -8,10 +8,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Laravel\Socialite\Contracts\User as SocialiteUserContract;
 use Laravel\Socialite\Facades\Socialite;
-use Mockery;
-use Tests\TestCase;
+use Laravel\Socialite\Two\User as OAuth2User;
 
-class SocialAuthenticationTest extends TestCase
+class SocialAuthenticationTest extends AccountSecurityTestCase
 {
     use RefreshDatabase;
 
@@ -20,14 +19,10 @@ class SocialAuthenticationTest extends TestCase
         string $email = 'jean.tremblay@example.com',
         string $name = 'Jean Tremblay',
     ): SocialiteUserContract {
-        $socialiteUser = Mockery::mock(SocialiteUserContract::class);
-        $socialiteUser->shouldReceive('getId')->andReturn($id);
-        $socialiteUser->shouldReceive('getEmail')->andReturn($email);
-        $socialiteUser->shouldReceive('getName')->andReturn($name);
-        $socialiteUser->shouldReceive('getNickname')->andReturn(null);
-        $socialiteUser->shouldReceive('getAvatar')->andReturn('https://lh3.googleusercontent.com/fake-avatar.jpg');
-
-        return $socialiteUser;
+        return (new OAuth2User)->setRaw(['email_verified' => true])->map([
+            'id' => $id, 'email' => $email, 'name' => $name, 'nickname' => null,
+            'avatar' => 'https://lh3.googleusercontent.com/fake-avatar.jpg',
+        ]);
     }
 
     public function test_unknown_provider_is_rejected_at_the_route_level(): void
@@ -63,7 +58,8 @@ class SocialAuthenticationTest extends TestCase
 
         $this->assertNotNull($user->email_verified_at);
         $this->assertNull($user->password);
-        $this->assertNotNull($user->wallet, 'A wallet must be created for new social sign-ups, same as classic registration.');
+        $this->assertNull($user->wallet, 'The retired wallet must not be created by social sign-up.');
+        $this->assertDatabaseCount('wallets', 0);
 
         $this->assertAuthenticatedAs($user);
         $response->assertRedirect(route('dashboard', absolute: false));
@@ -88,6 +84,7 @@ class SocialAuthenticationTest extends TestCase
             'provider_id' => 'google-123',
         ]);
         $this->assertNotNull($existing->email_verified_at, 'Linking via a provider should mark the email verified.');
+        $this->assertNull($existing->password, 'An unverified pre-registrant must lose their old password.');
         $this->assertAuthenticatedAs($existing);
 
         // No duplicate account should have been created.

@@ -1,20 +1,23 @@
 <?php
 
 // use App\Http\Controllers\ProfileController;
+use App\Features\Admin\Controllers\AdminController;
+use App\Features\Chat\Controllers\ChatController;
+use App\Features\Dashboard\Controllers\DashboardController;
+use App\Features\Group\Controllers\GroupController;
+use App\Features\Group\Controllers\GroupDraftController;
+use App\Features\Payment\Controllers\PaymentController;
+use App\Features\Payment\Controllers\StripeWebhookController;
+use App\Features\Subscription\Controllers\SubscriptionController;
+use App\Models\Group;
+use App\Models\Subscription;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Models\Subscription;
-use App\Models\Group;
-use App\Features\Group\Controllers\GroupController;
-use App\Features\Subscription\Controllers\SubscriptionController;
-use App\Features\Payment\Controllers\PaymentController;
-use App\Features\Dashboard\Controllers\DashboardController;
-use App\Features\Chat\Controllers\ChatController;
-use App\Features\Admin\Controllers\AdminController;
-use App\Features\Payment\Controllers\StripeWebhookController;
 
-Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
+Route::pattern('group', '[0-9]+');
+
+Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->group(function () {
     Route::get('/', [AdminController::class, 'index'])->name('admin.index');
     Route::get('/users', [AdminController::class, 'users'])->name('admin.users');
     Route::get('/groups', [AdminController::class, 'groups'])->name('admin.groups');
@@ -60,9 +63,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/dashboard/profile', [DashboardController::class, 'updateProfile']);
 });
 
-Route::get('/conditions', fn() => Inertia::render('Legal/Terms'))->name('legal.terms');
-Route::get('/confidentialite', fn() => Inertia::render('Legal/Privacy'))->name('legal.privacy');
-Route::get('/charte', fn() => Inertia::render('Legal/Trust'))->name('legal.trust');
+Route::get('/conditions', fn () => Inertia::render('Legal/Terms'))->name('legal.terms');
+Route::get('/confidentialite', fn () => Inertia::render('Legal/Privacy'))->name('legal.privacy');
+Route::get('/charte', fn () => Inertia::render('Legal/Trust'))->name('legal.trust');
 
 Route::get('/groups/service/{slug}', [GroupController::class, 'byService'])
     ->name('groups.by-service');
@@ -81,9 +84,10 @@ Route::get('/', function () {
             'discountPercent' => 50,
         ]);
 
-    $openGroups = Group::with('subscription')
+    $openGroups = Group::with(['subscription', 'owner'])
         ->where('status', 'open')
         ->where('visibility', 'public')
+        ->whereHas('owner')
         ->limit(10)
         ->get()
         ->map(fn ($group) => [
@@ -110,7 +114,20 @@ Route::get('/payment/success', [PaymentController::class, 'success'])
     ->name('payment.success');
 
 Route::get('/dashboard/groups/create', [GroupController::class, 'create'])
-    ->middleware(['auth', 'verified']);
+    ->middleware(['auth', 'verified'])->name('groups.create');
+
+Route::middleware(['auth', 'verified', 'throttle:60,1'])->group(function () {
+    Route::get('/dashboard/groups/drafts/{draft}', [GroupDraftController::class, 'edit'])->whereUuid('draft')->name('group-drafts.edit');
+    Route::get('/group-drafts', [GroupDraftController::class, 'index']);
+    Route::post('/group-drafts', [GroupDraftController::class, 'store']);
+    Route::get('/group-drafts/{draft}', [GroupDraftController::class, 'show'])->whereUuid('draft');
+    Route::put('/group-drafts/{draft}', [GroupDraftController::class, 'update'])->whereUuid('draft');
+    Route::delete('/group-drafts/{draft}', [GroupDraftController::class, 'destroy'])->whereUuid('draft');
+    Route::post('/group-drafts/{draft}/publish', [GroupDraftController::class, 'publish'])->whereUuid('draft')->middleware('throttle:10,1');
+    Route::post('/group-drafts/{draft}/reopen', [GroupDraftController::class, 'reopen'])->whereUuid('draft');
+    Route::get('/stripe/onboarding/return', [PaymentController::class, 'returnFromOnboarding'])->name('stripe.onboarding.return');
+    Route::get('/stripe/onboarding/refresh', [PaymentController::class, 'refreshOnboarding'])->name('stripe.onboarding.refresh');
+});
 
 Route::post('/groups', [GroupController::class, 'store'])
     ->middleware(['auth', 'verified'])

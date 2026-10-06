@@ -2,19 +2,22 @@
 
 namespace App\Providers;
 
-use App\Features\Group\Repositories\Contracts\GroupRepositoryInterface;
-use App\Features\Payment\Repositories\Contracts\PaymentRepositoryInterface;
-use App\Features\Wallet\Repositories\Contracts\WalletRepositoryInterface;
-use App\Features\Group\Repositories\GroupRepository;
-use App\Features\Payment\Repositories\PaymentRepository;
-use App\Features\Wallet\Repositories\WalletRepository;
-use App\Features\Payment\Contracts\PaymentGatewayInterface;
-use App\Features\Payment\Services\StripeGateway;
-use Illuminate\Support\Facades\Vite;
-use Illuminate\Support\ServiceProvider;
+use App\Features\Group\Contracts\GroupProductGateway;
 use App\Features\Group\Policies\GroupPolicy;
+use App\Features\Group\Repositories\Contracts\GroupRepositoryInterface;
+use App\Features\Group\Repositories\GroupRepository;
+use App\Features\Group\Services\StripeGroupProductGateway;
+use App\Features\Payment\Contracts\BillingReadGatewayInterface;
+use App\Features\Payment\Contracts\CheckoutGatewayInterface;
+use App\Features\Payment\Contracts\OwnerStripeGatewayInterface;
+use App\Features\Payment\Contracts\PaymentGatewayInterface;
+use App\Features\Payment\Services\StripeBillingGateway;
+use App\Features\Payment\Services\StripeGateway;
+use App\Features\Payment\Services\StripeOwnerGateway;
 use App\Models\Group;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\ServiceProvider;
+use Stripe\StripeClient;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,9 +26,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->singleton(StripeClient::class, fn () => new StripeClient(config('services.stripe.secret')));
+        $this->app->bind(GroupProductGateway::class, StripeGroupProductGateway::class);
+        $this->app->bind(OwnerStripeGatewayInterface::class, StripeOwnerGateway::class);
         $this->app->bind(GroupRepositoryInterface::class, GroupRepository::class);
-        $this->app->bind(PaymentRepositoryInterface::class, PaymentRepository::class);
-        $this->app->bind(WalletRepositoryInterface::class, WalletRepository::class);
+        $this->app->bind(BillingReadGatewayInterface::class, StripeBillingGateway::class);
+        $this->app->bind(CheckoutGatewayInterface::class, StripeBillingGateway::class);
         $this->app->bind(PaymentGatewayInterface::class, StripeGateway::class);
     }
 
@@ -39,6 +45,7 @@ class AppServiceProvider extends ServiceProvider
             if (str_contains($errfile, 'stripe-php') && str_contains($errstr, 'Accounts v2')) {
                 return true;
             }
+
             return false;
         }, E_USER_WARNING);
     }

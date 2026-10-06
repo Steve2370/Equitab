@@ -3,256 +3,45 @@
 namespace App\Features\Payment\Services;
 
 use App\Models\Group;
-use App\Models\GroupMember;
 use App\Models\Payment;
 use App\Models\User;
-use App\Features\Payment\Repositories\Contracts\PaymentRepositoryInterface;
-use App\Features\Payment\Contracts\PaymentGatewayInterface;
-use App\Jobs\CheckCredentialsProvided;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Exception;
 
+// Checkout, entitlement and refunds have separate responsibilities.
 class PaymentService
 {
-    private const PLATFORM_FEE_PERCENTAGE = 0.05;
-
     public function __construct(
-        private readonly PaymentGatewayInterface $gateway,
-        private readonly PaymentRepositoryInterface $paymentRepository,
+        private readonly SubscriptionCheckoutService $checkout,
+        private readonly PaymentSynchronizationService $synchronization,
+        private readonly PaymentRefundService $refunds,
     ) {}
 
-    public function initiateSubscription(
-        User $payer,
-        Group $group,
-        string $paymentMethodId
-    ): array {
-        if ($group->isFull()) {
-            throw new Exception('Ce groupe est complet.');
-        }
+    public function initiateSubscription(User $payer, Group $group, string $paymentMethodId, ?string $inviteToken = null): array
+    {
+        $raw = $this->checkout->start($payer, $group, $paymentMethodId, $inviteToken);
+        $this->synchronizeSubscription($raw['id']);
+        $invoice = is_array($raw['latest_invoice'] ?? null) ? $raw['latest_invoice'] : [];
 
-        if (! $this->gateway->isAccountActive($group->owner)) {
-            throw new Exception('Le propriétaire n\'a pas configuré ses paiements.');
-        }
-
-        $currentActiveMembers = $group->members()->where('status', 'active')->count();
-        $futureActiveMembers = $currentActiveMembers + 1;
-        $currentPricePerMember = (int) round($group->total_price / $futureActiveMembers);
-
-        $platformFee = (int) round($currentPricePerMember * self::PLATFORM_FEE_PERCENTAGE);
-        $stripePriceId = $this->gateway->createMonthlyPrice($group, $currentPricePerMember);
-
-        $result = $this->gateway->createSubscription(
-            payer: $payer,
-            stripePriceId: $stripePriceId,
-            stripeConnectAccountId: $group->owner->stripe_connect_account_id,
-            platformFeeInCents: $platformFee,
-            paymentMethodId: $paymentMethodId,
-        );
-
-        $isNewMember = ! $group->members()->where('user_id', $payer->id)->exists();
-
-        $member = $group->members()->updateOrCreate(
-            ['user_id' => $payer->id],
-            [
-                'role' => 'member',
-                'status' => 'pending_payment',
-                'share_amount' => $currentPricePerMember,
-                'joined_at' => now(),
-                'stripe_subscription_id' => $result['subscription_id'],
-                'stripe_subscription_item_id' => $result['subscription_item_id'] ?? null,
-                'stripe_customer_id' => $payer->fresh()->stripe_customer_id,
-                'subscription_status' => $result['status'],
-                'current_period_end' => now()->addMonth()->startOfMonth(),
-            ]
-        );
-
-        if ($isNewMember) {
-            $group->increment('current_members');
-        }
-
-        // Quand Stripe confirme la souscription tout de suite (pas de 3DS,
-        // paiement synchrone réussi via error_if_incomplete), on active le
-        // membre et on enregistre le paiement immédiatement — sans ça,
-        // l'activation dépendait uniquement du webhook Stripe (pas toujours
-        // joignable en local/dev) ou d'un second appel front-end dont
-        // l'échec n'était jamais remonté à l'utilisateur, laissant le
-        // membre bloqué "en attente" malgré un paiement Stripe réussi.
-        if (($result['status'] ?? null) === 'active') {
-            $this->activateMemberAndRecordPayment(
-                member: $member,
-                amountPaid: $result['amount_today'] ?? 0,
-                currency: strtoupper($group->subscription->currency ?? 'cad'),
-                paymentIntentId: $result['payment_intent_id'] ?? null,
-            );
-        }
-
-        return $result;
+        return [
+            'subscription_id' => $raw['id'], 'status' => $raw['status'],
+            'client_secret' => $invoice['confirmation_secret']['client_secret'] ?? $invoice['payment_intent']['client_secret'] ?? null,
+            'amount_today' => $invoice['amount_due'] ?? 0,
+            'invoice_paid' => ($invoice['status'] ?? null) === 'paid',
+            'next_billing_date' => $raw['items']['data'][0]['current_period_end'] ?? $raw['current_period_end'] ?? null,
+        ];
     }
 
-    /**
-     * Active un membre et enregistre son paiement de façon idempotente.
-     * Point d'entrée partagé par le flux de souscription synchrone, la
-     * confirmation 3DS côté client (confirmSubscription) et le webhook
-     * Stripe — pour que ces trois chemins ne puissent plus diverger.
-     */
-    public function activateMemberAndRecordPayment(
-        GroupMember $member,
-        int $amountPaid,
-        string $currency = 'CAD',
-        ?string $paymentIntentId = null,
-    ): Payment {
-        return DB::transaction(function () use ($member, $amountPaid, $currency, $paymentIntentId) {
-            $member->update([
-                'status' => 'active',
-                'subscription_status' => 'active',
-                'last_payment_at' => now(),
-                'next_payment_at' => now()->addMonth(),
-            ]);
-
-            $existing = $paymentIntentId
-                ? Payment::where('stripe_payment_intent_id', $paymentIntentId)->first()
-                : Payment::where('group_id', $member->group_id)
-                    ->where('user_id', $member->user_id)
-                    ->where('status', 'completed')
-                    ->whereDate('paid_at', today())
-                    ->first();
-
-            if ($existing) {
-                return $existing;
-            }
-
-            $member->user->increment('completed_payments_count');
-
-            $payment = Payment::create([
-                'group_id' => $member->group_id,
-                'user_id' => $member->user_id,
-                'amount' => $amountPaid,
-                'currency' => $currency,
-                'status' => 'completed',
-                'paid_at' => now(),
-                'due_date' => now(),
-                'period_start' => now()->startOfMonth(),
-                'period_end' => now()->endOfMonth(),
-                'platform_fee_amount' => (int) round($amountPaid * self::PLATFORM_FEE_PERCENTAGE),
-                'stripe_payment_intent_id' => $paymentIntentId,
-            ]);
-
-            CheckCredentialsProvided::dispatch(
-                paymentId: $payment->id,
-                groupId: $member->group_id,
-                userId: $member->user_id,
-            )->delay(now()->addHours(48));
-
-            Log::info('Paiement enregistré et membre activé', [
-                'payment_id' => $payment->id,
-                'group_id' => $member->group_id,
-                'user_id' => $member->user_id,
-                'amount' => $amountPaid,
-            ]);
-
-            return $payment;
-        });
+    public function synchronizeSubscription(string $subscriptionId, ?string $invoiceId = null): ?Payment
+    {
+        return $this->synchronization->synchronize($subscriptionId, $invoiceId);
     }
 
-
-    /**
-     * Point d'entrée unique de remboursement — auparavant, le job
-     * CheckCredentialsProvided et AdminController::resolveDispute
-     * dupliquaient chacun leur propre logique, avec les mêmes trois défauts :
-     * le résultat de l'appel Stripe n'était jamais inspecté (le paiement
-     * était marqué "refunded" même si Stripe renvoyait un échec, voire même
-     * sans appeler Stripe du tout quand stripe_payment_intent_id était nul),
-     * aucun identifiant de remboursement n'était conservé, et l'abonnement
-     * Stripe du membre n'était jamais annulé — un membre "remboursé" côté
-     * Equitab continuait donc d'être facturé par Stripe. Idempotent : un
-     * paiement déjà remboursé est renvoyé tel quel sans repasser par Stripe.
-     */
     public function refundPayment(Payment $payment, string $reason): Payment
     {
-        return DB::transaction(function () use ($payment, $reason) {
-            $payment = Payment::whereKey($payment->id)->lockForUpdate()->firstOrFail();
-
-            if ($payment->status === 'refunded') {
-                return $payment;
-            }
-
-            if (! $payment->stripe_payment_intent_id) {
-                throw new Exception(
-                    "Remboursement impossible : le paiement #{$payment->id} n'a pas d'identifiant Stripe (payment_intent) associé."
-                );
-            }
-
-            $result = $this->gateway->refundPayment($payment->stripe_payment_intent_id);
-
-            // Un refund Stripe peut échouer (carte déjà remboursée ailleurs,
-            // fonds insuffisants côté compte connecté, etc.) — le statut
-            // renvoyé par Stripe doit être inspecté avant de considérer
-            // quoi que ce soit comme remboursé côté Equitab.
-            if (! in_array($result['status'] ?? null, ['succeeded', 'pending'], true)) {
-                throw new Exception(
-                    "Le remboursement Stripe du paiement #{$payment->id} n'a pas abouti (statut: " . ($result['status'] ?? 'inconnu') . ')'
-                );
-            }
-
-            $payment->update([
-                'status' => 'refunded',
-                'refunded_at' => now(),
-                'refund_reason' => $reason,
-                'stripe_refund_id' => $result['refund_id'] ?? null,
-            ]);
-
-            $member = GroupMember::where('group_id', $payment->group_id)
-                ->where('user_id', $payment->user_id)
-                ->first();
-
-            if ($member) {
-                if ($member->stripe_subscription_id) {
-                    try {
-                        $this->gateway->cancelSubscription($member->stripe_subscription_id);
-                    } catch (Exception $e) {
-                        // Déjà annulé côté Stripe (ex: customer.subscription.deleted
-                        // déjà traité par le webhook) — ne doit pas faire échouer
-                        // le remboursement, qui est la partie critique ici.
-                        Log::warning("Annulation abonnement Stripe échouée pendant remboursement paiement #{$payment->id}: " . $e->getMessage());
-                    }
-                }
-
-                $wasActive = $member->status === 'active';
-
-                $member->update([
-                    'status' => 'left',
-                    'subscription_status' => 'canceled',
-                ]);
-
-                if ($wasActive) {
-                    $member->group()->decrement('current_members');
-                }
-            }
-
-            Log::info("Remboursement confirmé — paiement #{$payment->id}", [
-                'reason' => $reason,
-                'stripe_refund_id' => $result['refund_id'] ?? null,
-            ]);
-
-            return $payment->fresh();
-        });
+        return $this->refunds->refund($payment, $reason);
     }
 
-    public function markPaymentFailed(string $stripePaymentIntentId, string $reason = ''): ?Payment
+    public function synchronizeRefund(string $paymentIntentId): void
     {
-        $payment = Payment::where('stripe_payment_intent_id', $stripePaymentIntentId)->first();
-
-        if (! $payment) {
-            return null;
-        }
-
-        $payment->update([
-            'status' => 'failed',
-        ]);
-
-        $payment->increment('retry_count');
-
-        return $payment;
+        $this->refunds->synchronizeIntent($paymentIntentId);
     }
 }

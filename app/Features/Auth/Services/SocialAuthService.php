@@ -4,105 +4,94 @@ namespace App\Features\Auth\Services;
 
 use App\Mail\WelcomeUser;
 use App\Models\User;
-use App\Features\Wallet\Services\WalletService;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
+use Laravel\Socialite\Two\User as OAuth2User;
 
 class SocialAuthService
 {
-    public function __construct(
-        private readonly WalletService $walletService,
-    ) {}
+    public function __construct(private readonly AccountAccessRevoker $revoker) {}
 
-    /**
-     * Find an existing user matching this provider account, or create a new
-     * one. Works identically for any provider (google, github, ...) — the
-     * only provider-specific input is the $provider string and whatever
-     * Socialite normalized onto the SocialiteUser contract.
-     *
-     * - If a user is already linked to this provider account, return it.
-     * - If a user exists with the same email (password account, or another
-     *   linked provider), link this provider to it. The provider has
-     *   already verified the email address, so this link is safe and also
-     *   marks the email verified if it wasn't already.
-     * - Otherwise, create a brand new user, mirroring what
-     *   RegisteredUserController does on classic sign-up (wallet, welcome
-     *   email, Registered event) so every sign-up path leaves the account
-     *   in the same state.
-     *
-     * @throws ValidationException if the matched account is suspended/banned.
-     */
-    public function findOrCreateUser(string $provider, SocialiteUser $socialiteUser): User
+    public function findOrCreateUser(string $provider, SocialiteUser $identity): User
     {
-        $user = User::whereHas('oauthProviders', function ($query) use ($provider, $socialiteUser) {
-            $query->where('provider', $provider)->where('provider_id', $socialiteUser->getId());
-        })->first();
+        $this->validateIdentity($provider, $identity);
+        $email = mb_strtolower(trim($identity->getEmail()));
 
-        $user ??= User::where('email', $socialiteUser->getEmail())->first();
-        $user ??= $this->createNewUser($socialiteUser);
-        $this->ensureUserIsActive($user);
-        $this->syncOAuthProvider($user, $provider, $socialiteUser);
+        return DB::transaction(function () use ($provider, $identity, $email): User {
+            $user = User::query()->whereHas('oauthProviders', function ($query) use ($provider, $identity) {
+                $query->where('provider', $provider)->where('provider_id', $identity->getId());
+            })->lockForUpdate()->first();
 
-        return $user;
+            $user ??= User::query()->whereRaw('LOWER(email) = ?', [$email])->lockForUpdate()->first();
+            $isNew = $user === null;
+            $user ??= User::create([
+                'name' => $identity->getName() ?: $identity->getNickname() ?: 'Nouvel utilisateur',
+                'email' => $email,
+                'password' => null,
+                'status' => 'active',
+                'avatar' => $identity->getAvatar(),
+            ]);
+
+            if (! $user->canAccessAccount()) {
+                throw ValidationException::withMessages(['email' => 'Ce compte est suspendu ou désactivé.']);
+            }
+
+            if (! $isNew && ! $user->hasVerifiedEmail()) {
+                // Email ownership has now been proven. No credential issued to
+                // the unverified pre-registrant may survive this recovery.
+                $user = $this->revoker->replacePassword($user, null);
+                $user->oauthProviders()->delete();
+                Password::deleteToken($user);
+            }
+
+            $linked = $user->oauthProviders()->where('provider', $provider)->first();
+            if ($linked && $linked->provider_id !== (string) $identity->getId()) {
+                throw ValidationException::withMessages(['email' => 'Ce compte est déjà lié à une autre identité Google.']);
+            }
+
+            $user->oauthProviders()->updateOrCreate(['provider' => $provider], [
+                'provider_id' => $identity->getId(),
+                'avatar' => $identity->getAvatar(),
+            ]);
+
+            if (! $user->hasVerifiedEmail()) {
+                $user->markEmailAsVerified();
+            }
+
+            if ($isNew) {
+                DB::afterCommit(function () use ($user): void {
+                    try {
+                        Mail::to($user->email)->send(new WelcomeUser($user));
+                    } catch (\Exception) {
+                        Log::warning('Welcome email failed (social sign-up).', ['user_id' => $user->id]);
+                    }
+                    event(new Registered($user));
+                });
+            }
+
+            return $user;
+        });
     }
 
-    private function syncOAuthProvider(User $user, string $provider, SocialiteUser $socialiteUser): void {
-        $user->oauthProviders()->updateOrCreate(['provider' => $provider],
-            [
-                'provider_id' => $socialiteUser->getId(),
-                'avatar' => $socialiteUser->getAvatar(),
-            ],
-        );
-        if (! $user->email_verified_at) {
-            $user->forceFill([
-                'email_verified_at' => now(),
-            ])->save();
-        }
-    }
-
-    private function createNewUser(SocialiteUser $socialiteUser): User
+    private function validateIdentity(string $provider, SocialiteUser $identity): void
     {
-        $user = User::create([
-            'name' => $socialiteUser->getName() ?: $socialiteUser->getNickname() ?: 'Nouvel utilisateur',
-            'email' => $socialiteUser->getEmail(),
-            'password' => null,
-            'status' => 'active',
-            'email_verified_at' => now(),
-            'avatar' => $socialiteUser->getAvatar(),
-        ]);
+        // Socialite's generic contract makes no email-verification guarantee.
+        // Only the enabled Google adapter's explicit assertion is accepted.
+        $raw = $identity instanceof OAuth2User ? $identity->getRaw() : [];
+        $verified = ($raw['email_verified'] ?? $raw['verified_email'] ?? false) === true;
 
-        $this->walletService->createForUser($user);
-
-        try {
-            Mail::to($user->email)->send(new WelcomeUser($user));
-        } catch (\Exception $e) {
-            Log::error('Welcome email failed (social sign-up): ' . $e->getMessage());
+        if ($provider !== 'google' || ! in_array($provider, config('oauth.providers', []), true)
+            || ! $verified || ! is_string($identity->getEmail())
+            || ! filter_var($identity->getEmail(), FILTER_VALIDATE_EMAIL)
+            || ! is_string($identity->getId()) || $identity->getId() === '') {
+            throw ValidationException::withMessages([
+                'email' => 'Google doit confirmer votre adresse courriel pour permettre la connexion.',
+            ]);
         }
-
-        event(new Registered($user));
-
-        return $user;
-    }
-
-    /**
-     * Block login for suspended/banned accounts.
-     *
-     * Note: the standard email/password login (LoginRequest) does not
-     * currently perform this check either — this should be aligned during
-     * the auth refactor so every login path enforces the same account
-     * status rules.
-     */
-    private function ensureUserIsActive(User $user): void
-    {
-        if ($user->status === 'active') {
-            return;
-        }
-
-        throw ValidationException::withMessages([
-            'email' => 'Ce compte a été suspendu. Contactez le support pour plus d\'informations.',
-        ]);
     }
 }

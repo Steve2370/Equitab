@@ -2,19 +2,21 @@
 
 namespace App\Features\Admin\Controllers;
 
+use App\Features\Payment\Services\BillingReconciliationService;
+use App\Features\Payment\Services\SubscriptionCancellationService;
 use App\Http\Controllers\Controller;
+use App\Mail\AdminMessage;
 use App\Models\Dispute;
 use App\Models\Group;
+use App\Models\GroupMember;
 use App\Models\Payment;
 use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\AdminMessage;
-use App\Mail\AutoRefundProcessed;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Features\Payment\Services\PaymentService;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -41,7 +43,7 @@ class AdminController extends Controller
         $users = User::withCount(['ownedGroups', 'groupMembers'])
             ->latest()
             ->paginate(20)
-            ->through(fn($u) => [
+            ->through(fn ($u) => [
                 'id' => $u->id,
                 'name' => $u->name,
                 'email' => $u->email,
@@ -101,7 +103,7 @@ class AdminController extends Controller
             ->withCount('members')
             ->latest()
             ->paginate(20)
-            ->through(fn($g) => [
+            ->through(fn ($g) => [
                 'id' => $g->id,
                 'name' => $g->name,
                 'ownerName' => $g->owner->name ?? 'Utilisateur supprimé',
@@ -116,7 +118,7 @@ class AdminController extends Controller
                 // La composition du groupe (qui est dans quel groupe) —
                 // manquait ici alors que la page Admin/Groups.vue l'attend
                 // déjà pour son panneau dépliable.
-                'members' => $g->members->map(fn($m) => [
+                'members' => $g->members->map(fn ($m) => [
                     'id' => $m->user_id,
                     'name' => $m->user->name ?? 'Utilisateur supprimé',
                     'email' => $m->user->email ?? '—',
@@ -136,7 +138,7 @@ class AdminController extends Controller
             ->where('status', 'completed')
             ->latest('paid_at')
             ->paginate(20)
-            ->through(fn($p) => [
+            ->through(fn ($p) => [
                 'id' => $p->id,
                 'userName' => $p->user->name ?? 'Utilisateur supprimé',
                 'userEmail' => $p->user->email ?? '—',
@@ -158,16 +160,18 @@ class AdminController extends Controller
 
     public function disputes(): Response
     {
-        $disputes = Dispute::with(['user', 'group.subscription'])
+        // Restore archived group context only for this authorized history view;
+        // deleted account identity and global model relations stay hidden.
+        $disputes = Dispute::with(['user', 'payment', 'group' => fn ($query) => $query->withTrashed()->with('subscription')])
             ->latest()
             ->paginate(20)
-            ->through(fn($d) => [
+            ->through(fn ($d) => [
                 'id' => $d->id,
-                'userName' => $d->user->name,
-                'userEmail' => $d->user->email,
-                'groupName' => $d->group->name,
+                'userName' => $d->user?->name ?? 'Utilisateur supprimé',
+                'userEmail' => $d->user?->email ?? '—',
+                'groupName' => $d->group?->name ?? 'Groupe supprimé',
                 'amount' => $d->payment?->amount ?? 0,
-                'subscriptionName' => $d->group->subscription->name,
+                'subscriptionName' => $d->group?->subscription?->name ?? 'Service indisponible',
                 'reason' => $d->reason,
                 'description' => $d->description,
                 'status' => $d->status,
@@ -177,40 +181,40 @@ class AdminController extends Controller
         return Inertia::render('Admin/Disputes', ['disputes' => $disputes]);
     }
 
-    public function resolveDispute(Request $request, Dispute $dispute, PaymentService $paymentService): RedirectResponse
+    public function resolveDispute(Request $request, Dispute $dispute, BillingReconciliationService $billing): RedirectResponse
     {
         $request->validate([
             'status' => ['required', 'in:resolved_refund,resolved_rejected'],
             'admin_notes' => ['nullable', 'string', 'max:1000'],
         ]);
-
-        if ($request->status === 'resolved_refund') {
-            if (! $dispute->payment->stripe_payment_intent_id) {
-                return back()->with('error', 'Ce paiement n\'a pas d\'identifiant Stripe — remboursement impossible.');
-            }
-
-            try {
-                // Point d'entrée unique de remboursement, partagé avec le
-                // job CheckCredentialsProvided : ne marque le paiement
-                // "refunded" qu'après confirmation réelle de Stripe, et
-                // annule l'abonnement du membre au passage.
-                $paymentService->refundPayment($dispute->payment, 'dispute_resolved');
-            } catch (\Exception $e) {
-                Log::error("Échec remboursement dispute #{$dispute->id}: " . $e->getMessage());
-                return back()->with('error', 'Le remboursement Stripe a échoué : ' . $e->getMessage());
-            }
-
-            Mail::to($dispute->user->email)
-                ->send(new AutoRefundProcessed(
-                    $dispute->payment->load('group.subscription'),
-                    $dispute->user
-                ));
+        if (in_array($dispute->status, ['resolved_refund', 'resolved_rejected'], true)) {
+            return back()->with('error', 'Ce litige est déjà résolu.');
         }
+        if ($request->status === 'resolved_refund') {
+            $payment = $dispute->payment;
+            if (! $payment || ! $payment->stripe_payment_intent_id) {
+                return back()->with('error', 'Ce paiement doit être rapproché avec Stripe avant remboursement.');
+            }
+            $dispute->update(['admin_notes' => $request->admin_notes]);
+            try {
+                $payment = $billing->refund($payment, 'dispute_resolved');
+            } catch (\Throwable) {
+                Log::warning('Remboursement du litige à reprendre.', ['dispute_id' => $dispute->id]);
 
+                return back()->with('error', 'Le remboursement ne peut pas être confirmé ; la demande reste à suivre.');
+            }
+            if ($payment->status !== 'refunded') {
+                return back()->with('success', 'Demande de remboursement enregistrée, confirmation en attente.');
+            }
+        }
+        if ($request->status === 'resolved_rejected'
+            && DB::table('payment_refund_attempts')->where('payment_id', $dispute->payment_id)->exists()) {
+            return back()->with('error', 'Un remboursement a déjà été demandé ; vérifier son état avant de rejeter le litige.');
+        }
         $dispute->update([
             'status' => $request->status,
             'admin_notes' => $request->admin_notes,
-            'resolved_at' => now(),
+            'resolved_at' => $dispute->resolved_at ?? now(),
         ]);
 
         return back()->with('success', 'Dispute résolue avec succès.');
@@ -248,29 +252,39 @@ class AdminController extends Controller
         return back()->with('success', "Message envoyé à {$users->count()} utilisateur(s).");
     }
 
-    public function deleteUser(\App\Models\User $user): \Illuminate\Http\RedirectResponse
+    public function deleteUser(User $user, SubscriptionCancellationService $cancellations): RedirectResponse
     {
         if ($user->id === Auth::id()) {
             return back()->with('error', 'Vous ne pouvez pas supprimer votre propre compte.');
         }
-
-        $user->groupMembers()->where('status', 'active')->each(function ($member) {
-            if ($member->stripe_subscription_id) {
-                try {
-                    app(\App\Features\Payment\Contracts\PaymentGatewayInterface::class)
-                        ->cancelSubscription($member->stripe_subscription_id);
-                } catch (\Exception $e) {
-                    Log::error('Cancel sub error: ' . $e->getMessage());
-                }
+        // Persist all intentions before remote calls; soft delete retains replay targets.
+        $members = DB::transaction(function () use ($user) {
+            $ownedIds = Group::withTrashed()->where('owner_id', $user->id)->pluck('id');
+            Group::withTrashed()->whereIn('id', $ownedIds)->update(['status' => 'closed']);
+            $members = GroupMember::where(fn ($query) => $query->where('user_id', $user->id)
+                ->orWhereIn('group_id', $ownedIds))->lockForUpdate()->get();
+            foreach ($members as $member) {
+                $member->update(['cancellation_requested_at' => $member->cancellation_requested_at ?? now()]);
             }
-            $member->update(['status' => 'left']);
-        });
+            $user->delete();
 
-        $user->ownedGroups()->where('status', 'open')->each(function ($group) {
-            $group->update(['status' => 'closed']);
+            return $members;
         });
+        $pending = 0;
+        foreach ($members as $member) {
+            try {
+                if (! $cancellations->request($member)) {
+                    $pending++;
+                }
+            } catch (\Throwable) {
+                $pending++;
+                Log::warning('Annulation après suppression de compte à reprendre.', ['member_id' => $member->id]);
+            }
+        }
+        if ($pending > 0) {
+            return back()->with('error', 'Compte supprimé ; des annulations restent en attente et seront réessayées.');
+        }
 
-        $user->delete();
-        return back()->with('success', 'Utilisateur supprimé.');
+        return back()->with('success', 'Utilisateur supprimé et annulations confirmées.');
     }
 }

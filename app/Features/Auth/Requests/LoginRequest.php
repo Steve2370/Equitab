@@ -52,15 +52,15 @@ class LoginRequest extends FormRequest
 
         $user = Auth::user();
 
-        if ($user->isSuspended()) {
+        if (! $user->canAccessAccount()) {
             Auth::logout();
 
-            $message = $user->suspended_until
-                ? "Votre compte est suspendu jusqu'au " . $user->suspended_until->format('d M Y à H:i') . '.'
-                : 'Votre compte est suspendu.';
+            $message = $user->status === 'suspended' && $user->suspended_until
+                ? "Votre compte est suspendu jusqu'au ".$user->suspended_until->format('d M Y à H:i').'.'
+                : 'Ce compte est suspendu ou désactivé.';
 
             if ($user->suspension_reason) {
-                $message .= ' Raison : ' . $user->suspension_reason;
+                $message .= ' Raison : '.$user->suspension_reason;
             }
 
             throw ValidationException::withMessages([

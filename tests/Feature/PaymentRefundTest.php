@@ -8,8 +8,7 @@ use App\Models\Group;
 use App\Models\GroupMember;
 use App\Models\Payment;
 use Exception;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
+use Tests\Support\BillingTestCase;
 
 /**
  * Couvre le finding critique P0 « remboursement non fiable » : les deux
@@ -21,10 +20,8 @@ use Tests\TestCase;
  * stripe_payment_intent_id, n'accepte qu'un statut Stripe succeeded/pending,
  * et annule l'abonnement + met à jour le membre/groupe.
  */
-class PaymentRefundTest extends TestCase
+class PaymentRefundTest extends BillingTestCase
 {
-    use RefreshDatabase;
-
     public function test_refund_requires_a_stripe_payment_intent_id(): void
     {
         $payment = Payment::factory()->withoutStripeIntent()->create(['status' => 'completed']);

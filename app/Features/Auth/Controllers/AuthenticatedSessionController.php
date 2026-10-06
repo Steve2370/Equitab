@@ -2,8 +2,9 @@
 
 namespace App\Features\Auth\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Features\Auth\Requests\LoginRequest;
+use App\Features\Auth\Services\AccountSession;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -32,6 +33,7 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $request->session()->regenerate();
+        app(AccountSession::class)->remember($request->session(), $request->user());
 
         return redirect()->intended(route('dashboard', absolute: false))
             ->with('success', 'Connexion réussie. Bienvenue !');

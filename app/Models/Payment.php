@@ -23,8 +23,10 @@ class Payment extends Model
         // Equitab affichés dans l'admin) et stripe_payment_intent_id
         // (utilisé pour la déduplication et les remboursements) ne
         // s'enregistraient jamais.
-        'stripe_payment_intent_id', 'stripe_transfer_id', 'platform_fee_amount',
+        'stripe_payment_intent_id', 'stripe_transfer_id', 'platform_fee_amount', 'stripe_invoice_id',
         'refunded_at', 'refund_reason', 'stripe_refund_id',
+        'confirmation_notified_at',
+        'credentials_check_due_at', 'credentials_check_queued_at',
     ];
 
     protected function casts(): array
@@ -37,6 +39,9 @@ class Payment extends Model
             'paid_at' => 'datetime',
             'platform_fee_amount' => 'integer',
             'refunded_at' => 'datetime',
+            'confirmation_notified_at' => 'datetime',
+            'credentials_check_due_at' => 'datetime',
+            'credentials_check_queued_at' => 'datetime',
         ];
     }
 

@@ -5,19 +5,16 @@ set -e
 # partagent le même volume bind-mounté que le conteneur "app"
 # (docker-compose.yml: ".:/var/www" sur les deux). Contrairement à
 # docker/entrypoint.sh, on ne relance PAS "npm ci && npm run build" ici :
-# ces conteneurs ne servent aucune page, et exécuter npm en parallèle dans
-# plusieurs conteneurs sur le même node_modules/ bind-mounté peut corrompre
-# l'installation. "composer install" reste nécessaire (autoload des jobs et
-# commandes), mais Composer verrouille déjà son propre répertoire vendor/ —
-# un démarrage concurrent avec le conteneur "app" attend simplement son tour
-# au lieu de corrompre quoi que ce soit.
+# ces conteneurs ne servent aucune page. Seul app prépare vendor/node_modules :
+# depends_on: service_healthy garantit la fin de sa préparation avant démarrage.
+# Composer n'est pas un verrou inter-conteneurs. Ne pas lancer de worker manuel
+# avant app, ni modifier le checkout partagé tant qu'un worker tourne.
 
 cd /var/www
 
-git config --global --add safe.directory /var/www
-
-if [ -f composer.json ]; then
-    composer install --no-interaction --optimize-autoloader
+if [ ! -r vendor/autoload.php ]; then
+    echo "Dépendances absentes : démarrer app et attendre son état healthy." >&2
+    exit 1
 fi
 
 exec "$@"

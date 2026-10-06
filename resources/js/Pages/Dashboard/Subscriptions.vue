@@ -33,13 +33,15 @@ interface OwnedSubscription {
 }
 
 interface Props {
+    initialTab?: "joined" | "owned";
     joinedSubscriptions: JoinedSubscription[];
     ownedSubscriptions: OwnedSubscription[];
+    drafts?: { id: string; name: string; status: string; updatedAt: string; url: string }[];
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
-const activeTab = ref<"joined" | "owned">("joined");
+const activeTab = ref<"joined" | "owned">(props.initialTab ?? "joined");
 const showCredentials = ref(false);
 const selectedGroup = ref<{ id: number; name: string } | null>(null);
 
@@ -121,6 +123,19 @@ function confirmCloseGroup(): void {
                 }}</Link
             >
         </div>
+        <section v-if="drafts?.length" class="eq-panel mb-8 p-5" aria-labelledby="owner-drafts-title">
+            <h2 id="owner-drafts-title" class="text-lg font-semibold">Vos partages en préparation</h2>
+            <p class="mt-1 text-sm text-gray-600">Privés et sans paiement. Reprenez quand vous le souhaitez.</p>
+            <ul class="mt-4 divide-y divide-gray-100">
+                <li v-for="draft in drafts" :key="draft.id" class="flex flex-wrap items-center justify-between gap-3 py-3">
+                    <div class="min-w-0">
+                        <p class="font-medium break-words">{{ draft.name || 'Mon prochain partage' }}</p>
+                        <p class="text-sm text-gray-500">{{ draft.status === 'publishing' ? 'Publication à reprendre' : 'Brouillon enregistré' }} · {{ draft.updatedAt }}</p>
+                    </div>
+                    <Link :href="draft.url" class="eq-button" :aria-label="`Reprendre ${draft.name || 'mon partage'}`">Reprendre <ArrowUpRight :size="16" /></Link>
+                </li>
+            </ul>
+        </section>
         <div
             class="eq-pills mb-8"
             role="group"

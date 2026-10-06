@@ -2,28 +2,31 @@
 
 namespace App\Features\Payment\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\Group;
-use App\Models\Dispute;
-use App\Models\Payment;
-use App\Models\GroupMember;
+use App\Features\Group\Services\GroupAccess;
+use App\Features\Payment\Services\OwnerOnboardingAccess;
+use App\Features\Payment\Services\OwnerOnboardingException;
+use App\Features\Payment\Services\OwnerOnboardingService;
+use App\Features\Payment\Services\PaymentConfirmationNotifier;
 use App\Features\Payment\Services\PaymentService;
-use App\Features\Payment\Contracts\PaymentGatewayInterface;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Models\Dispute;
+use App\Models\Group;
+use App\Models\GroupMember;
+use App\Models\Payment;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\PaymentConfirmed;
-use App\Mail\NewMemberJoined;
-use Inertia\Response;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
-use Exception;
+use Inertia\Response;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Throwable;
 
 class PaymentController extends Controller
 {
     public function __construct(
         private readonly PaymentService $paymentService,
-        private readonly PaymentGatewayInterface $gateway,
+        private readonly GroupAccess $access,
     ) {}
 
     public function initiate(Group $group, Request $request): JsonResponse
@@ -31,18 +34,48 @@ class PaymentController extends Controller
         return response()->json(['message' => 'Utilisez POST /groups/{group}/subscribe'], 410);
     }
 
-    public function startOnboarding(Request $request): JsonResponse
+    public function startOnboarding(Request $request, OwnerOnboardingService $onboarding): JsonResponse
     {
-        $url = $this->gateway->createOnboardingLink(
-            $request->user(),
-            returnUrl: route('dashboard'),
-            refreshUrl: route('dashboard'),
-        );
-        return response()->json(['url' => $url]);
+        $data = $request->validate(['draft_id' => ['nullable', 'uuid']]);
+        try {
+            return response()->json(['url' => $onboarding->start($request->user(), $data['draft_id'] ?? null)]);
+        } catch (OwnerOnboardingException $e) {
+            return response()->json(['message' => $e->getMessage()], 503);
+        }
     }
 
-    public function calculateProration(Group $group): JsonResponse
+    public function returnFromOnboarding(Request $request, OwnerOnboardingService $onboarding, OwnerOnboardingAccess $access): RedirectResponse
     {
+        $data = $request->validate(['draft_id' => ['nullable', 'uuid']]);
+        $draftId = $data['draft_id'] ?? null;
+        $access->authorize($request->user()->fresh(), $draftId);
+        $destination = $access->destination($draftId);
+        try {
+            $onboarding->refresh($request->user());
+        } catch (OwnerOnboardingException $e) {
+            return redirect()->to($destination)->with('error', $e->getMessage());
+        }
+
+        return redirect()->to($destination);
+    }
+
+    public function refreshOnboarding(Request $request, OwnerOnboardingService $onboarding, OwnerOnboardingAccess $access): RedirectResponse
+    {
+        $data = $request->validate(['draft_id' => ['nullable', 'uuid']]);
+        $draftId = $data['draft_id'] ?? null;
+        $access->authorize($request->user()->fresh(), $draftId);
+        try {
+            return redirect()->away($onboarding->start($request->user(), $draftId));
+        } catch (OwnerOnboardingException $e) {
+            return redirect()->to($access->destination($draftId))->with('error', $e->getMessage());
+        }
+    }
+
+    public function calculateProration(Group $group, Request $request): JsonResponse
+    {
+        $data = $request->validate(['invite_token' => ['nullable', 'string', 'max:255']]);
+        abort_unless($this->access->canView($request->user(), $group)
+            || $this->access->hasValidInvitation($group, $data['invite_token'] ?? null), 404);
         // $group->price_per_member n'est jamais renseigné (le prix réel
         // vient de total_price / membres actifs) — calculatePricePerMemberIfJoined()
         // donne le prix tel qu'il sera pour quelqu'un qui n'a pas encore
@@ -62,16 +95,27 @@ class PaymentController extends Controller
         ]);
     }
 
-    public function startIdentityVerification(Request $request): JsonResponse
+    public function startIdentityVerification(Request $request, OwnerOnboardingService $onboarding): JsonResponse
     {
-        $result = $this->gateway->createIdentityVerificationSession($request->user());
-        return response()->json(['url' => $result['url']]);
+        $data = $request->validate(['draft_id' => ['nullable', 'uuid']]);
+        $draftId = $data['draft_id'] ?? null;
+        try {
+            $result = $onboarding->startIdentity($request->user(), $draftId);
+            if ($draftId !== null && $request->hasSession()) {
+                $request->session()->put('owner_draft_id', $draftId);
+            }
+
+            return response()->json(['url' => $result['url']]);
+        } catch (OwnerOnboardingException $e) {
+            return response()->json(['message' => $e->getMessage()], 503);
+        }
     }
 
     public function subscribe(Group $group, Request $request): JsonResponse
     {
         $request->validate([
-            'payment_method_id' => ['required', 'string'],
+            'payment_method_id' => ['required', 'string', 'max:255', 'regex:/^pm_[A-Za-z0-9_]+$/'],
+            'invite_token' => ['nullable', 'string', 'max:255'],
         ]);
 
         try {
@@ -79,14 +123,16 @@ class PaymentController extends Controller
                 payer: $request->user(),
                 group: $group,
                 paymentMethodId: $request->payment_method_id,
+                inviteToken: $request->input('invite_token'),
             );
 
-            Log::info('Subscribe result', $result);
-
             return response()->json($result);
-        } catch (Exception $e) {
-            Log::error('Subscribe error: ' . $e->getMessage());
-            return response()->json(['message' => $e->getMessage()], 422);
+        } catch (HttpExceptionInterface $e) {
+            throw $e;
+        } catch (Throwable) {
+            Log::warning('Souscription à rapprocher.', ['group_id' => $group->id, 'user_id' => $request->user()->id]);
+
+            return response()->json(['message' => 'La confirmation est momentanément indisponible. Réessayez sans recommencer le paiement.'], 503);
         }
     }
 
@@ -95,9 +141,10 @@ class PaymentController extends Controller
         $groupId = $request->query('group_id');
         $group = Group::with(['subscription', 'owner'])->findOrFail($groupId);
         $user = $request->user();
+        abort_unless($this->access->canView($user, $group), 404);
 
         $member = $group->members()->where('user_id', $user->id)->first();
-        $isMemberActive = $member?->status === 'active';
+        $isMemberActive = $this->access->canUseService($user, $group);
 
         return Inertia::render('PaymentSuccess', [
             'group' => [
@@ -122,7 +169,7 @@ class PaymentController extends Controller
         ]);
     }
 
-    public function dispute(Request $request, \App\Models\Payment $payment): JsonResponse
+    public function dispute(Request $request, Payment $payment): JsonResponse
     {
         $request->validate([
             'reason' => ['required', 'in:no_access,invalid_credentials,service_down,other'],
@@ -157,10 +204,10 @@ class PaymentController extends Controller
         ], 201);
     }
 
-    public function confirmSubscription(Request $request): JsonResponse
+    public function confirmSubscription(Request $request, PaymentConfirmationNotifier $notifications): JsonResponse
     {
         $request->validate([
-            'subscription_id' => ['required', 'string'],
+            'subscription_id' => ['required', 'string', 'max:255', 'regex:/^sub_[A-Za-z0-9_]+$/'],
         ]);
 
         $member = GroupMember::where('stripe_subscription_id', $request->subscription_id)
@@ -171,35 +218,21 @@ class PaymentController extends Controller
             return response()->json(['message' => 'Abonnement introuvable.'], 404);
         }
 
-        $stripe = new \Stripe\StripeClient(config('services.stripe.secret'));
-        $subscription = $stripe->subscriptions->retrieve($request->subscription_id, [
-            'expand' => ['latest_invoice.payment_intent'],
-        ]);
+        if (in_array($member->status, ['left', 'kicked'], true) || $member->cancellation_requested_at || ! $member->group) {
+            return response()->json(['message' => 'Cette adhésion est terminée.'], 422);
+        }
+        try {
+            $payment = $this->paymentService->synchronizeSubscription($request->subscription_id);
+        } catch (Throwable) {
+            Log::warning('Confirmation Stripe à reprendre.', ['member_id' => $member->id]);
 
-        $invoice = $subscription->latest_invoice;
-        $paymentIntentStatus = $invoice?->payment_intent?->status ?? null;
-        $invoiceStatus = $invoice?->status ?? null;
-
-        if ($subscription->status !== 'active' && $paymentIntentStatus !== 'succeeded' && $invoiceStatus !== 'paid') {
+            return response()->json(['message' => 'La confirmation est momentanément indisponible. Réessayez plus tard.'], 503);
+        }
+        $member->refresh();
+        if (! $payment || $payment->status !== 'completed' || ! $this->access->canUseService($request->user()->fresh(), $member->group)) {
             return response()->json(['message' => 'Paiement non confirmé par Stripe.'], 422);
         }
-
-        // Délègue au même point d'entrée que le flux de souscription
-        // synchrone et le webhook Stripe — idempotent via
-        // stripe_payment_intent_id, donc rejouable sans risque même si le
-        // webhook ou l'activation synchrone est déjà passé par là.
-        $payment = $this->paymentService->activateMemberAndRecordPayment(
-            member: $member,
-            amountPaid: $invoice?->amount_paid ?? 0,
-            currency: strtoupper($subscription->currency),
-            paymentIntentId: $invoice?->payment_intent?->id,
-        );
-
-        Mail::to($member->user->email)
-            ->send(new PaymentConfirmed($payment, $member));
-
-        Mail::to($member->group->owner->email)
-            ->send(new NewMemberJoined($member->group->load('subscription', 'owner'), $member->user, $member->share_amount));
+        $notifications->sendOnce($payment, $member);
 
         return response()->json(['message' => 'Abonnement activé.']);
     }

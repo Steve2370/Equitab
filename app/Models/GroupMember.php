@@ -23,7 +23,7 @@ class GroupMember extends Model
         // webhook et la réconciliation cherchent le membre par stripe_subscription_id, qui
         // était toujours vide.
         'stripe_subscription_id', 'stripe_subscription_item_id',
-        'stripe_customer_id', 'subscription_status', 'current_period_end',
+        'stripe_customer_id', 'subscription_status', 'current_period_end', 'cancellation_requested_at',
     ];
 
     protected function casts(): array
@@ -34,6 +34,7 @@ class GroupMember extends Model
             'last_payment_at' => 'date',
             'next_payment_at' => 'date',
             'current_period_end' => 'datetime',
+            'cancellation_requested_at' => 'datetime',
         ];
     }
 

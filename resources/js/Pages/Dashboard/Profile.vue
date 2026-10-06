@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { Head, router, usePage } from "@inertiajs/vue3";
+import { Head, Link, router, usePage } from "@inertiajs/vue3";
 import DashboardLayout from "@/Layouts/DashboardLayout.vue";
 import {
     ShieldCheck,
@@ -18,6 +18,7 @@ import {
 } from "lucide-vue-next";
 
 interface Props {
+    resumeDraftUrl?: string | null;
     user: {
         name: string;
         email: string;
@@ -166,9 +167,7 @@ async function startOnboarding(): Promise<void> {
             },
         });
 
-        console.log("Status:", response.status);
         const data = await response.json();
-        console.log("Data:", data);
 
         if (data.url) window.location.href = data.url;
     } catch (e) {
@@ -207,6 +206,14 @@ const canadianProvinces = [
                     Gérez votre identité et vos moyens de paiement
                 </p>
             </div>
+        </div>
+
+        <div v-if="resumeDraftUrl" class="eq-panel mb-5 flex flex-wrap items-center justify-between gap-4 p-5">
+            <div>
+                <h2 class="font-semibold">Votre groupe vous attend.</h2>
+                <p class="mt-1 text-sm text-gray-600">Votre brouillon reste privé. Revenez le prévisualiser et publier lorsque vos vérifications sont confirmées.</p>
+            </div>
+            <Link :href="resumeDraftUrl" class="eq-button">Reprendre mon groupe <ChevronRight :size="16" /></Link>
         </div>
 
         <div

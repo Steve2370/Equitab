@@ -56,7 +56,7 @@ class HandleInertiaRequests extends Middleware
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
             ],
-            'isAdmin' => $user && in_array($user->email, \App\Http\Middleware\EnsureIsAdmin::ADMIN_EMAILS),
+            'isAdmin' => $user?->isAdmin() ?? false,
         ];
     }
 }

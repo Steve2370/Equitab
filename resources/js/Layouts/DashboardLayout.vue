@@ -16,6 +16,7 @@ import {
     Plus,
     ArrowUpRight,
 } from "lucide-vue-next";
+defineProps<{ hideVerificationNotice?: boolean }>();
 const sidebarOpen = ref(false);
 const menuButton = ref<HTMLButtonElement>();
 const page = usePage<{
@@ -49,8 +50,8 @@ function isActive(href: string) {
         : currentPath.value.startsWith(href);
 }
 const currentLabel = computed(() =>
-    currentPath.value === "/dashboard/groups/create"
-        ? "Créer un groupe"
+    currentPath.value === "/dashboard/groups/create" || currentPath.value.startsWith("/dashboard/groups/drafts/")
+        ? "Préparer un groupe"
         : (navItems.find((item) => isActive(item.href))?.label ?? "Mon espace"),
 );
 watch(
@@ -198,7 +199,7 @@ function closeMenu() {
         >
             <div class="mx-auto max-w-6xl">
                 <Link
-                    v-if="user && user.identity_status !== 'verified'"
+                    v-if="!hideVerificationNotice && user && user.identity_status !== 'verified'"
                     href="/dashboard/profile"
                     class="mb-7 flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-900"
                     ><ShieldCheck

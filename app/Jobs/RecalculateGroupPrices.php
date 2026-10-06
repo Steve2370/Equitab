@@ -2,16 +2,16 @@
 
 namespace App\Jobs;
 
-use App\Models\Group;
 use App\Features\Payment\Contracts\PaymentGatewayInterface;
+use App\Mail\PriceChanged;
+use App\Models\Group;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\PriceChanged;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class RecalculateGroupPrices implements ShouldQueue
 {
@@ -20,7 +20,7 @@ class RecalculateGroupPrices implements ShouldQueue
     public function handle(PaymentGatewayInterface $gateway): void
     {
         $groups = Group::where('status', 'open')
-            ->whereHas('members', fn($q) => $q->where('status', 'active'))
+            ->whereHas('members', fn ($q) => $q->where('status', 'active'))
             ->get();
 
         foreach ($groups as $group) {
@@ -63,7 +63,7 @@ class RecalculateGroupPrices implements ShouldQueue
             Log::info("Prix recalculé pour groupe #{$group->id}: {$newPricePerMember}");
 
         } catch (\Exception $e) {
-            Log::error("Échec recalcul prix groupe #{$group->id}: " . $e->getMessage());
+            Log::error('Échec du recalcul des prix.', ['group_id' => $group->id]);
         }
     }
 }

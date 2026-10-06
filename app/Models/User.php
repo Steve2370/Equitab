@@ -2,17 +2,22 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
+
+    protected $attributes = [
+        'status' => 'active',
+    ];
 
     protected $fillable = [
         'name', 'email', 'password',
@@ -29,7 +34,7 @@ class User extends Authenticatable
     ];
 
     protected $hidden = [
-        'password', 'remember_token',
+        'password', 'remember_token', 'auth_version', 'is_admin',
     ];
 
     protected function casts(): array
@@ -41,6 +46,8 @@ class User extends Authenticatable
             'identity_verified_at' => 'datetime',
             'trust_score' => 'decimal:2',
             'suspended_until' => 'datetime',
+            'is_admin' => 'boolean',
+            'auth_version' => 'integer',
         ];
     }
 
@@ -57,6 +64,17 @@ class User extends Authenticatable
         }
 
         return $this->suspended_until === null || $this->suspended_until->isFuture();
+    }
+
+    public function canAccessAccount(): bool
+    {
+        return ! $this->trashed()
+            && ($this->status === 'active' || ($this->status === 'suspended' && ! $this->isSuspended()));
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->is_admin === true && $this->hasVerifiedEmail() && $this->canAccessAccount();
     }
 
     public function wallet(): HasOne
@@ -87,8 +105,9 @@ class User extends Authenticatable
     public function getDisplayNameAttribute(): string
     {
         if ($this->show_real_name === false && $this->username) {
-            return '@' . $this->username;
+            return '@'.$this->username;
         }
+
         return $this->name;
     }
 
@@ -114,7 +133,7 @@ class User extends Authenticatable
             $score += 20;
         }
 
-        $paymentsReceived = Payment::whereHas('group', fn($q) => $q->where('owner_id', $this->id))
+        $paymentsReceived = Payment::whereHas('group', fn ($q) => $q->where('owner_id', $this->id))
             ->where('status', 'completed')
             ->count();
 
@@ -122,7 +141,7 @@ class User extends Authenticatable
             $score += 20;
         }
 
-        $disputes = Dispute::whereHas('group', fn($q) => $q->where('owner_id', $this->id))
+        $disputes = Dispute::whereHas('group', fn ($q) => $q->where('owner_id', $this->id))
             ->where('status', 'resolved_refund')
             ->count();
 
@@ -140,7 +159,7 @@ class User extends Authenticatable
 
         $score -= ($disputes * 20);
 
-        $autoRefunds = Payment::whereHas('group', fn($q) => $q->where('owner_id', $this->id))
+        $autoRefunds = Payment::whereHas('group', fn ($q) => $q->where('owner_id', $this->id))
             ->where('refund_reason', 'auto_no_credentials')
             ->count();
 

@@ -2,30 +2,32 @@
 
 namespace App\Features\Group\Controllers;
 
-use App\Http\Controllers\Controller;
+use App\Features\Group\Repositories\Contracts\GroupRepositoryInterface;
 use App\Features\Group\Requests\StoreGroupRequest;
 use App\Features\Group\Requests\UpdateGroupRequest;
+use App\Features\Group\Services\GroupAccess;
+use App\Features\Group\Services\GroupService;
+use App\Features\Group\Services\OwnerGroupPage;
+use App\Features\Payment\Services\BillingUnavailable;
+use App\Http\Controllers\Controller;
+use App\Http\Resources\GroupResource;
 use App\Models\Group;
 use App\Models\Subscription;
-use App\Features\Group\Repositories\Contracts\GroupRepositoryInterface;
-use App\Features\Group\Services\GroupService;
+use Exception;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use App\Features\Payment\Contracts\PaymentGatewayInterface;
-use App\Http\Resources\GroupResource;
-use Illuminate\Http\RedirectResponse;
-use Inertia\Response;
 use Inertia\Inertia;
-use Exception;
+use Inertia\Response;
 
 class GroupController extends Controller
 {
     public function __construct(
         private readonly GroupRepositoryInterface $groupRepository,
         private readonly GroupService $groupService,
-        private readonly PaymentGatewayInterface $gateway,
+        private readonly GroupAccess $access,
     ) {}
 
     public function index(): JsonResponse
@@ -35,35 +37,9 @@ class GroupController extends Controller
         return GroupResource::collection($groups)->response();
     }
 
-    public function create(Request $request): \Inertia\Response
+    public function create(Request $request, OwnerGroupPage $page): Response
     {
-        $user = $request->user();
-
-        if ($user->identity_status !== 'verified' || $user->stripe_connect_status !== 'active') {
-            return Inertia::render('Dashboard/Groups/Create', [
-                'subscriptions' => [],
-                'verificationError' => true,
-                'identityVerified' => $user->identity_status === 'verified',
-                'connectActive' => $user->stripe_connect_status === 'active',
-            ]);
-        }
-
-        $subscriptions = \App\Models\Subscription::where('is_active', true)
-            ->with('category')
-            ->get()
-            ->map(fn($s) => [
-                'id' => $s->id,
-                'name' => $s->name,
-                'slug' => $s->slug,
-                'max_members' => $s->max_members,
-                'monthly_price' => $s->monthly_price,
-                'category' => $s->category->name,
-            ]);
-
-        return Inertia::render('Dashboard/Groups/Create', [
-            'subscriptions' => $subscriptions,
-            'verificationError' => false,
-        ]);
+        return Inertia::render('Dashboard/Groups/Create', $page->props($request->user()));
     }
 
     public function store(StoreGroupRequest $request): RedirectResponse
@@ -71,15 +47,19 @@ class GroupController extends Controller
         try {
             $group = $this->groupService->create($request->user(), $request->validated());
         } catch (Exception $e) {
-            return back()->with('error', $e->getMessage())->withInput();
+            return back()->with('error', $e->getMessage())->withInput($request->safe()->except([
+                'credential_email', 'credential_password', 'credential_notes',
+            ]));
         }
 
         return redirect()->route('dashboard.subscriptions')
             ->with('success', 'Votre groupe a été créé avec succès !');
     }
 
-    public function show(Group $group): JsonResponse
+    public function show(Request $request, Group $group): JsonResponse
     {
+        abort_unless($this->access->canView($request->user('sanctum'), $group), 404);
+
         return (new GroupResource($group->load(['subscription', 'owner'])))
             ->response();
     }
@@ -89,10 +69,12 @@ class GroupController extends Controller
         $group = Group::where('invite_token', $token)
             ->where('status', 'open')
             ->whereIn('visibility', ['invite_only', 'private'])
+            ->whereHas('owner')
             ->with(['owner', 'subscription'])
             ->firstOrFail();
 
         return Inertia::render('InvitePage', [
+            'inviteToken' => $token,
             'group' => [
                 'id' => $group->id,
                 'name' => $group->name,
@@ -110,7 +92,7 @@ class GroupController extends Controller
 
     public function update(UpdateGroupRequest $request, Group $group): JsonResponse
     {
-        $updated = $this->groupRepository->update($group, $request->validated());
+        $updated = $this->groupService->update($request->user(), $group, $request->validated());
 
         return response()->json([
             'message' => 'Groupe mis à jour.',
@@ -122,23 +104,24 @@ class GroupController extends Controller
     {
         $this->authorize('delete', $group);
 
-        $this->groupRepository->delete($group);
+        $complete = $this->groupService->close($request->user(), $group, delete: true);
 
         return response()->json([
-            'message' => 'Groupe fermé.',
+            'message' => $complete ? 'Groupe fermé.' : 'Groupe fermé. Les annulations de paiement sont en cours.',
         ]);
     }
 
     public function join(Request $request, Group $group): JsonResponse
     {
+        $request->validate(['invite_token' => ['nullable', 'string', 'max:255']]);
         try {
             $this->groupService->join(
                 $request->user(),
                 $group,
                 $request->string('invite_token')->value() ?: null,
             );
-        } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 422);
+        } catch (BillingUnavailable $e) {
+            return response()->json(['message' => $e->getMessage()], 503);
         }
 
         return response()->json([
@@ -148,16 +131,7 @@ class GroupController extends Controller
 
     public function credentials(Request $request, Group $group): JsonResponse
     {
-        $user = $request->user();
-
-        $isMemberActive = $group->members()
-            ->where('user_id', $user->id)
-            ->where('status', 'active')
-            ->exists();
-
-        $isOwner = $group->owner_id === $user->id;
-
-        if (! $isMemberActive && ! $isOwner) {
+        if (! $this->access->canUseService($request->user(), $group)) {
             return response()->json(['message' => 'Accès refusé.'], 403);
         }
 
@@ -185,6 +159,7 @@ class GroupController extends Controller
             ->where('subscription_id', $subscription->id)
             ->where('status', 'open')
             ->where('visibility', 'public')
+            ->whereHas('owner')
             ->where('current_members', '<', DB::raw('max_members'))
             ->with(['owner', 'subscription'])
             ->get()
@@ -220,24 +195,14 @@ class GroupController extends Controller
         ]);
     }
 
-    public function close(Group $group): RedirectResponse
+    public function close(Request $request, Group $group): RedirectResponse
     {
         $this->authorize('update', $group);
 
-        if ($group->owner_id !== Auth::id()) {
-            abort(403);
-        }
+        $complete = $this->groupService->close($request->user(), $group);
 
-        $group->update(['status' => 'closed']);
-        $activeMembers = $group->members()->where('status', 'active')->where('role', 'member')->get();
-
-        foreach ($activeMembers as $member) {
-            if ($member->stripe_subscription_id) {
-                $this->gateway->cancelSubscription($member->stripe_subscription_id);
-            }
-            $member->update(['status' => 'left', 'subscription_status' => 'canceled']);
-        }
-
-        return back()->with('success', 'Le groupe a été fermé.');
+        return back()->with('success', $complete
+            ? 'Le groupe a été fermé.'
+            : 'Le groupe a été fermé. Les annulations de paiement sont en cours.');
     }
 }

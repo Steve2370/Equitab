@@ -1,17 +1,18 @@
 <?php
 
+use App\Features\Auth\Middleware\EnsureSessionIsCurrent;
+use App\Http\Middleware\EnsureEmailIsVerified;
+use App\Http\Middleware\EnsureIsAdmin;
+use App\Http\Middleware\EnsureNotSuspended;
+use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
-use App\Http\Middleware\EnsureEmailIsVerified;
-use App\Http\Middleware\HandleInertiaRequests;
-use App\Http\Middleware\EnsureIsAdmin;
-use App\Http\Middleware\EnsureNotSuspended;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
+use Symfony\Component\HttpFoundation\Response;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -23,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
+            EnsureSessionIsCurrent::class,
             EnsureNotSuspended::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
@@ -35,6 +37,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'verified' => EnsureEmailIsVerified::class,
             'admin' => EnsureIsAdmin::class,
+            'not_suspended' => EnsureNotSuspended::class,
+            'session_current' => EnsureSessionIsCurrent::class,
         ]);
 
         $middleware->statefulApi();
@@ -44,7 +48,21 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->respond(function (\Symfony\Component\HttpFoundation\Response $response, \Throwable $e, Request $request) {
+        // These endpoints are JSON even for a handcrafted HTML-form request.
+        // Never flash an unvalidated draft payload (including nested secrets).
+        $exceptions->shouldRenderJsonWhen(fn (Request $request, Throwable $e) => $request->is('group-drafts', 'group-drafts/*', 'api/group-drafts', 'api/group-drafts/*')
+            || $request->expectsJson()
+        );
+        $exceptions->dontFlash([
+            'credential_email', 'credential_password', 'credential_notes',
+            'data.credential_email', 'data.credential_password', 'data.credential_notes',
+        ]);
+        $exceptions->respond(function (Response $response, Throwable $e, Request $request) {
+            // Keep the draft API contract in production too, including expired
+            // sessions. An HTML redirect must never masquerade as a saved draft.
+            if ($request->expectsJson() || $request->is('api/*', 'group-drafts', 'group-drafts/*')) {
+                return $response;
+            }
             if (
                 ! app()->environment(['local', 'testing'])
                 && in_array($response->getStatusCode(), [404, 500, 503])

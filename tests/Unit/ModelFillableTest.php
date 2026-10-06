@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
@@ -17,6 +18,11 @@ class ModelFillableTest extends TestCase
     private const GLOBALLY_EXCLUDED_COLUMNS = [
         'id', 'created_at', 'updated_at', 'deleted_at',
         'email_verified_at', 'remember_token',
+    ];
+
+    /** Security fields changed only by explicit, trusted operations. */
+    private const INTENTIONALLY_GUARDED_COLUMNS = [
+        User::class => ['is_admin', 'auth_version'],
     ];
 
     /**
@@ -40,13 +46,13 @@ class ModelFillableTest extends TestCase
         $mismatches = [];
 
         foreach ($modelFiles as $file) {
-            $class = 'App\\Models\\' . basename($file, '.php');
+            $class = 'App\\Models\\'.basename($file, '.php');
 
             if (! class_exists($class)) {
                 continue;
             }
 
-            $model = new $class();
+            $model = new $class;
 
             // Un modèle explicitement non protégé (guarded = []) autorise
             // volontairement tout — rien à vérifier pour lui.
@@ -63,7 +69,12 @@ class ModelFillableTest extends TestCase
             $columns = Schema::getColumnListing($table);
             $fillable = $model->getFillable();
 
-            $missing = array_diff($columns, $fillable, self::GLOBALLY_EXCLUDED_COLUMNS);
+            $missing = array_diff(
+                $columns,
+                $fillable,
+                self::GLOBALLY_EXCLUDED_COLUMNS,
+                self::INTENTIONALLY_GUARDED_COLUMNS[$class] ?? [],
+            );
 
             if (! empty($missing)) {
                 $mismatches[$class] = $missing;
@@ -71,12 +82,37 @@ class ModelFillableTest extends TestCase
         }
 
         $formatted = collect($mismatches)
-            ->map(fn ($cols, $class) => "  {$class}: " . implode(', ', $cols))
+            ->map(fn ($cols, $class) => "  {$class}: ".implode(', ', $cols))
             ->implode("\n");
 
         $this->assertEmpty(
             $mismatches,
             "Colonnes en base absentes de \$fillable (Eloquent les ignore silencieusement lors d'un create()/update()) :\n{$formatted}"
         );
+    }
+
+    public function test_privileged_user_columns_remain_guarded_on_create_and_update(): void
+    {
+        $model = new User;
+        foreach (self::INTENTIONALLY_GUARDED_COLUMNS[User::class] as $column) {
+            $this->assertTrue(Schema::hasColumn($model->getTable(), $column));
+            $this->assertNotContains($column, $model->getFillable());
+            $this->assertFalse($model->isFillable($column));
+        }
+
+        $user = User::create([
+            'name' => 'Synthetic Privilege Attempt',
+            'email' => 'protected-columns@example.test',
+            'password' => 'Synthetic-password',
+            'is_admin' => true,
+            'auth_version' => 99,
+        ])->refresh();
+        $this->assertFalse($user->is_admin);
+        $this->assertSame(0, $user->auth_version);
+
+        $user->update(['is_admin' => true, 'auth_version' => 100]);
+
+        $this->assertFalse($user->fresh()->is_admin);
+        $this->assertSame(0, $user->fresh()->auth_version);
     }
 }

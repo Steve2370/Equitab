@@ -82,14 +82,22 @@ return [
                     'scheme' => env('REVERB_SCHEME', 'https'),
                     'useTLS' => env('REVERB_SCHEME', 'https') === 'https',
                 ],
-                'allowed_origins' => ['*'],
+                // Reverb compares the Origin hostname (not a full URL).
+                // List additional frontend hosts explicitly; never allow '*'.
+                'allowed_origins' => array_values(array_filter(array_map(
+                    static fn (string $host): string => trim($host),
+                    explode(',', (string) env(
+                        'REVERB_ALLOWED_ORIGINS',
+                        parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST) ?: 'localhost',
+                    )),
+                ), static fn (string $host): bool => $host !== '' && ! str_contains($host, '*'))),
                 'ping_interval' => env('REVERB_APP_PING_INTERVAL', 60),
                 'activity_timeout' => env('REVERB_APP_ACTIVITY_TIMEOUT', 30),
-                'max_connections' => env('REVERB_APP_MAX_CONNECTIONS'),
+                'max_connections' => max(1, (int) env('REVERB_APP_MAX_CONNECTIONS', 500)),
                 'max_message_size' => env('REVERB_APP_MAX_MESSAGE_SIZE', 10_000),
                 'accept_client_events_from' => env('REVERB_APP_ACCEPT_CLIENT_EVENTS_FROM', 'members'),
                 'rate_limiting' => [
-                    'enabled' => env('REVERB_APP_RATE_LIMITING_ENABLED', false),
+                    'enabled' => env('REVERB_APP_RATE_LIMITING_ENABLED', true),
                     'max_attempts' => env('REVERB_APP_RATE_LIMIT_MAX_ATTEMPTS', 60),
                     'decay_seconds' => env('REVERB_APP_RATE_LIMIT_DECAY_SECONDS', 60),
                     'terminate_on_limit' => env('REVERB_APP_RATE_LIMIT_TERMINATE', false),

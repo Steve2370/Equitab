@@ -30,5 +30,10 @@
     },
     "dependencies": {
         "lucide-vue-next": "^1.0.0"
+    },
+    "overrides": {
+        "concurrently": {
+            "shell-quote": "1.11.0"
+        }
     }
 }

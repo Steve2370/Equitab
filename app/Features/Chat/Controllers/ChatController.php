@@ -2,21 +2,24 @@
 
 namespace App\Features\Chat\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Events\MessageSent;
+use App\Features\Group\Services\GroupAccess;
+use App\Http\Controllers\Controller;
+use App\Mail\NewMessage;
 use App\Models\Group;
-use App\Models\User;
 use App\Models\Message;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
-use App\Mail\NewMessage;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class ChatController extends Controller
 {
+    public function __construct(private readonly GroupAccess $access) {}
+
     public function index(Request $request): Response
     {
         $user = $request->user();
@@ -24,12 +27,16 @@ class ChatController extends Controller
         $memberships = $user->groupMembers()
             ->with(['group.subscription', 'group.owner'])
             ->where('status', 'active')
+            ->whereHas('group')
             ->get();
 
         $conversations = collect();
 
         foreach ($memberships as $member) {
             $group = $member->group;
+            if (! $this->access->canUseService($user, $group)) {
+                continue;
+            }
             $isOwner = $group->owner_id === $user->id;
 
             if ($isOwner) {
@@ -40,9 +47,11 @@ class ChatController extends Controller
 
                 foreach ($otherMembers as $otherMember) {
                     $other = $otherMember->user;
-                    $conversations->push($this->buildConversation($group, $user, $other));
+                    if ($other && $this->access->canChat($user, $group, $other)) {
+                        $conversations->push($this->buildConversation($group, $user, $other));
+                    }
                 }
-            } else {
+            } elseif ($group->owner && $this->access->canChat($user, $group, $group->owner)) {
                 $conversations->push($this->buildConversation($group, $user, $group->owner));
             }
         }
@@ -56,8 +65,8 @@ class ChatController extends Controller
     {
         $lastMessage = Message::where('group_id', $group->id)
             ->where(function ($q) use ($user, $other) {
-                $q->where(fn($q2) => $q2->where('sender_id', $user->id)->where('receiver_id', $other->id))
-                  ->orWhere(fn($q2) => $q2->where('sender_id', $other->id)->where('receiver_id', $user->id));
+                $q->where(fn ($q2) => $q2->where('sender_id', $user->id)->where('receiver_id', $other->id))
+                    ->orWhere(fn ($q2) => $q2->where('sender_id', $other->id)->where('receiver_id', $user->id));
             })
             ->latest()
             ->first();
@@ -88,7 +97,7 @@ class ChatController extends Controller
     {
         $user = $request->user();
 
-        if ($group->owner_id !== $user->id) {
+        if ($group->owner_id !== $user->id || ! $this->access->canUseService($user, $group)) {
             return response()->json(['message' => 'Accès refusé.'], 403);
         }
 
@@ -96,7 +105,9 @@ class ChatController extends Controller
             ->with('user')
             ->where('user_id', '!=', $user->id)
             ->get()
-            ->map(fn($m) => [
+            ->filter(fn ($m) => $m->user && $this->access->canChat($user, $group, $m->user))
+            ->values()
+            ->map(fn ($m) => [
                 'id' => $m->user->id,
                 'name' => $m->user->name,
                 'avatar' => $m->user->avatar,
@@ -109,12 +120,7 @@ class ChatController extends Controller
     {
         $user = $request->user();
         $isOwner = $group->owner_id === $user->id;
-        $isMemberActive = $group->members()
-            ->where('user_id', $user->id)
-            ->where('status', 'active')
-            ->exists();
-
-        if (! $isOwner && ! $isMemberActive) {
+        if (! $this->access->canUseService($user, $group)) {
             return response()->json(['message' => 'Accès refusé.'], 403);
         }
 
@@ -128,15 +134,20 @@ class ChatController extends Controller
             return response()->json(['message' => 'Destinataire requis.'], 422);
         }
 
+        $other = User::find($otherId);
+        if (! $other || ! $this->access->canChat($user, $group, $other)) {
+            return response()->json(['message' => 'Accès refusé.'], 403);
+        }
+
         $messages = Message::where('group_id', $group->id)
             ->where(function ($q) use ($user, $otherId) {
-                $q->where(fn($q2) => $q2->where('sender_id', $user->id)->where('receiver_id', $otherId))
-                  ->orWhere(fn($q2) => $q2->where('sender_id', $otherId)->where('receiver_id', $user->id));
+                $q->where(fn ($q2) => $q2->where('sender_id', $user->id)->where('receiver_id', $otherId))
+                    ->orWhere(fn ($q2) => $q2->where('sender_id', $otherId)->where('receiver_id', $user->id));
             })
             ->with('sender')
             ->orderBy('created_at')
             ->get()
-            ->map(fn($m) => [
+            ->map(fn ($m) => [
                 'id' => $m->id,
                 'body' => $m->body,
                 'sender_id' => $m->sender_id,
@@ -161,26 +172,19 @@ class ChatController extends Controller
 
         $user = $request->user();
         $isOwner = $group->owner_id === $user->id;
-        $isMemberActive = $group->members()
-            ->where('user_id', $user->id)
-            ->where('status', 'active')
-            ->exists();
-
-        if (! $isOwner && ! $isMemberActive) {
+        if (! $this->access->canUseService($user, $group)) {
             return response()->json(['message' => 'Accès refusé.'], 403);
         }
 
         if ($isOwner) {
             $receiverId = (int) $request->input('receiver_id');
-            $isValidReceiver = $group->members()
-                ->where('user_id', $receiverId)
-                ->where('status', 'active')
-                ->exists();
-            if (! $isValidReceiver) {
-                return response()->json(['message' => 'Destinataire invalide.'], 422);
-            }
         } else {
             $receiverId = $group->owner_id;
+        }
+
+        $receiver = User::find($receiverId);
+        if (! $receiver || ! $this->access->canChat($user, $group, $receiver)) {
+            return response()->json(['message' => 'Destinataire invalide.'], 422);
         }
 
         $message = Message::create([
@@ -194,8 +198,7 @@ class ChatController extends Controller
 
         broadcast(new MessageSent($message));
 
-        $receiver = User::find($receiverId);
-        if ($receiver && ($receiver->allow_direct_contact ?? true)) {
+        if ($receiver->allow_direct_contact ?? true) {
             Mail::to($receiver->email)
                 ->send(new NewMessage(
                     recipient: $receiver,

@@ -11,13 +11,21 @@ RUN apt-get update && apt-get install -y \
 # (base isolée, jamais la vraie base Postgres) — sans ce driver,
 # "php artisan test" échoue avec "could not find driver".
 
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# Production excludes PHP development tools. The local compose opts in for tests.
+ARG INSTALL_DEV_DEPENDENCIES=0
+ENV INSTALL_DEV_DEPENDENCIES=${INSTALL_DEV_DEPENDENCIES}
 
 WORKDIR /var/www
 COPY . .
 
-RUN composer install --no-interaction --optimize-autoloader
-RUN npm ci
+RUN if [ "$INSTALL_DEV_DEPENDENCIES" = "1" ]; then \
+        composer install --no-interaction --no-scripts --no-plugins --optimize-autoloader; \
+    else \
+        composer install --no-dev --no-interaction --no-scripts --no-plugins --optimize-autoloader; \
+    fi
+RUN npm ci --ignore-scripts --no-audit --no-fund
 RUN npm run build
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 

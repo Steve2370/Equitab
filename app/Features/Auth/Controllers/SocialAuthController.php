@@ -2,8 +2,9 @@
 
 namespace App\Features\Auth\Controllers;
 
-use App\Http\Controllers\Controller;
+use App\Features\Auth\Services\AccountSession;
 use App\Features\Auth\Services\SocialAuthService;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -38,7 +39,7 @@ class SocialAuthController extends Controller
         } catch (\Exception $e) {
             return redirect()->route('login')->with(
                 'status',
-                'La connexion via ' . Str::ucfirst($provider) . ' a échoué. Veuillez réessayer.',
+                'La connexion via '.Str::ucfirst($provider).' a échoué. Veuillez réessayer.',
             );
         }
 
@@ -51,6 +52,7 @@ class SocialAuthController extends Controller
         Auth::login($user, remember: true);
 
         request()->session()->regenerate();
+        app(AccountSession::class)->remember(request()->session(), $user);
 
         return redirect()->intended(route('dashboard', absolute: false));
     }

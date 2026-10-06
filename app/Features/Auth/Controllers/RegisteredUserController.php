@@ -2,19 +2,19 @@
 
 namespace App\Features\Auth\Controllers;
 
+use App\Features\Auth\Services\AccountSession;
 use App\Http\Controllers\Controller;
+use App\Mail\WelcomeUser;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
-use App\Mail\WelcomeUser;
-use App\Features\Wallet\Services\WalletService;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -46,16 +46,17 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
-        app(WalletService::class)->createForUser($user);
 
         try {
             Mail::to($user->email)->send(new WelcomeUser($user));
         } catch (\Exception $e) {
-            Log::error('Welcome email failed: ' . $e->getMessage());
+            Log::error('Welcome email failed: '.$e->getMessage());
         }
 
         event(new Registered($user));
         Auth::login($user);
+        $request->session()->regenerate();
+        app(AccountSession::class)->remember($request->session(), $user);
 
         return redirect(route('dashboard', absolute: false));
     }

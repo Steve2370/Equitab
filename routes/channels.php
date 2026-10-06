@@ -1,16 +1,11 @@
 <?php
 
-use Illuminate\Support\Facades\Broadcast;
+use App\Features\Group\Services\GroupAccess;
 use App\Models\Group;
 use App\Models\User;
+use Illuminate\Support\Facades\Broadcast;
 
-// Vérifiait uniquement que l'utilisateur connecté correspondait à l'un des
-// deux identifiants du nom du canal, jamais qu'il appartenait réellement au
-// groupe {groupId} — n'importe quel utilisateur pouvait donc s'abonner à
-// n'importe quel canal chat.{n'importe quel groupe}.{son propre id}.{un
-// autre id}, y compris un groupe qu'il a quitté ou dont il n'a jamais fait
-// partie. On vérifie maintenant une appartenance active réelle (propriétaire
-// ou membre actif) au groupe concerné, en plus de la correspondance d'id.
+// Both peers must be entitled to this owner/member conversation.
 Broadcast::channel('chat.{groupId}.{userId1}.{userId2}', function (User $user, int $groupId, int $userId1, int $userId2) {
     if ($user->id !== $userId1 && $user->id !== $userId2) {
         return false;
@@ -22,12 +17,7 @@ Broadcast::channel('chat.{groupId}.{userId1}.{userId2}', function (User $user, i
         return false;
     }
 
-    if ($group->owner_id === $user->id) {
-        return true;
-    }
+    $other = User::find($user->id === $userId1 ? $userId2 : $userId1);
 
-    return $group->members()
-        ->where('user_id', $user->id)
-        ->where('status', 'active')
-        ->exists();
+    return $other !== null && app(GroupAccess::class)->canChat($user, $group, $other);
 });

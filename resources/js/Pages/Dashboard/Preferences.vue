@@ -5,7 +5,6 @@ import DashboardLayout from "@/Layouts/DashboardLayout.vue";
 import {
     User,
     Bell,
-    Globe,
     Shield,
     Trash2,
     Camera,
@@ -105,16 +104,6 @@ function deleteAccount(): void {
     });
 }
 
-const timezones = [
-    "America/Toronto",
-    "America/Vancouver",
-    "America/Winnipeg",
-    "America/Halifax",
-    "America/St_Johns",
-    "America/New_York",
-    "Europe/Paris",
-    "UTC",
-];
 </script>
 
 <template>

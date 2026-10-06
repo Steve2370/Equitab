@@ -18,12 +18,18 @@ class EnsureNotSuspended
     {
         $user = $request->user();
 
-        if ($user && $user->isSuspended()) {
-            Auth::guard('web')->logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
+        if ($user && ! $user->canAccessAccount()) {
+            if ($request->hasSession()) {
+                Auth::guard('web')->logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+            }
 
-            return redirect('/login')->with('error', 'Votre compte a été suspendu.');
+            if ($request->expectsJson() || $request->is('api/*', 'group-drafts', 'group-drafts/*')) {
+                return response()->json(['message' => 'Ce compte est suspendu ou désactivé.'], 403);
+            }
+
+            return redirect('/login')->with('error', 'Ce compte est suspendu ou désactivé.');
         }
 
         return $next($request);

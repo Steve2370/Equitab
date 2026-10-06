@@ -2,33 +2,40 @@
 
 namespace App\Features\Group\Services;
 
-use App\Models\Group;
-use App\Models\User;
-use App\Models\StripePrice;
 use App\Features\Group\Repositories\Contracts\GroupRepositoryInterface;
 use App\Features\Payment\Contracts\PaymentGatewayInterface;
+use App\Features\Payment\Services\BillingOperationLock;
+use App\Features\Payment\Services\BillingUnavailable;
+use App\Features\Payment\Services\MembershipState;
+use App\Features\Payment\Services\OwnerOnboardingService;
+use App\Features\Payment\Services\SubscriptionCancellationService;
+use App\Models\Group;
+use App\Models\GroupMember;
+use App\Models\StripePrice;
+use App\Models\User;
+use Closure;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Exception;
+use LogicException;
 
 class GroupService
 {
     public function __construct(
         private readonly GroupRepositoryInterface $groupRepository,
         private readonly PaymentGatewayInterface $gateway,
+        private readonly OwnerPublicationEligibility $eligibility,
+        private readonly OwnerOnboardingService $onboarding,
+        private readonly GroupAccess $access,
+        private readonly BillingOperationLock $billingLock,
+        private readonly SubscriptionCancellationService $cancellations,
+        private readonly MembershipState $memberships,
     ) {}
 
     public function create(User $owner, array $data): Group
     {
-        // L'écran de création bloque déjà la soumission si l'identité ou
-        // Stripe Connect ne sont pas actifs, mais cette règle n'était
-        // vérifiée que côté interface : un appel direct à POST /groups (web
-        // ou API) la contournait complètement. GroupPolicy::create() portait
-        // déjà exactement cette règle mais n'était jamais invoquée — on
-        // l'applique ici, au seul endroit par lequel un groupe peut être créé.
-        if ($owner->identity_status !== 'verified' || $owner->stripe_connect_status !== 'active') {
-            throw new Exception('Votre identité et votre compte Stripe Connect doivent être vérifiés avant de créer un groupe.');
-        }
+        $this->eligibility->assertCanPrepare($owner);
+        $this->onboarding->refresh($owner);
+        $this->eligibility->assertCanPublish($owner->fresh());
 
         return DB::transaction(function () use ($owner, $data) {
             $group = $this->groupRepository->create([
@@ -42,6 +49,10 @@ class GroupService
             $group->load('subscription');
 
             $stripeData = $this->gateway->createProduct($group);
+
+            // A suspension or a webhook restriction during the remote call wins.
+            $currentOwner = User::whereKey($owner->id)->lockForUpdate()->firstOrFail();
+            $this->eligibility->assertCanPublish($currentOwner);
 
             StripePrice::create([
                 'group_id' => $group->id,
@@ -61,7 +72,6 @@ class GroupService
 
             if (in_array($data['visibility'] ?? 'public', ['invite_only', 'private'])) {
                 $token = bin2hex(random_bytes(16));
-                \Illuminate\Support\Facades\Log::info('Generating invite token', ['visibility' => $data['visibility'], 'token' => $token]);
                 $group->update(['invite_token' => $token]);
             }
 
@@ -69,107 +79,111 @@ class GroupService
         });
     }
 
-    /**
-     * Rejoindre un groupe sans paiement immédiat (statut pending_payment).
-     * Auparavant, seuls isFull() et "déjà membre" étaient vérifiés : ni la
-     * visibilité du groupe, ni le token d'invitation, ni le statut réel du
-     * groupe (fermé), ni le statut du compte (suspendu, email non vérifié)
-     * n'étaient contrôlés côté serveur — un appel API direct pouvait donc
-     * rejoindre un groupe privé/sur invitation sans lien d'invitation, ou
-     * un compte suspendu pouvait continuer à rejoindre des groupes.
-     */
+    /** Reserve a seat without granting service access or charging the member. */
     public function join(User $user, Group $group, ?string $inviteToken = null): void
     {
-        DB::transaction(function () use ($user, $group, $inviteToken) {
-            if ($group->status !== 'open') {
-                throw new Exception('Ce groupe n\'accepte plus de nouveaux membres.');
-            }
+        $this->billingLock->run('group:'.$group->id, function (Closure $assertOwned) use ($user, $group, $inviteToken): void {
+            DB::transaction(function () use ($user, $group, $inviteToken, $assertOwned): void {
+                $current = Group::lockForUpdate()->findOrFail($group->id);
+                $account = User::lockForUpdate()->findOrFail($user->id);
+                $member = $current->members()->where('user_id', $account->id)->first();
+                $this->access->authorizeSubscription($account, $current, $inviteToken, $member);
+                abort_if($member !== null, 409, 'Vous êtes déjà membre de ce groupe.');
+                $assertOwned();
 
-            if ($group->isFull()) {
-                throw new Exception('Ce groupe est complet.');
-            }
-
-            if (in_array($group->visibility, ['private', 'invite_only'], true)) {
-                if (! $inviteToken || ! hash_equals((string) $group->invite_token, $inviteToken)) {
-                    throw new Exception('Ce groupe nécessite un lien d\'invitation valide.');
+                $current->members()->create([
+                    'user_id' => $account->id,
+                    'role' => 'member',
+                    'status' => 'pending_payment',
+                    'share_amount' => $current->calculatePricePerMemberIfJoined(),
+                    'joined_at' => now(),
+                    'next_payment_at' => now()->addDays(3),
+                ]);
+                $current->increment('current_members');
+                if ($current->isFull()) {
+                    $current->update(['status' => 'full']);
                 }
-            }
-
-            if ($user->isSuspended()) {
-                throw new Exception('Votre compte est actuellement suspendu.');
-            }
-
-            if ($user->email_verified_at === null) {
-                throw new Exception('Votre adresse email doit être vérifiée avant de rejoindre un groupe.');
-            }
-
-            if ($group->owner_id === $user->id) {
-                throw new Exception('Vous êtes le propriétaire de ce groupe.');
-            }
-
-            $alreadyMember = $group->members()
-                ->where('user_id', $user->id)
-                ->exists();
-
-            if ($alreadyMember) {
-                throw new Exception('Vous êtes déjà membre de ce groupe.');
-            }
-
-            $group->members()->create([
-                'user_id' => $user->id,
-                'role' => 'member',
-                'status' => 'pending_payment',
-                // price_per_member n'est jamais renseigné sur le groupe —
-                // calculatePricePerMemberIfJoined() donne le partage réel
-                // une fois ce membre ajouté (total_price / membres+1).
-                'share_amount' => $group->calculatePricePerMemberIfJoined(),
-                'joined_at' => now(),
-                'next_payment_at' => now()->addDays(3),
-            ]);
-
-            $group->increment('current_members');
-
-            if ($group->fresh()->isFull()) {
-                $this->groupRepository->update($group, ['status' => 'full']);
-            }
+            });
         });
     }
 
     public function leave(User $user, Group $group): void
     {
-        DB::transaction(function () use ($user, $group) {
-            $member = $group->members()
-                ->where('user_id', $user->id)
-                ->where('role', 'member')
-                ->firstOrFail();
+        $this->assertOutsideTransaction();
+        abort_if($group->owner_id === $user->id, 403, 'Le propriétaire doit fermer son groupe.');
+        $member = $group->members()->where('user_id', $user->id)->where('role', 'member')->firstOrFail();
+        $this->cancellations->request($member);
+    }
 
-            // Un membre qui quitte gardait son abonnement Stripe actif —
-            // il continuait donc à être facturé, sans plus faire partie du
-            // groupe, jusqu'à ce que le renouvellement échoue de lui-même.
-            if ($member->stripe_subscription_id) {
-                try {
-                    $this->gateway->cancelSubscription($member->stripe_subscription_id);
-                } catch (Exception $e) {
-                    \Illuminate\Support\Facades\Log::warning(
-                        "Annulation abonnement Stripe échouée pendant le départ du membre #{$member->id}: " . $e->getMessage()
-                    );
+    /** All cancellation requests commit before the first remote call. */
+    public function close(User $owner, Group $group, bool $delete = false): bool
+    {
+        $this->assertOutsideTransaction();
+        $memberIds = $this->billingLock->run('group:'.$group->id, function (Closure $assertOwned) use ($owner, $group, $delete): array {
+            return DB::transaction(function () use ($owner, $group, $delete, $assertOwned): array {
+                $current = Group::lockForUpdate()->findOrFail($group->id);
+                $account = User::lockForUpdate()->findOrFail($owner->id);
+                abort_unless($current->owner_id === $account->id && $account->canAccessAccount() && $account->hasVerifiedEmail(), 403);
+                $assertOwned();
+                $current->update(['status' => 'closed']);
+
+                $members = $current->members()->where('role', 'member')
+                    ->where(function ($query): void {
+                        $query->whereIn('status', ['active', 'pending_payment', 'suspended'])
+                            ->orWhereNotNull('cancellation_requested_at')
+                            ->orWhereNotNull('stripe_subscription_id');
+                    })->lockForUpdate()->get();
+                foreach ($members as $member) {
+                    $member->update(['cancellation_requested_at' => $member->cancellation_requested_at ?? now()]);
+                    $confirmed = ! $member->stripe_subscription_id || $member->subscription_status === 'canceled';
+                    $this->memberships->revoke($member, $confirmed ? 'canceled' : 'cancellation_pending', true);
                 }
-            }
+                if ($delete) {
+                    $current->delete(); // Keep financial history and retry identifiers.
+                }
 
-            $wasActive = $member->status === 'active';
-
-            $member->update([
-                'status' => 'left',
-                'subscription_status' => $member->stripe_subscription_id ? 'canceled' : $member->subscription_status,
-            ]);
-
-            if ($wasActive) {
-                $group->decrement('current_members');
-            }
-
-            if ($group->status === 'full') {
-                $this->groupRepository->update($group, ['status' => 'open']);
-            }
+                return $members->modelKeys();
+            });
         });
+
+        // request() acquires the same lock: never invoke it re-entrantly.
+        $complete = true;
+        foreach ($memberIds as $id) {
+            try {
+                $confirmed = $this->cancellations->request(GroupMember::findOrFail($id));
+                $complete = $confirmed && $complete;
+            } catch (BillingUnavailable) {
+                $complete = false; // Durable request remains for reconciliation.
+            }
+        }
+
+        return $complete;
+    }
+
+    public function update(User $owner, Group $group, array $data): Group
+    {
+        if (($data['status'] ?? null) === 'closed') {
+            $this->close($owner, $group);
+            unset($data['status']);
+        }
+
+        return $this->billingLock->run('group:'.$group->id, function (Closure $assertOwned) use ($owner, $group, $data): Group {
+            return DB::transaction(function () use ($owner, $group, $data, $assertOwned): Group {
+                $current = Group::lockForUpdate()->findOrFail($group->id);
+                $account = User::lockForUpdate()->findOrFail($owner->id);
+                abort_unless($current->owner_id === $account->id && $account->canAccessAccount() && $account->hasVerifiedEmail(), 403);
+                abort_if($current->status === 'closed' && isset($data['status']) && $data['status'] !== 'closed', 409, 'Ce groupe est fermé.');
+                $assertOwned();
+
+                return $this->groupRepository->update($current, $data);
+            });
+        });
+    }
+
+    private function assertOutsideTransaction(): void
+    {
+        if (DB::transactionLevel() !== 0) {
+            throw new LogicException('Group cancellation must run outside an existing database transaction.');
+        }
     }
 }

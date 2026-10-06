@@ -2,47 +2,37 @@
 
 namespace App\Features\Auth\Controllers\Api;
 
-use App\Http\Controllers\Controller;
 use App\Features\Auth\Requests\RegisterRequest;
-use App\Models\User;
-use Illuminate\Support\Facades\Mail;
-use App\Features\Wallet\Services\WalletService;
-use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Controller;
 use App\Mail\WelcomeUser;
-use Illuminate\Support\Facades\Log;
+use App\Models\User;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class RegisterController extends Controller
 {
-    public function __construct(
-        private readonly WalletService $walletService,
-    ) {}
-
     public function __invoke(RegisterRequest $request): JsonResponse
     {
-        $user = DB::transaction(function () use ($request) {
-            Log::info('Creating user...');
+        [$user, $token] = DB::transaction(function () use ($request): array {
             $user = User::create($request->validated());
-            Log::info('User created: ' . $user->id);
-            $this->walletService->createForUser($user);
-            Log::info('Wallet created for: ' . $user->id);
-            return $user;
+
+            return [$user, $user->createToken('equitab')->plainTextToken];
         });
-        Log::info('After transaction: ' . ($user->id ?? 'NULL'));
 
         try {
-            Log::info('Attempting to send welcome email to: ' . $user->email);
             Mail::to($user->email)->send(new WelcomeUser($user));
-            Log::info('Welcome email sent successfully to: ' . $user->email);
-        } catch (\Exception $e) {
-            Log::error('Welcome email failed: ' . $e->getMessage());
+        } catch (\Exception) {
+            Log::warning('Welcome email failed.', ['user_id' => $user->id]);
         }
 
-        $token = $user->createToken('equitab')->plainTextToken;
+        event(new Registered($user));
 
         return response()->json([
             'message' => 'Compte créé avec succès.',
-            'user' => $user->load('wallet'),
+            'user' => $user,
             'token' => $token,
         ], 201);
     }

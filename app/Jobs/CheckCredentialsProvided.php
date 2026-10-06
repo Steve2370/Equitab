@@ -2,18 +2,15 @@
 
 namespace App\Jobs;
 
+use App\Features\Payment\Services\BillingReconciliationService;
 use App\Models\Group;
 use App\Models\Payment;
-use App\Models\User;
-use App\Mail\AutoRefundProcessed;
-use Illuminate\Support\Facades\Mail;
-use App\Features\Payment\Services\PaymentService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class CheckCredentialsProvided implements ShouldQueue
 {
@@ -31,35 +28,24 @@ class CheckCredentialsProvided implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(PaymentService $paymentService): void
+    public function handle(BillingReconciliationService $billing): void
     {
         $payment = Payment::find($this->paymentId);
-        $group = Group::find($this->groupId);
-        $user = User::find($this->userId);
-
-        if (! $payment || ! $group || ! $user) return;
-        if ($payment->status === 'refunded') return;
-        if ($group->credential_email || $group->credential_password) return;
-
-        try {
-            // Délègue à PaymentService::refundPayment(), point d'entrée
-            // unique partagé avec AdminController::resolveDispute() : ne
-            // marque "refunded" qu'après confirmation réelle de Stripe,
-            // conserve l'ID du refund, annule l'abonnement du membre.
-            $paymentService->refundPayment($payment, 'auto_no_credentials');
-
-            $group->owner->increment('disputed_payments_count');
-
-            Mail::to($user->email)
-                ->send(new AutoRefundProcessed(
-                    $payment->load('group.subscription'),
-                    $user
-                ));
-
-            Log::info("Remboursement automatique — paiement #{$this->paymentId}");
-
-        } catch (\Exception $e) {
-            Log::error("Échec remboursement automatique #{$this->paymentId}: " . $e->getMessage());
+        if (! $payment || $payment->group_id !== $this->groupId || $payment->user_id !== $this->userId) {
+            return;
         }
+        $attempt = DB::table('payment_refund_attempts')->where('payment_id', $payment->id)->first();
+        if ($attempt) {
+            // Continue a durable request even if credentials arrive later.
+            $billing->refund($payment, $attempt->reason);
+
+            return;
+        }
+        $group = Group::withTrashed()->find($this->groupId);
+        if (! $group || $payment->status !== 'completed' || $group->credential_email || $group->credential_password) {
+            return;
+        }
+        // Failure remains retryable; the scheduler also resumes durable attempts.
+        $billing->refund($payment, 'auto_no_credentials');
     }
 }

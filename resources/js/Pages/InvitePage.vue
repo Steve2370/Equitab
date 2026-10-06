@@ -20,6 +20,7 @@ interface Group {
 
 interface Props {
     group: Group;
+    inviteToken: string;
 }
 
 const props = defineProps<Props>();
@@ -114,6 +115,7 @@ function onSuccess(): void {
                     :group-id="group.id"
                     :price-per-member="group.pricePerMember"
                     :subscription-name="group.subscriptionName"
+                    :invite-token="inviteToken"
                     @success="onSuccess"
                     @cancel="showForm = false"
                 />

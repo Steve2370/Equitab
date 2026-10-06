@@ -7,11 +7,21 @@ services:
     container_name: equitab_app
     restart: unless-stopped
     working_dir: /var/www
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
     volumes:
       - .:/var/www
     ports:
-      - "9000:9000"
-      - "6001:6001"
+      # Nginx is on the host. Never expose trusted FastCGI to the Internet.
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:6001:6001"
+    healthcheck:
+      test: ["CMD", "php", "-r", "exit(@fsockopen('127.0.0.1', 9000) === false ? 1 : 0);"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 120s
     networks:
       - equitab_network
 
@@ -27,13 +37,21 @@ services:
     container_name: equitab_queue_worker
     restart: unless-stopped
     working_dir: /var/www
+    user: www-data
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
     volumes:
       - .:/var/www
     entrypoint: ["docker/entrypoint-worker.sh"]
     command: ["php", "artisan", "queue:work", "--sleep=3", "--tries=3", "--max-time=3600"]
     depends_on:
-      - postgres
-      - redis
+      app:
+        condition: service_healthy
+      postgres:
+        condition: service_started
+      redis:
+        condition: service_started
     networks:
       - equitab_network
 
@@ -49,13 +67,21 @@ services:
     container_name: equitab_scheduler
     restart: unless-stopped
     working_dir: /var/www
+    user: www-data
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
     volumes:
       - .:/var/www
     entrypoint: ["docker/entrypoint-worker.sh"]
     command: ["php", "artisan", "schedule:work"]
     depends_on:
-      - postgres
-      - redis
+      app:
+        condition: service_healthy
+      postgres:
+        condition: service_started
+      redis:
+        condition: service_started
     networks:
       - equitab_network
 

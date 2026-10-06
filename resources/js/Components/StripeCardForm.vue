@@ -8,6 +8,7 @@ interface Props {
     subscriptionName: string;
     amountToday?: number;
     nextBillingDate?: string;
+    inviteToken?: string;
 }
 
 interface Emits {
@@ -20,6 +21,9 @@ const emit = defineEmits<Emits>();
 
 const isLoading = ref(false);
 const errorMessage = ref('');
+const amountToday = ref(props.amountToday);
+const pricePerMember = ref(props.pricePerMember);
+const prorationReady = ref(props.amountToday !== undefined);
 let stripe: any = null;
 let cardElement: any = null;
 
@@ -31,6 +35,14 @@ function formatCurrency(amountInCents: number): string {
 }
 
 onMounted(async() => {
+    isLoading.value = true;
+    try {
+        await loadProration();
+    } catch {
+        errorMessage.value = 'Le montant à payer ne peut pas être vérifié. Veuillez réessayer.';
+    } finally {
+        isLoading.value = false;
+    }
     await nextTick();
     stripe = (window as any).Stripe(import.meta.env.VITE_STRIPE_KEY);
     const elements = stripe.elements();
@@ -54,6 +66,28 @@ onUnmounted(() => {
     if (cardElement) cardElement.destroy();
 });
 
+async function loadProration(): Promise<void> {
+    if (prorationReady.value) return;
+    const query = new URLSearchParams();
+    if (props.inviteToken) query.set('invite_token', props.inviteToken);
+    const response = await fetch(`/api/groups/${props.groupId}/proration${query.size ? `?${query}` : ''}`, {
+        headers: { Accept: 'application/json' },
+        cache: 'no-store',
+    });
+    if (!response.ok) throw new Error('Proration unavailable');
+    const data: unknown = await response.json();
+    if (typeof data !== 'object' || data === null
+        || !('amount_today' in data) || typeof data.amount_today !== 'number'
+        || !Number.isSafeInteger(data.amount_today) || data.amount_today < 0
+        || !('amount_recurring' in data) || typeof data.amount_recurring !== 'number'
+        || !Number.isSafeInteger(data.amount_recurring) || data.amount_recurring < 0) {
+        throw new Error('Invalid proration');
+    }
+    amountToday.value = data.amount_today;
+    pricePerMember.value = data.amount_recurring;
+    prorationReady.value = true;
+}
+
 async function confirmOnBackend(subscriptionId: string): Promise<boolean> {
     const response = await fetch(`/api/subscriptions/confirm`, {
         method: 'POST',
@@ -64,15 +98,8 @@ async function confirmOnBackend(subscriptionId: string): Promise<boolean> {
         },
         body: JSON.stringify({ subscription_id: subscriptionId }),
     });
-    const data = await response.json();
-
     if (! response.ok) {
-        // Le paiement a bien été prélevé par Stripe à ce stade — on ne
-        // bloque donc pas l'utilisateur, mais on ne prétend plus que tout
-        // s'est bien passé silencieusement. Un job planifié (equitab:reconcile-payments)
-        // rattrapera l'activation ct côté serveur ; on informe simplement
-        // l'utilisateur pour éviter la confusion pendant ce court délai.
-        console.error('confirmOnBackend a échoué:', response.status, data);
+        // Seule une confirmation serveur autorise l'annonce d'un succès.
         return false;
     }
 
@@ -80,10 +107,16 @@ async function confirmOnBackend(subscriptionId: string): Promise<boolean> {
 }
 
 async function handleSubmit(): Promise<void> {
+    if (isLoading.value) return;
     isLoading.value = true;
     errorMessage.value = '';
 
     try {
+        if (!prorationReady.value) {
+            await loadProration();
+            errorMessage.value = 'Le montant a été actualisé. Vérifiez-le avant de confirmer votre abonnement.';
+            return;
+        }
         const { paymentMethod, error } = await stripe.createPaymentMethod({
             type: 'card',
             card: cardElement,
@@ -101,11 +134,13 @@ async function handleSubmit(): Promise<void> {
                 'Accept': 'application/json',
                 'X-XSRF-TOKEN': getCsrfToken(),
             },
-            body: JSON.stringify({ payment_method_id: paymentMethod.id }),
+            body: JSON.stringify({
+                payment_method_id: paymentMethod.id,
+                ...(props.inviteToken ? { invite_token: props.inviteToken } : {}),
+            }),
         });
 
         const data = await response.json();
-        console.log('Réponse subscribe:', JSON.stringify(data));
 
         if (! response.ok) {
             errorMessage.value = data.message ?? 'Une erreur est survenue.';
@@ -116,7 +151,7 @@ async function handleSubmit(): Promise<void> {
         if (data.status === 'active') {
             const confirmed = await confirmOnBackend(data.subscription_id);
             if (! confirmed) {
-                errorMessage.value = "Votre paiement a été accepté par Stripe, mais son enregistrement a pris plus de temps que prévu. Rechargez cette page dans une minute — l'accès s'activera automatiquement.";
+                errorMessage.value = 'Le paiement doit encore être vérifié. Consultez vos abonnements avant de réessayer.';
                 return;
             }
             emit('success', data.subscription_id);
@@ -139,7 +174,7 @@ async function handleSubmit(): Promise<void> {
             if (paymentIntent?.status === 'succeeded') {
                 const confirmed = await confirmOnBackend(data.subscription_id);
                 if (! confirmed) {
-                    errorMessage.value = "Votre paiement a été accepté par Stripe, mais son enregistrement a pris plus de temps que prévu. Rechargez cette page dans une minute — l'accès s'activera automatiquement.";
+                    errorMessage.value = 'Le paiement doit encore être vérifié. Consultez vos abonnements avant de réessayer.';
                     return;
                 }
                 emit('success', data.subscription_id);
@@ -148,11 +183,10 @@ async function handleSubmit(): Promise<void> {
             }
         }
 
-        // Fallback — rediriger quand même (l'activation sera rattrapée par
-        // le webhook Stripe ou le job de réconciliation périodique)
-        emit('success', data.subscription_id);
-        window.location.href = `/payment/success?group_id=${props.groupId}`;
+        errorMessage.value = 'Votre paiement n’est pas encore confirmé. Consultez vos abonnements avant de réessayer.';
 
+    } catch {
+        errorMessage.value = 'La demande ne peut pas être confirmée. Vérifiez votre connexion, puis réessayez.';
     } finally {
         isLoading.value = false;
     }

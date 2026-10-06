@@ -2,15 +2,17 @@
 
 namespace App\Features\Group\Policies;
 
+use App\Features\Group\Services\OwnerPublicationEligibility;
 use App\Models\Group;
 use App\Models\User;
 
 class GroupPolicy
 {
+    public function __construct(private readonly OwnerPublicationEligibility $eligibility) {}
+
     public function create(User $user): bool
     {
-        return $user->identity_status === 'verified'
-            && $user->stripe_connect_status === 'active';
+        return $this->eligibility->state($user)['ready'];
     }
 
     public function update(User $user, Group $group): bool

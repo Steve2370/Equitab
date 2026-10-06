@@ -2,16 +2,18 @@
 
 namespace App\Features\Dashboard\Controllers;
 
+use App\Features\Payment\Services\OwnerOnboardingException;
+use App\Features\Payment\Services\OwnerOnboardingService;
 use App\Http\Controllers\Controller;
 use App\Mail\IdentityVerified;
-use Illuminate\Support\Facades\Mail;
+use App\Models\GroupDraft;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {
@@ -22,26 +24,31 @@ class DashboardController extends Controller
         $activeGroups = $user->groupMembers()
             ->with('group.subscription')
             ->where('status', 'active')
-            ->whereHas('group', fn($q) => $q->whereNotIn('status', ['closed']))
+            ->whereHas('group', fn ($q) => $q->whereNotIn('status', ['closed']))
             ->get();
 
         $totalSavings = $activeGroups->sum(function ($member) {
             $fullPrice = $member->group->subscription->monthly_price;
             $sharedPrice = $member->share_amount;
+
             return ($fullPrice - $sharedPrice) / 100;
         });
 
-        $monthlySpend = $activeGroups->sum(fn($m) => $m->share_amount / 100);
+        $monthlySpend = $activeGroups->sum(fn ($m) => $m->share_amount / 100);
 
         $upcomingPayments = $user->payments()
-            ->with('group.subscription')
+            // History remains visible after a group is archived. Do not alter
+            // the global relation used by authorization and payment workflows.
+            ->with(['group' => fn ($query) => $query->withTrashed()->with('subscription')])
             ->where('status', 'pending')
             ->orderBy('due_date')
             ->limit(5)
             ->get()
-            ->map(fn($p) => [
+            ->map(fn ($p) => [
                 'id' => $p->id,
-                'groupName' => $p->group->subscription->name . ' — ' . $p->group->name,
+                'groupName' => $p->group
+                    ? ($p->group->subscription?->name ?? 'Service indisponible').' — '.$p->group->name
+                    : 'Groupe indisponible',
                 'amount' => $p->amount,
                 'status' => $p->status,
                 'paidAt' => $p->paid_at?->format('d M Y'),
@@ -65,12 +72,12 @@ class DashboardController extends Controller
             ->with(['group.subscription', 'group.owner'])
             ->where('role', 'member')
             ->whereIn('status', ['active', 'pending_payment'])
-            ->whereHas('group', fn($q) => $q->whereNotIn('status', ['closed']))
+            ->whereHas('group', fn ($q) => $q->whereNotIn('status', ['closed']))
             ->get()
-            ->map(fn($m) => [
+            ->map(fn ($m) => [
                 'id' => $m->group->id,
                 'subscriptionName' => $m->group->subscription->name,
-                'ownerName' => $m->group->owner->display_name,
+                'ownerName' => $m->group->owner?->display_name ?? 'Utilisateur supprimé',
                 'pricePerMember' => $m->share_amount,
                 'joinedAt' => $m->joined_at?->format('d/m/Y'),
                 'status' => $m->status,
@@ -82,7 +89,7 @@ class DashboardController extends Controller
             ->with('subscription')
             ->whereNotIn('status', ['closed'])
             ->get()
-            ->map(fn($g) => [
+            ->map(fn ($g) => [
                 'id' => $g->id,
                 'subscriptionName' => $g->subscription->name,
                 'membersCount' => $g->current_members,
@@ -90,25 +97,35 @@ class DashboardController extends Controller
                 'pricePerMember' => $g->calculateCurrentPricePerMember(),
                 'totalPrice' => $g->total_price,
                 'status' => $g->status,
-                'inviteLink' => $g->invite_token ? config('app.url') . '/invite/' . $g->invite_token : null,
+                'inviteLink' => $g->invite_token ? config('app.url').'/invite/'.$g->invite_token : null,
                 'renewalDate' => $g->renewal_date?->format('d M Y'),
             ]);
 
         return Inertia::render('Dashboard/Subscriptions', [
+            'initialTab' => $request->query('tab') === 'owned' ? 'owned' : 'joined',
             'joinedSubscriptions' => $joined,
             'ownedSubscriptions' => $owned,
+            'drafts' => GroupDraft::where('owner_id', $user->id)
+                ->where('status', '!=', 'published')->latest('updated_at')->get()
+                ->map(fn ($draft) => [
+                    'id' => $draft->id,
+                    'name' => $draft->data['name'] ?? 'Mon prochain partage',
+                    'status' => $draft->status,
+                    'updatedAt' => $draft->updated_at->format('d/m/Y H:i'),
+                    'url' => route('group-drafts.edit', $draft, absolute: false),
+                ]),
         ]);
     }
 
     public function payments(Request $request): Response
     {
         $payments = $request->user()->payments()
-            ->with('group.subscription')
+            ->with(['group' => fn ($query) => $query->withTrashed()->with('subscription')])
             ->latest('paid_at')
             ->paginate(20)
-            ->through(fn($p) => [
+            ->through(fn ($p) => [
                 'id' => $p->id,
-                'groupName' => $p->group->subscription->name,
+                'groupName' => $p->group?->subscription?->name ?? 'Service indisponible',
                 'amount' => $p->amount,
                 'status' => $p->status,
                 'paidAt' => $p->paid_at?->format('d M Y'),
@@ -125,11 +142,12 @@ class DashboardController extends Controller
         $groups = $request->user()->groupMembers()
             ->with(['group.subscription', 'group.owner'])
             ->where('status', 'active')
+            ->whereHas('group')
             ->get()
-            ->map(fn($m) => [
+            ->map(fn ($m) => [
                 'groupId' => $m->group->id,
                 'subscriptionName' => $m->group->subscription->name,
-                'ownerName' => $m->group->owner->display_name,
+                'ownerName' => $m->group->owner?->display_name ?? 'Utilisateur supprimé',
                 'slug' => $m->group->subscription->slug,
             ]);
 
@@ -138,56 +156,28 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function profile(Request $request): Response
+    public function profile(Request $request, OwnerOnboardingService $onboarding): Response
     {
         $user = $request->user();
 
-        if ($user->stripe_identity_session_id && $user->identity_status !== 'verified') {
+        if ($user->stripe_identity_session_id || $user->stripe_connect_account_id) {
             try {
-                $stripe = new \Stripe\StripeClient(config('services.stripe.secret'));
-                $session = $stripe->identity->verificationSessions->retrieve(
-                    $user->stripe_identity_session_id
-                );
-
-                if ($session->status === 'verified') {
-                    $user->update(['identity_status' => 'verified']);
+                $identityWasVerified = $user->identity_status === 'verified';
+                $onboarding->refresh($user);
+                if (! $identityWasVerified && $user->identity_status === 'verified') {
                     Mail::to($user->email)->send(new IdentityVerified($user));
-                } elseif ($session->status === 'processing') {
-                    $user->update(['identity_status' => 'pending']);
                 }
-
-                $user->refresh();
-            } catch (\Exception $e) {
-                Log::error('Identity check failed: ' . $e->getMessage());
+            } catch (OwnerOnboardingException) {
+                $request->session()->flash('error', 'La vérification des versements est temporairement indisponible. Réessayez avant de publier.');
             }
         }
 
-        if ($user->stripe_connect_account_id && $user->stripe_connect_status !== 'active') {
-            try {
-                $stripe = $stripe ?? new \Stripe\StripeClient(config('services.stripe.secret'));
-                $account = $stripe->accounts->retrieve($user->stripe_connect_account_id);
-
-                // Même logique que le webhook account.updated : tant que
-                // pending_verification n'est pas vide, Stripe vérifie encore
-                // des éléments en arrière-plan (compte bancaire, identité...)
-                // même si charges_enabled est déjà à true.
-                $pendingVerification = ! empty($account->requirements->pending_verification ?? []);
-
-                $status = match(true) {
-                    $pendingVerification => 'pending',
-                    $account->charges_enabled && $account->payouts_enabled => 'active',
-                    $account->details_submitted => 'pending',
-                    default => 'restricted',
-                };
-
-                $user->update(['stripe_connect_status' => $status]);
-                $user->refresh();
-            } catch (\Exception $e) {
-                Log::error('Connect check failed: ' . $e->getMessage());
-            }
-        }
+        $resumeDraft = GroupDraft::where('owner_id', $user->id)
+            ->whereKey($request->session()->get('owner_draft_id'))
+            ->where('status', '!=', 'published')->first();
 
         return Inertia::render('Dashboard/Profile', [
+            'resumeDraftUrl' => $resumeDraft ? route('group-drafts.edit', $resumeDraft, absolute: false) : null,
             'user' => [
                 'name' => $user->name,
                 'email' => $user->email,
@@ -243,10 +233,10 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function updatePreferences(Request $request): \Illuminate\Http\RedirectResponse
+    public function updatePreferences(Request $request): RedirectResponse
     {
         $request->validate([
-            'username' => ['nullable', 'string', 'max:30', 'unique:users,username,' . $request->user()->id],
+            'username' => ['nullable', 'string', 'max:30', 'unique:users,username,'.$request->user()->id],
             'timezone' => ['required', 'string', 'timezone'],
             'notif_member_joined' => ['boolean'],
             'notif_payment_received' => ['boolean'],
@@ -275,16 +265,16 @@ class DashboardController extends Controller
         $user = $request->user();
 
         if ($user->avatar) {
-            $oldKey = str_replace(config('services.cloudflare.r2_url') . '/', '', $user->avatar);
+            $oldKey = str_replace(config('services.cloudflare.r2_url').'/', '', $user->avatar);
             Storage::disk('r2')->delete($oldKey);
         }
 
         $file = $request->file('avatar');
-        $filename = 'avatars/' . $user->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+        $filename = 'avatars/'.$user->id.'_'.time().'.'.$file->getClientOriginalExtension();
 
         Storage::disk('r2')->put($filename, file_get_contents($file), 'public');
 
-        $url = config('services.cloudflare.r2_url') . '/' . $filename;
+        $url = config('services.cloudflare.r2_url').'/'.$filename;
         $user->update(['avatar' => $url]);
 
         return back()->with('success', 'Avatar mis à jour.');
