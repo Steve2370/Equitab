@@ -5,7 +5,8 @@
         "dev": "vite",
         "preview:design": "node scripts/preview-redesign.mjs",
         "build": "vite build",
-        "emails": "node resources/emails/compile.cjs"
+        "emails": "node resources/emails/compile.cjs",
+        "emails:check": "node resources/emails/compile.cjs --check"
     },
     "devDependencies": {
         "@inertiajs/vue3": "^2.0.0",

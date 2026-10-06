@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="und" dir="auto" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<html lang="fr" dir="auto" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
   <head>
     <title></title>
     <!--[if !mso]><!-->
@@ -29,16 +29,16 @@
       .mj-outlook-group-fix { width:100% !important; }
     </style>
     <![endif]-->
-    
+
       <!--[if !mso]><!-->
-        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&amp;display=swap" rel="stylesheet" type="text/css">
         <style type="text/css">
-          @import url(https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap);
+          @import url(https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&amp;display=swap);
         </style>
       <!--<![endif]-->
 
-    
-    
+
+
     <style type="text/css">
       @media only screen and (min-width:480px) {
         .mj-column-per-100 { width:100% !important; max-width: 100%; }
@@ -47,242 +47,288 @@
     <style media="screen and (min-width:480px)">
       .moz-text-html .mj-column-per-100 { width:100% !important; max-width: 100%; }
     </style>
-    
-    
-  
-    
+
+
+
+
     <style type="text/css">
 
     @media only screen and (max-width:479px) {
       table.mj-full-width-mobile { width: 100% !important; }
       td.mj-full-width-mobile { width: auto !important; }
     }
-  
+
     </style>
-    
-    
+
+    <style type="text/css">
+a:focus-visible { outline: 3px solid #187a57; outline-offset: 4px; }
+  @media only screen and (max-width: 480px) {
+    .email-section > table > tbody > tr > td { padding-left: 20px !important; padding-right: 20px !important; }
+    .email-copy h1 { font-size: 26px !important; }
+  }
+    </style>
+
   </head>
-  
-      <body  style="word-spacing:normal;background-color:#F9FAFB;">
-        
-        <div
-           aria-roledescription="email" role="article" lang="und" dir="auto" style="word-spacing:normal;background-color:#F9FAFB;"
-        >
-        
-      
-      <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#0B1929" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
-    
-      
-      <div  style="background:#0B1929;background-color:#0B1929;margin:0px auto;max-width:600px;">
-        
-        <table
-           align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#0B1929;background-color:#0B1929;width:100%;"
-        >
+
+      <body style="word-spacing:normal;background-color:#f6f8f6;">
+
+    <div style="display:none;font-size:1px;color:#ffffff;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">Un message de l’équipe EquitAb au sujet de votre compte.</div>
+
+        <div aria-roledescription="email" role="article" lang="fr" dir="auto" style="word-spacing:normal;background-color:#f6f8f6;">
+
+
+      <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+
+
+      <div style="margin:0px auto;max-width:600px;">
+
+        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
           <tbody>
             <tr>
-              <td
-                 style="direction:ltr;font-size:0px;padding:24px 32px;text-align:center;"
-              >
-                <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]-->
-            
-      <div
-         class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;"
-      >
-        
-      <table
-         border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%"
-      >
-        <tbody>
-          
-              <tr>
-                <td
-                   style="font-size:0px;word-break:break-word;"
-                >
-                  
-      <div
-         class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;"
-      >
-        
-      <table
-         border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%"
-      >
-        <tbody>
-          
-              <tr>
-                <td
-                   align="center" style="font-size:0px;padding:0;word-break:break-word;"
-                >
-                  
-      <table
-         border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px;"
-      >
+              <td style="direction:ltr;font-size:0px;padding:32px 24px 24px;text-align:center;">
+                <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:552px;" ><![endif]-->
+
+      <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+
+      <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
         <tbody>
           <tr>
-            <td  style="width:170px;">
-              
-      <img
-         alt="Equitab" src="https://equitab.ca/Images/EquitabLogoblanc.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" width="170" height="auto"
-      />
-    
+            <td style="vertical-align:top;padding:0;">
+
+      <table border="0" cellpadding="0" cellspacing="0" role="presentation" style width="100%">
+        <tbody>
+
+              <tr>
+                <td align="left" style="font-size:0px;padding:0;word-break:break-word;">
+
+      <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px;">
+        <tbody>
+          <tr>
+            <td style="width:150px;">
+
+        <a href="{{ config('app.url') }}" target="_blank">
+
+      <img alt="EquitAb" src="{{ rtrim(config('app.url'), '/') }}/Images/EquitabLogo.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" width="150" height="auto">
+
+        </a>
+
             </td>
           </tr>
         </tbody>
       </table>
-    
+
                 </td>
               </tr>
-            
+
         </tbody>
       </table>
-    
-      </div>
-    
-                </td>
-              </tr>
-            
+
+            </td>
+          </tr>
         </tbody>
       </table>
-    
+
       </div>
-    
+
           <!--[if mso | IE]></td></tr></table><![endif]-->
               </td>
             </tr>
           </tbody>
         </table>
-        
+
       </div>
-    
-      
-      <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#FFFFFF" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
-    
-      
-      <div  style="background:#FFFFFF;background-color:#FFFFFF;margin:0px auto;max-width:600px;">
-        
-        <table
-           align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#FFFFFF;background-color:#FFFFFF;width:100%;"
-        >
+
+
+      <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="email-card-outlook" role="presentation" style="width:600px;" width="600" bgcolor="#ffffff" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+
+
+      <div class="email-card" style="box-shadow: 0 12px 32px -24px #303b3766; background: #ffffff; background-color: #ffffff; margin: 0px auto; max-width: 600px; border-radius: 24px; overflow: hidden;">
+
+        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;background-color:#ffffff;width:100%;border-collapse:separate;">
           <tbody>
             <tr>
-              <td
-                 style="direction:ltr;font-size:0px;padding:40px 32px 24px;text-align:center;"
-              >
-                <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]-->
-            
-      <div
-         class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;"
-      >
-        
-      <table
-         border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%"
-      >
-        <tbody>
-          
-              <tr>
-                <td
-                   align="left" style="font-size:0px;padding:10px 25px;padding-bottom:8px;word-break:break-word;"
-                >
-                  
-      <div
-         style="font-family:Montserrat, Arial, sans-serif;font-size:15px;line-height:1.6;text-align:left;color:#6B7280;"
-      >Bonjour <strong>{{ $userName }}</strong>,</div>
-    
-                </td>
-              </tr>
-            
-              <tr>
-                <td
-                   align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;"
-                >
-                  
-      <div
-         style="font-family:Montserrat, Arial, sans-serif;font-size:15px;line-height:1.6;text-align:left;color:#374151;"
-      >{!! nl2br(e($emailBody)) !!}</div>
-    
-                </td>
-              </tr>
-            
-        </tbody>
-      </table>
-    
-      </div>
-    
-          <!--[if mso | IE]></td></tr></table><![endif]-->
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        
-      </div>
-    
-      
-      <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#F3F4F6" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
-    
-      
-      <div  style="background:#F3F4F6;background-color:#F3F4F6;margin:0px auto;max-width:600px;">
-        
-        <table
-           align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#F3F4F6;background-color:#F3F4F6;width:100%;"
-        >
+              <td style="border:1px solid #dce5df;border-radius:24px;direction:ltr;font-size:0px;padding:32px 0;text-align:center;">
+                <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="email-section-outlook" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="email-section-outlook" role="presentation" style="width:598px;" width="598" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+
+
+      <div class="email-section" style="margin:0px auto;max-width:598px;">
+
+        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
           <tbody>
             <tr>
-              <td
-                 style="direction:ltr;font-size:0px;padding:24px 32px;text-align:center;"
-              >
-                <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]-->
-            
-      <div
-         class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;"
-      >
-        
-      <table
-         border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%"
-      >
+              <td style="direction:ltr;font-size:0px;padding:0 32px;text-align:center;">
+                <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:534px;" ><![endif]-->
+
+      <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+
+      <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
         <tbody>
-          
+          <tr>
+            <td style="vertical-align:top;padding:0;">
+
+      <table border="0" cellpadding="0" cellspacing="0" role="presentation" style width="100%">
+        <tbody>
+
               <tr>
-                <td
-                   align="center" style="font-size:0px;padding:10px 25px;word-break:break-word;"
-                >
-                  
-      <div
-         style="font-family:Montserrat, Arial, sans-serif;font-size:12px;line-height:1.6;text-align:center;color:#9CA3AF;"
-      >© 2026 Equitab Inc. — Ce message a été envoyé par l'équipe Equitab.</div>
-    
+                <td align="left" style="font-size:0px;padding:0 0 14px;word-break:break-word;">
+
+      <div style="font-family:Montserrat, Arial, sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;line-height:1.75;text-align:left;color:#187a57;">L’ÉQUIPE EQUITAB</div>
+
                 </td>
               </tr>
-            
+
               <tr>
-                <td
-                   align="center" style="font-size:0px;padding:10px 25px;padding-top:4px;word-break:break-word;"
-                >
-                  
-      <div
-         style="font-family:Montserrat, Arial, sans-serif;font-size:12px;line-height:1.6;text-align:center;color:#9CA3AF;"
-      >Des questions ? <a href="mailto:support@equitab.ca" style="color: #10B981;">support@equitab.ca</a></div>
-    
+                <td align="left" class="email-copy" style="overflow-wrap: anywhere; word-wrap: break-word; font-size: 0px; padding: 0 0 20px; word-break: break-word;">
+
+      <div style="font-family:Montserrat, Arial, sans-serif;font-size:30px;font-weight:600;letter-spacing:-1px;line-height:1.2;text-align:left;color:#303b37;"><h1 style="margin: 0; font-size: inherit; line-height: inherit; font-weight: inherit;">Un message pour vous.</h1></div>
+
                 </td>
               </tr>
-            
+
+              <tr>
+                <td align="left" class="email-copy" style="overflow-wrap: anywhere; word-wrap: break-word; font-size: 0px; padding: 0 0 16px; word-break: break-word;">
+
+      <div style="font-family:Montserrat, Arial, sans-serif;font-size:15px;line-height:1.75;text-align:left;color:#303b37;">Bonjour <strong>{{ $userName }}</strong>,</div>
+
+                </td>
+              </tr>
+
         </tbody>
       </table>
-    
+
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
       </div>
-    
+
           <!--[if mso | IE]></td></tr></table><![endif]-->
               </td>
             </tr>
           </tbody>
         </table>
-        
+
       </div>
-    
-      
+
+
+      <!--[if mso | IE]></td></tr></table></td></tr><tr><td class="email-section-outlook" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="email-section-outlook" role="presentation" style="width:598px;" width="598" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+
+
+      <div class="email-section" style="margin:0px auto;max-width:598px;">
+
+        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+          <tbody>
+            <tr>
+              <td style="direction:ltr;font-size:0px;padding:0 32px;text-align:center;">
+                <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:534px;" ><![endif]-->
+
+      <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+
+      <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+        <tbody>
+          <tr>
+            <td style="vertical-align:top;padding:0;">
+
+      <table border="0" cellpadding="0" cellspacing="0" role="presentation" style width="100%">
+        <tbody>
+
+              <tr>
+                <td align="left" class="email-copy" style="overflow-wrap: anywhere; word-wrap: break-word; font-size: 0px; padding: 0 0 16px; word-break: break-word;">
+
+      <div style="font-family:Montserrat, Arial, sans-serif;font-size:15px;line-height:1.75;text-align:left;color:#303b37;">{!! nl2br(e($emailBody)) !!}</div>
+
+                </td>
+              </tr>
+
+        </tbody>
+      </table>
+
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      </div>
+
+          <!--[if mso | IE]></td></tr></table><![endif]-->
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+
+
+      <!--[if mso | IE]></td></tr></table></td></tr></table><![endif]-->
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+
+
+      <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="email-section-outlook" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+
+
+      <div class="email-section" style="margin:0px auto;max-width:600px;">
+
+        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+          <tbody>
+            <tr>
+              <td style="direction:ltr;font-size:0px;padding:24px 32px 36px;text-align:center;">
+                <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]-->
+
+      <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+
+      <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+        <tbody>
+          <tr>
+            <td style="vertical-align:top;padding:0;">
+
+      <table border="0" cellpadding="0" cellspacing="0" role="presentation" style width="100%">
+        <tbody>
+
+              <tr>
+                <td align="left" style="font-size:0px;padding:0 0 8px;word-break:break-word;">
+
+      <div style="font-family:Montserrat, Arial, sans-serif;font-size:13px;line-height:1.7;text-align:left;color:#686b70;">Besoin d’un coup de main ? <a href="mailto:support@equitab.ca" style="color:#187a57;text-decoration:underline;">Écrivez-nous</a>.</div>
+
+                </td>
+              </tr>
+
+              <tr>
+                <td align="left" style="font-size:0px;padding:0;word-break:break-word;">
+
+      <div style="font-family:Montserrat, Arial, sans-serif;font-size:11px;line-height:1.75;text-align:left;color:#686b70;">© {{ date('Y') }} EquitAb · Partage d’abonnements<br>Ce courriel concerne votre compte ou votre activité sur EquitAb.</div>
+
+                </td>
+              </tr>
+
+        </tbody>
+      </table>
+
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      </div>
+
+          <!--[if mso | IE]></td></tr></table><![endif]-->
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+
+
       <!--[if mso | IE]></td></tr></table><![endif]-->
-    
-    
+
+
       </div>
       </body>
-    
+
 </html>
-  

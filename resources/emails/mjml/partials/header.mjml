@@ -1,0 +1,5 @@
+<mj-section padding="32px 24px 24px">
+  <mj-column>
+    <mj-image src="{{ rtrim(config('app.url'), '/') }}/Images/EquitabLogo.png" href="{{ config('app.url') }}" alt="EquitAb" width="150px" align="left" padding="0" />
+  </mj-column>
+</mj-section>

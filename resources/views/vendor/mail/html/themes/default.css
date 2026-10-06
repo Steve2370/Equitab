@@ -1,0 +1,24 @@
+/* The same palette and action shape as resources/css/app.css. */
+body { -webkit-text-size-adjust: none; margin: 0; padding: 0; }
+.notification-copy, .notification-copy p, .subcopy { font-family: Montserrat, Arial, sans-serif; color: #303b37; }
+.notification-copy h1 { color: #303b37; font-size: 28px; font-weight: 600; line-height: 1.25; margin: 0 0 20px; }
+.notification-copy p { font-size: 15px; line-height: 1.75; margin: 0 0 16px; }
+.notification-copy a, .subcopy a { color: #187a57; }
+.notification-copy .button {
+    background-color: #187a57;
+    border: 14px solid #187a57;
+    border-left-width: 24px;
+    border-right-width: 24px;
+    border-radius: 28px;
+    color: #ffffff;
+    display: inline-block;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    text-align: center;
+    text-decoration: none;
+}
+.action { margin: 24px 0; width: 100%; }
+.subcopy { border-top: 1px solid #dce5df; margin-top: 24px; padding-top: 20px; }
+.subcopy p { color: #686b70; font-size: 12px; line-height: 1.7; }
+.break-all { overflow-wrap: anywhere; word-break: break-all; }

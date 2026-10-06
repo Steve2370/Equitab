@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="und" dir="auto" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<html lang="fr" dir="auto" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
   <head>
     <title></title>
     <!--[if !mso]><!-->
@@ -29,16 +29,16 @@
       .mj-outlook-group-fix { width:100% !important; }
     </style>
     <![endif]-->
-    
+
       <!--[if !mso]><!-->
-        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&amp;display=swap" rel="stylesheet" type="text/css">
         <style type="text/css">
-          @import url(https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap);
+          @import url(https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&amp;display=swap);
         </style>
       <!--<![endif]-->
 
-    
-    
+
+
     <style type="text/css">
       @media only screen and (min-width:480px) {
         .mj-column-per-100 { width:100% !important; max-width: 100%; }
@@ -47,604 +47,374 @@
     <style media="screen and (min-width:480px)">
       .moz-text-html .mj-column-per-100 { width:100% !important; max-width: 100%; }
     </style>
-    
-    
-  
-    
+
+
+
+
     <style type="text/css">
 
     @media only screen and (max-width:479px) {
       table.mj-full-width-mobile { width: 100% !important; }
       td.mj-full-width-mobile { width: auto !important; }
     }
-  
+
     </style>
-    
-    
+
+    <style type="text/css">
+a:focus-visible { outline: 3px solid #187a57; outline-offset: 4px; }
+  @media only screen and (max-width: 480px) {
+    .email-section > table > tbody > tr > td { padding-left: 20px !important; padding-right: 20px !important; }
+    .email-copy h1 { font-size: 26px !important; }
+  }
+    </style>
+
   </head>
-  
-      <body  style="word-spacing:normal;background-color:#F9FAFB;">
-        
-        <div
-           aria-roledescription="email" role="article" lang="und" dir="auto" style="word-spacing:normal;background-color:#F9FAFB;"
-        >
-        <!-- Header -->
-      
-      <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#0B1929" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
-    
-      
-      <div  style="background:#0B1929;background-color:#0B1929;margin:0px auto;max-width:600px;">
-        
-        <table
-           align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#0B1929;background-color:#0B1929;width:100%;"
-        >
+
+      <body style="word-spacing:normal;background-color:#f6f8f6;">
+
+    <div style="display:none;font-size:1px;color:#ffffff;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">Votre paiement n’a pas abouti. Consultez votre abonnement pour faire le point.</div>
+
+        <div aria-roledescription="email" role="article" lang="fr" dir="auto" style="word-spacing:normal;background-color:#f6f8f6;">
+
+
+      <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+
+
+      <div style="margin:0px auto;max-width:600px;">
+
+        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
           <tbody>
             <tr>
-              <td
-                 style="direction:ltr;font-size:0px;padding:24px 32px;text-align:center;"
-              >
-                <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]-->
-            
-      <div
-         class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;"
-      >
-        
-      <table
-         border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%"
-      >
-        <tbody>
-          
-              <tr>
-                <td
-                   style="font-size:0px;word-break:break-word;"
-                >
-                  
-      <div
-         class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;"
-      >
-        
-      <table
-         border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%"
-      >
-        <tbody>
-          
-              <tr>
-                <td
-                   align="center" style="font-size:0px;padding:0;word-break:break-word;"
-                >
-                  
-      <table
-         border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px;"
-      >
+              <td style="direction:ltr;font-size:0px;padding:32px 24px 24px;text-align:center;">
+                <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:552px;" ><![endif]-->
+
+      <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+
+      <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
         <tbody>
           <tr>
-            <td  style="width:170px;">
-              
-      <img
-         alt="Equitab" src="https://equitab.ca/Images/EquitabLogoblanc.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" width="170" height="auto"
-      />
-    
+            <td style="vertical-align:top;padding:0;">
+
+      <table border="0" cellpadding="0" cellspacing="0" role="presentation" style width="100%">
+        <tbody>
+
+              <tr>
+                <td align="left" style="font-size:0px;padding:0;word-break:break-word;">
+
+      <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px;">
+        <tbody>
+          <tr>
+            <td style="width:150px;">
+
+        <a href="{{ config('app.url') }}" target="_blank">
+
+      <img alt="EquitAb" src="{{ rtrim(config('app.url'), '/') }}/Images/EquitabLogo.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" width="150" height="auto">
+
+        </a>
+
             </td>
           </tr>
         </tbody>
       </table>
-    
+
                 </td>
               </tr>
-            
+
         </tbody>
       </table>
-    
-      </div>
-    
-                </td>
-              </tr>
-            
-        </tbody>
-      </table>
-    
-      </div>
-    
-          <!--[if mso | IE]></td></tr></table><![endif]-->
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        
-      </div>
-    
-      
-      <!--[if mso | IE]></td></tr></table><![endif]-->
-    
-    <!-- Hero -->
-      
-      <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#FFFFFF" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
-    
-      
-      <div  style="background:#FFFFFF;background-color:#FFFFFF;margin:0px auto;max-width:600px;">
-        
-        <table
-           align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#FFFFFF;background-color:#FFFFFF;width:100%;"
-        >
-          <tbody>
-            <tr>
-              <td
-                 style="direction:ltr;font-size:0px;padding:40px 32px 24px;text-align:center;"
-              >
-                <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]-->
-            
-      <div
-         class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;"
-      >
-        
-      <table
-         border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%"
-      >
-        <tbody>
-          
-              <tr>
-                <td
-                   align="center" style="font-size:0px;padding:10px 25px;word-break:break-word;"
-                >
-                  
-      <div
-         style="font-family:Montserrat, Arial, sans-serif;font-size:28px;font-weight:700;line-height:1.6;text-align:center;color:#DC2626;"
-      >Échec de paiement</div>
-    
-                </td>
-              </tr>
-            
-              <tr>
-                <td
-                   align="center" style="font-size:0px;padding:10px 25px;padding-top:8px;word-break:break-word;"
-                >
-                  
-      <div
-         style="font-family:Montserrat, Arial, sans-serif;font-size:15px;line-height:1.6;text-align:center;color:#6B7280;"
-      >Bonjour <strong>{{ $memberName }}</strong>, votre paiement n'a pas pu être traité.</div>
-    
-                </td>
-              </tr>
-            
-        </tbody>
-      </table>
-    
-      </div>
-    
-          <!--[if mso | IE]></td></tr></table><![endif]-->
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        
-      </div>
-    
-      
-      <!--[if mso | IE]></td></tr></table><![endif]-->
-    
-    <!-- Détails -->
-      
-      <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#FFFFFF" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
-    
-      
-      <div  style="background:#FFFFFF;background-color:#FFFFFF;margin:0px auto;max-width:600px;">
-        
-        <table
-           align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#FFFFFF;background-color:#FFFFFF;width:100%;"
-        >
-          <tbody>
-            <tr>
-              <td
-                 style="direction:ltr;font-size:0px;padding:0 32px 24px;text-align:center;"
-              >
-                <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]-->
-            
-      <div
-         class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;"
-      >
-        
-      <table
-         border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%" style="border-collapse:separate;"
-      >
-        <tbody>
-          <tr>
-            <td  style="background-color:#FEF2F2;border-radius:12px;vertical-align:top;border-collapse:separate;padding:24px;">
-              
-      <table
-         border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%"
-      >
-        <tbody>
-          
-              <tr>
-                <td
-                   align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;"
-                >
-                  
-      <table
-         cellpadding="0" cellspacing="0" width="100%" border="0" style="color:#000000;font-family:Montserrat, Arial, sans-serif;font-size:13px;line-height:22px;table-layout:auto;width:100%;border:none;"
-      >
-        <tr>
-            <td style="padding: 6px 0; color: #6B7280; font-size: 14px;">Service</td>
-            <td style="padding: 6px 0; color: #0B1929; font-weight: 600; text-align: right;">{{ $subscriptionName }}</td>
-          </tr>
-          <tr>
-            <td style="padding: 6px 0; color: #6B7280; font-size: 14px;">Groupe</td>
-            <td style="padding: 6px 0; color: #0B1929; font-weight: 600; text-align: right;">{{ $groupName }}</td>
-          </tr>
-          <tr>
-            <td style="padding: 6px 0; color: #6B7280; font-size: 14px;">Montant</td>
-            <td style="padding: 6px 0; color: #DC2626; font-weight: 700; text-align: right;">{{ $amount }} $ CAD</td>
-          </tr>
-      </table>
-    
-                </td>
-              </tr>
-            
-        </tbody>
-      </table>
-    
+
             </td>
           </tr>
         </tbody>
       </table>
-    
+
       </div>
-    
+
           <!--[if mso | IE]></td></tr></table><![endif]-->
               </td>
             </tr>
           </tbody>
         </table>
-        
+
       </div>
-    
-      
-      <!--[if mso | IE]></td></tr></table><![endif]-->
-    
-    <!-- Raisons possibles -->
-      
-      <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#FFFFFF" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
-    
-      
-      <div  style="background:#FFFFFF;background-color:#FFFFFF;margin:0px auto;max-width:600px;">
-        
-        <table
-           align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#FFFFFF;background-color:#FFFFFF;width:100%;"
-        >
+
+
+      <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="email-card-outlook" role="presentation" style="width:600px;" width="600" bgcolor="#ffffff" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+
+
+      <div class="email-card" style="box-shadow: 0 12px 32px -24px #303b3766; background: #ffffff; background-color: #ffffff; margin: 0px auto; max-width: 600px; border-radius: 24px; overflow: hidden;">
+
+        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;background-color:#ffffff;width:100%;border-collapse:separate;">
           <tbody>
             <tr>
-              <td
-                 style="direction:ltr;font-size:0px;padding:0 32px 24px;text-align:center;"
-              >
-                <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]-->
-            
-      <div
-         class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;"
-      >
-        
-      <table
-         border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%"
-      >
-        <tbody>
-          
-              <tr>
-                <td
-                   align="left" style="font-size:0px;padding:10px 25px;padding-bottom:12px;word-break:break-word;"
-                >
-                  
-      <div
-         style="font-family:Montserrat, Arial, sans-serif;font-size:15px;font-weight:600;line-height:1.6;text-align:left;color:#0B1929;"
-      >Raisons possibles :</div>
-    
-                </td>
-              </tr>
-            
-              <tr>
-                <td
-                   align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;"
-                >
-                  
-      <table
-         cellpadding="0" cellspacing="0" width="100%" border="0" style="color:#000000;font-family:Montserrat, Arial, sans-serif;font-size:13px;line-height:22px;table-layout:auto;width:100%;border:none;"
-      >
-        <tr>
-            <td style="padding: 6px 0; color: #374151; font-size: 14px;">• Fonds insuffisants sur votre carte</td>
-          </tr>
-          <tr>
-            <td style="padding: 6px 0; color: #374151; font-size: 14px;">• Carte expirée ou bloquée</td>
-          </tr>
-          <tr>
-            <td style="padding: 6px 0; color: #374151; font-size: 14px;">• Limite de transaction dépassée</td>
-          </tr>
-          <tr>
-            <td style="padding: 6px 0; color: #374151; font-size: 14px;">• Paiement refusé par votre banque</td>
-          </tr>
-      </table>
-    
-                </td>
-              </tr>
-            
-        </tbody>
-      </table>
-    
-      </div>
-    
-          <!--[if mso | IE]></td></tr></table><![endif]-->
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        
-      </div>
-    
-      
-      <!--[if mso | IE]></td></tr></table><![endif]-->
-    
-    <!-- Avertissement -->
-      
-      <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#FFFFFF" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
-    
-      
-      <div  style="background:#FFFFFF;background-color:#FFFFFF;margin:0px auto;max-width:600px;">
-        
-        <table
-           align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#FFFFFF;background-color:#FFFFFF;width:100%;"
-        >
+              <td style="border:1px solid #dce5df;border-radius:24px;direction:ltr;font-size:0px;padding:32px 0;text-align:center;">
+                <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="email-section-outlook" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="email-section-outlook" role="presentation" style="width:598px;" width="598" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+
+
+      <div class="email-section" style="margin:0px auto;max-width:598px;">
+
+        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
           <tbody>
             <tr>
-              <td
-                 style="direction:ltr;font-size:0px;padding:0 32px 24px;text-align:center;"
-              >
-                <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]-->
-            
-      <div
-         class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;"
-      >
-        
-      <table
-         border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%" style="border-collapse:separate;"
-      >
+              <td style="direction:ltr;font-size:0px;padding:0 32px;text-align:center;">
+                <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:534px;" ><![endif]-->
+
+      <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+
+      <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
         <tbody>
           <tr>
-            <td  style="background-color:#FFF7ED;border-radius:12px;vertical-align:top;border-collapse:separate;padding:20px;">
-              
-      <table
-         border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%"
-      >
+            <td style="vertical-align:top;padding:0;">
+
+      <table border="0" cellpadding="0" cellspacing="0" role="presentation" style width="100%">
         <tbody>
-          
+
               <tr>
-                <td
-                   align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;"
-                >
-                  
-      <div
-         style="font-family:Montserrat, Arial, sans-serif;font-size:14px;font-weight:600;line-height:1.6;text-align:left;color:#C2410C;"
-      >⚠️ Accès suspendu</div>
-    
+                <td align="left" style="font-size:0px;padding:0 0 14px;word-break:break-word;">
+
+      <div style="font-family:Montserrat, Arial, sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;line-height:1.75;text-align:left;color:#187a57;">ACTION REQUISE</div>
+
                 </td>
               </tr>
-            
+
               <tr>
-                <td
-                   align="left" style="font-size:0px;padding:10px 25px;padding-top:4px;word-break:break-word;"
-                >
-                  
-      <div
-         style="font-family:Montserrat, Arial, sans-serif;font-size:14px;line-height:1.6;text-align:left;color:#9A3412;"
-      >Votre accès au groupe <strong>{{ $groupName }}</strong> a été suspendu jusqu'au règlement du paiement. Mettez à jour votre moyen de paiement depuis votre tableau de bord.</div>
-    
+                <td align="left" class="email-copy" style="overflow-wrap: anywhere; word-wrap: break-word; font-size: 0px; padding: 0 0 20px; word-break: break-word;">
+
+      <div style="font-family:Montserrat, Arial, sans-serif;font-size:30px;font-weight:600;letter-spacing:-1px;line-height:1.2;text-align:left;color:#303b37;"><h1 style="margin: 0; font-size: inherit; line-height: inherit; font-weight: inherit;">Votre paiement n’a pas abouti.</h1></div>
+
                 </td>
               </tr>
-            
+
+              <tr>
+                <td align="left" class="email-copy" style="overflow-wrap: anywhere; word-wrap: break-word; font-size: 0px; padding: 0 0 16px; word-break: break-word;">
+
+      <div style="font-family:Montserrat, Arial, sans-serif;font-size:15px;line-height:1.75;text-align:left;color:#303b37;">Bonjour <strong>{{ $memberName }}</strong>, nous n’avons pas pu confirmer le paiement de votre abonnement.</div>
+
+                </td>
+              </tr>
+
         </tbody>
       </table>
-    
+
             </td>
           </tr>
         </tbody>
       </table>
-    
+
       </div>
-    
+
           <!--[if mso | IE]></td></tr></table><![endif]-->
               </td>
             </tr>
           </tbody>
         </table>
-        
+
       </div>
-    
-      
-      <!--[if mso | IE]></td></tr></table><![endif]-->
-    
-    <!-- CTA -->
-      
-      <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#FFFFFF" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
-    
-      
-      <div  style="background:#FFFFFF;background-color:#FFFFFF;margin:0px auto;max-width:600px;">
-        
-        <table
-           align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#FFFFFF;background-color:#FFFFFF;width:100%;"
-        >
+
+
+      <!--[if mso | IE]></td></tr></table></td></tr><tr><td class="email-section-outlook" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="email-section-outlook" role="presentation" style="width:598px;" width="598" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+
+
+      <div class="email-section" style="margin:0px auto;max-width:598px;">
+
+        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
           <tbody>
             <tr>
-              <td
-                 style="direction:ltr;font-size:0px;padding:0 32px 16px;text-align:center;"
-              >
-                <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]-->
-            
-      <div
-         class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;"
-      >
-        
-      <table
-         border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%"
-      >
-        <tbody>
-          
-              <tr>
-                <td
-                   align="center" style="font-size:0px;padding:14px 0;word-break:break-word;"
-                >
-                  
-      <table
-         border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:separate;width:100%;line-height:100%;"
-      >
+              <td style="direction:ltr;font-size:0px;padding:0 32px;padding-bottom:24px;text-align:center;">
+                <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:534px;" ><![endif]-->
+
+      <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+
+      <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%" style="border-collapse:separate;">
         <tbody>
           <tr>
-            <td
-               align="center" bgcolor="#DC2626" role="presentation" style="border:none;border-radius:8px;cursor:auto;mso-padding-alt:14px 48px;background:#DC2626;" valign="middle"
-            >
-              <a
-                 href="{{ $dashboardUrl }}" style="display:inline-block;background:#DC2626;color:#FFFFFF;font-family:Montserrat, Arial, sans-serif;font-size:15px;font-weight:600;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:14px 48px;mso-padding-alt:0px;border-radius:8px;" target="_blank"
-              >
-                Mettre à jour mon paiement
+            <td style="background-color:#f6f8f6;border:1px solid #dce5df;border-radius:16px;vertical-align:top;border-collapse:separate;padding:20px;">
+
+      <table border="0" cellpadding="0" cellspacing="0" role="presentation" style width="100%">
+        <tbody>
+
+              <tr>
+                <td align="left" class="details-table" style="font-size:0px;padding:0;word-break:break-word;">
+
+      <table cellpadding="0" cellspacing="0" width="100%" border="0" style="color:#303b37;font-family:Montserrat, Arial, sans-serif;font-size:14px;line-height:1.7;table-layout:fixed;width:100%;border:none;">
+        <tr><td style="padding: 10px 0; vertical-align: top; overflow-wrap: anywhere; word-wrap: break-word; color: #686b70; width: 44%; padding-right: 16px;" width="44%" valign="top">Service</td><td style="padding: 10px 0; vertical-align: top; overflow-wrap: anywhere; word-wrap: break-word; font-weight: 600; text-align: right;" valign="top" align="right">{{ $subscriptionName }}</td></tr>
+          <tr><td style="padding: 10px 0; vertical-align: top; overflow-wrap: anywhere; word-wrap: break-word; color: #686b70; width: 44%; padding-right: 16px; border-top: 1px solid #dce5df;" width="44%" valign="top">Groupe</td><td style="padding: 10px 0; vertical-align: top; overflow-wrap: anywhere; word-wrap: break-word; font-weight: 600; text-align: right; border-top: 1px solid #dce5df;" valign="top" align="right">{{ $groupName }}</td></tr>
+          <tr><td style="padding: 10px 0; vertical-align: top; overflow-wrap: anywhere; word-wrap: break-word; color: #686b70; width: 44%; padding-right: 16px; border-top: 1px solid #dce5df;" width="44%" valign="top">Montant</td><td style="padding: 10px 0; vertical-align: top; overflow-wrap: anywhere; word-wrap: break-word; font-weight: 600; text-align: right; border-top: 1px solid #dce5df;" valign="top" align="right">{{ $amount }} $ CAD</td></tr>
+      </table>
+
+                </td>
+              </tr>
+
+        </tbody>
+      </table>
+
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      </div>
+
+          <!--[if mso | IE]></td></tr></table><![endif]-->
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+
+
+      <!--[if mso | IE]></td></tr></table></td></tr><tr><td class="email-section-outlook" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="email-section-outlook" role="presentation" style="width:598px;" width="598" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+
+
+      <div class="email-section" style="margin:0px auto;max-width:598px;">
+
+        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+          <tbody>
+            <tr>
+              <td style="direction:ltr;font-size:0px;padding:0 32px;text-align:center;">
+                <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:534px;" ><![endif]-->
+
+      <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+
+      <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+        <tbody>
+          <tr>
+            <td style="vertical-align:top;padding:0;">
+
+      <table border="0" cellpadding="0" cellspacing="0" role="presentation" style width="100%">
+        <tbody>
+
+              <tr>
+                <td align="left" style="font-size:0px;padding:0 0 6px;word-break:break-word;">
+
+      <div style="font-family:Montserrat, Arial, sans-serif;font-size:15px;font-weight:600;line-height:1.75;text-align:left;color:#303b37;">La prochaine étape</div>
+
+                </td>
+              </tr>
+
+              <tr>
+                <td align="left" style="font-size:0px;padding:0 0 16px;word-break:break-word;">
+
+      <div style="font-family:Montserrat, Arial, sans-serif;font-size:14px;line-height:1.75;text-align:left;color:#303b37;">Vérifiez la validité de votre carte et les autorisations de votre banque, puis consultez votre abonnement pour voir les actions disponibles. L’accès au service nécessite un paiement confirmé.</div>
+
+                </td>
+              </tr>
+
+              <tr>
+                <td align="left" style="font-size:0px;padding:8px 0 0;word-break:break-word;">
+
+      <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:separate;line-height:100%;">
+        <tbody>
+          <tr>
+            <td align="center" bgcolor="#187a57" role="presentation" style="border:none;border-radius:28px;cursor:auto;mso-padding-alt:16px 28px;background:#187a57;" valign="middle">
+              <a href="{{ $dashboardUrl }}" style="display:inline-block;background:#187a57;color:#ffffff;font-family:Montserrat, Arial, sans-serif;font-size:14px;font-weight:600;line-height:20px;margin:0;text-decoration:none;text-transform:none;padding:16px 28px;mso-padding-alt:0px;border-radius:28px;" target="_blank">
+                Consulter mon abonnement
               </a>
             </td>
           </tr>
         </tbody>
       </table>
-    
+
                 </td>
               </tr>
-            
+
+              <tr>
+                <td align="left" style="font-size:0px;padding:20px 0 0;word-break:break-word;">
+
+      <div style="font-family:Montserrat, Arial, sans-serif;font-size:13px;line-height:1.7;text-align:left;color:#686b70;">Besoin d’aide pour régler la situation ? <a href="{{ $supportUrl }}" style="color:#187a57;">Contactez notre équipe</a>.</div>
+
+                </td>
+              </tr>
+
         </tbody>
       </table>
-    
+
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
       </div>
-    
+
           <!--[if mso | IE]></td></tr></table><![endif]-->
               </td>
             </tr>
           </tbody>
         </table>
-        
+
       </div>
-    
-      
-      <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#FFFFFF" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
-    
-      
-      <div  style="background:#FFFFFF;background-color:#FFFFFF;margin:0px auto;max-width:600px;">
-        
-        <table
-           align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#FFFFFF;background-color:#FFFFFF;width:100%;"
-        >
+
+
+      <!--[if mso | IE]></td></tr></table></td></tr></table><![endif]-->
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+
+
+      <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="email-section-outlook" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+
+
+      <div class="email-section" style="margin:0px auto;max-width:600px;">
+
+        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
           <tbody>
             <tr>
-              <td
-                 style="direction:ltr;font-size:0px;padding:0 32px 40px;text-align:center;"
-              >
+              <td style="direction:ltr;font-size:0px;padding:24px 32px 36px;text-align:center;">
                 <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]-->
-            
-      <div
-         class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;"
-      >
-        
-      <table
-         border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%"
-      >
+
+      <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+
+      <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
         <tbody>
-          
+          <tr>
+            <td style="vertical-align:top;padding:0;">
+
+      <table border="0" cellpadding="0" cellspacing="0" role="presentation" style width="100%">
+        <tbody>
+
               <tr>
-                <td
-                   align="center" style="font-size:0px;padding:10px 25px;word-break:break-word;"
-                >
-                  
-      <div
-         style="font-family:Montserrat, Arial, sans-serif;font-size:13px;line-height:1.6;text-align:center;color:#6B7280;"
-      >Besoin d'aide ? <a href="{{ $supportUrl }}" style="color: #10B981;">Contactez notre support</a></div>
-    
+                <td align="left" style="font-size:0px;padding:0 0 8px;word-break:break-word;">
+
+      <div style="font-family:Montserrat, Arial, sans-serif;font-size:13px;line-height:1.7;text-align:left;color:#686b70;">Besoin d’un coup de main ? <a href="mailto:support@equitab.ca" style="color:#187a57;text-decoration:underline;">Écrivez-nous</a>.</div>
+
                 </td>
               </tr>
-            
+
+              <tr>
+                <td align="left" style="font-size:0px;padding:0;word-break:break-word;">
+
+      <div style="font-family:Montserrat, Arial, sans-serif;font-size:11px;line-height:1.75;text-align:left;color:#686b70;">© {{ date('Y') }} EquitAb · Partage d’abonnements<br>Ce courriel concerne votre compte ou votre activité sur EquitAb.</div>
+
+                </td>
+              </tr>
+
         </tbody>
       </table>
-    
+
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
       </div>
-    
+
           <!--[if mso | IE]></td></tr></table><![endif]-->
               </td>
             </tr>
           </tbody>
         </table>
-        
+
       </div>
-    
-      
+
+
       <!--[if mso | IE]></td></tr></table><![endif]-->
-    
-    <!-- Footer -->
-      
-      <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#F3F4F6" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
-    
-      
-      <div  style="background:#F3F4F6;background-color:#F3F4F6;margin:0px auto;max-width:600px;">
-        
-        <table
-           align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#F3F4F6;background-color:#F3F4F6;width:100%;"
-        >
-          <tbody>
-            <tr>
-              <td
-                 style="direction:ltr;font-size:0px;padding:24px 32px;text-align:center;"
-              >
-                <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]-->
-            
-      <div
-         class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;"
-      >
-        
-      <table
-         border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%"
-      >
-        <tbody>
-          
-              <tr>
-                <td
-                   align="center" style="font-size:0px;padding:10px 25px;word-break:break-word;"
-                >
-                  
-      <div
-         style="font-family:Montserrat, Arial, sans-serif;font-size:12px;line-height:1.6;text-align:center;color:#9CA3AF;"
-      >© 2026 Equitab Inc. — Plateforme de partage d'abonnements</div>
-    
-                </td>
-              </tr>
-            
-              <tr>
-                <td
-                   align="center" style="font-size:0px;padding:10px 25px;padding-top:4px;word-break:break-word;"
-                >
-                  
-      <div
-         style="font-family:Montserrat, Arial, sans-serif;font-size:12px;line-height:1.6;text-align:center;color:#9CA3AF;"
-      >Des questions ? <a href="mailto:support@equitab.ca" style="color: #10B981;">support@equitab.ca</a></div>
-    
-                </td>
-              </tr>
-            
-        </tbody>
-      </table>
-    
-      </div>
-    
-          <!--[if mso | IE]></td></tr></table><![endif]-->
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        
-      </div>
-    
-      
-      <!--[if mso | IE]></td></tr></table><![endif]-->
-    
-    
+
+
       </div>
       </body>
-    
+
 </html>
-  

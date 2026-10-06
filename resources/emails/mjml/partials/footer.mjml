@@ -1,0 +1,6 @@
+<mj-section padding="24px 32px 36px" css-class="email-section">
+  <mj-column>
+    <mj-text mj-class="note" padding="0 0 8px">Besoin d’un coup de main ? <a href="mailto:support@equitab.ca" style="color:#187a57;text-decoration:underline;">Écrivez-nous</a>.</mj-text>
+    <mj-text font-size="11px" color="#686b70" padding="0">© {{ date('Y') }} EquitAb · Partage d’abonnements<br />Ce courriel concerne votre compte ou votre activité sur EquitAb.</mj-text>
+  </mj-column>
+</mj-section>

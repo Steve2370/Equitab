@@ -2,9 +2,8 @@
 
 namespace App\Mail;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use App\Models\GroupMember;
+use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
@@ -18,7 +17,7 @@ class PriceChanged extends Mailable
     /**
      * Create a new message instance.
      */
-     public function __construct(
+    public function __construct(
         public readonly GroupMember $member,
         public readonly int $oldPrice,
         public readonly int $newPrice,
@@ -32,7 +31,7 @@ class PriceChanged extends Mailable
         $direction = $this->newPrice < $this->oldPrice ? 'baissé' : 'augmenté';
 
         return new Envelope(
-            subject: "Votre prix a {$direction} — " . $this->member->group->subscription->name,
+            subject: "Votre prix a {$direction} — ".$this->member->group->subscription->name,
         );
     }
 
@@ -47,10 +46,12 @@ class PriceChanged extends Mailable
                 'memberName' => $this->member->user->name,
                 'groupName' => $this->member->group->name,
                 'subscriptionName' => $this->member->group->subscription->name,
-                'oldPrice' => number_format($this->oldPrice / 100, 2),
-                'newPrice' => number_format($this->newPrice / 100, 2),
+                // Public mailable properties are injected after view data.
+                // Keep display values distinct from the integer cent amounts.
+                'displayOldPrice' => number_format($this->oldPrice / 100, 2),
+                'displayNewPrice' => number_format($this->newPrice / 100, 2),
                 'isDecrease' => $this->newPrice < $this->oldPrice,
-                'dashboardUrl' => config('app.url') . '/dashboard/subscriptions',
+                'dashboardUrl' => config('app.url').'/dashboard/subscriptions',
             ],
         );
     }

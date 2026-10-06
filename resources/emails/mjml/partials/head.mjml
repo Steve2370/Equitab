@@ -1,0 +1,30 @@
+<mj-font name="Montserrat" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&amp;display=swap" />
+<mj-attributes>
+  <mj-all font-family="Montserrat, Arial, sans-serif" />
+  <mj-text font-size="15px" line-height="1.75" color="#303b37" padding="0 0 16px" />
+  <mj-section padding="0 32px" />
+  <mj-column padding="0" />
+  <mj-button background-color="#187a57" color="#ffffff" border-radius="28px" font-size="14px" font-weight="600" inner-padding="16px 28px" padding="8px 0 0" align="left" line-height="20px" />
+  <mj-table font-size="14px" line-height="1.7" color="#303b37" cellpadding="0" padding="0" table-layout="fixed" />
+  <mj-class name="eyebrow" color="#187a57" font-size="11px" font-weight="700" letter-spacing="1.5px" padding="0 0 14px" />
+  <mj-class name="headline" font-size="30px" font-weight="600" line-height="1.2" letter-spacing="-1px" padding="0 0 20px" />
+  <mj-class name="note" color="#686b70" font-size="13px" line-height="1.7" />
+  <mj-class name="details" background-color="#f6f8f6" border="1px solid #dce5df" border-radius="16px" padding="20px" />
+</mj-attributes>
+<mj-style inline="inline">
+  .email-card { box-shadow: 0 12px 32px -24px #303b3766; }
+  .details-table td { padding: 10px 0; vertical-align: top; overflow-wrap: anywhere; word-wrap: break-word; }
+  .details-table td:first-child { color: #686b70; width: 44%; padding-right: 16px; }
+  .details-table td:last-child { font-weight: 600; text-align: right; }
+  .details-table tr + tr td { border-top: 1px solid #dce5df; }
+  .email-copy { overflow-wrap: anywhere; word-wrap: break-word; }
+  .email-copy h1 { margin: 0; font-size: inherit; line-height: inherit; font-weight: inherit; }
+  .email-copy a { color: #187a57; text-decoration: underline; }
+</mj-style>
+<mj-style>
+  a:focus-visible { outline: 3px solid #187a57; outline-offset: 4px; }
+  @media only screen and (max-width: 480px) {
+    .email-section > table > tbody > tr > td { padding-left: 20px !important; padding-right: 20px !important; }
+    .email-copy h1 { font-size: 26px !important; }
+  }
+</mj-style>

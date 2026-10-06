@@ -1,6 +1,7 @@
 const mjml = require('mjml');
 const fs = require('fs');
 const path = require('path');
+const projectRoot = path.resolve(__dirname, '../..');
 
 const templates = [
     {
@@ -47,23 +48,47 @@ const templates = [
         input: 'resources/emails/mjml/admin-message.mjml',
         output: 'resources/views/emails/admin/message.blade.php',
     },
+    {
+        input: 'resources/emails/mjml/notification-layout.mjml',
+        output: 'resources/views/vendor/mail/html/layout.blade.php',
+    },
 ];
 
-async function compile() {
-    for (const { input, output } of templates) {
-        const mjmlContent = fs.readFileSync(input, 'utf8');
-        const result = await mjml(mjmlContent, { validationLevel: 'soft' });
+async function renderTemplate(input) {
+    const filePath = path.join(projectRoot, input);
+    const result = await mjml(fs.readFileSync(filePath, 'utf8'), {
+        filePath,
+        ignoreIncludes: false,
+        validationLevel: 'strict',
+    });
+    return result.html.split('\n').map((line) => line.trimEnd()).join('\n').trimEnd() + '\n';
+}
 
-        if (result.errors && result.errors.length > 0) {
-            console.error(`Erreurs dans ${input}:`, result.errors);
+async function compile({ check = false } = {}) {
+    // Validate every template before replacing any generated view.
+    const rendered = await Promise.all(templates.map(async (template) => ({
+        ...template,
+        html: await renderTemplate(template.input),
+    })));
+    for (const { input, output, html } of rendered) {
+        const destination = path.join(projectRoot, output);
+        if (check) {
+            if (!fs.existsSync(destination) || fs.readFileSync(destination, 'utf8') !== html) {
+                throw new Error(`Vue obsolète : ${output}. Exécutez npm run emails.`);
+            }
+        } else {
+            fs.mkdirSync(path.dirname(destination), { recursive: true });
+            fs.writeFileSync(destination, html);
         }
-
-        const dir = path.dirname(output);
-        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-
-        fs.writeFileSync(output, result.html);
-        console.log(`Compilé : ${input} → ${output}`);
+        console.log(`${check ? 'Vérifié' : 'Compilé'} : ${input} → ${output}`);
     }
 }
 
-compile().catch(console.error);
+module.exports = { compile, renderTemplate, templates };
+
+if (require.main === module) {
+    compile({ check: process.argv.includes('--check') }).catch((error) => {
+        console.error(error);
+        process.exitCode = 1;
+    });
+}

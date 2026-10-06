@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="fr" dir="auto" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
   <head>
-    <title></title>
+    <title>Votre compte EquitAb</title>
     <!--[if !mso]><!-->
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <!--<![endif]-->
@@ -72,9 +72,9 @@ a:focus-visible { outline: 3px solid #187a57; outline-offset: 4px; }
 
       <body style="word-spacing:normal;background-color:#f6f8f6;">
 
-    <div style="display:none;font-size:1px;color:#ffffff;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">Votre identité est vérifiée. Retrouvez la suite de votre parcours propriétaire.</div>
+    <div style="display:none;font-size:1px;color:#ffffff;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">Une étape pour votre compte EquitAb.</div>
 
-        <div aria-roledescription="email" role="article" lang="fr" dir="auto" style="word-spacing:normal;background-color:#f6f8f6;">
+        <div aria-label="Votre compte EquitAb" aria-roledescription="email" role="article" lang="fr" dir="auto" style="word-spacing:normal;background-color:#f6f8f6;">
 
 
       <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
@@ -172,71 +172,15 @@ a:focus-visible { outline: 3px solid #187a57; outline-offset: 4px; }
               <tr>
                 <td align="left" style="font-size:0px;padding:0 0 14px;word-break:break-word;">
 
-      <div style="font-family:Montserrat, Arial, sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;line-height:1.75;text-align:left;color:#187a57;">VOTRE COMPTE PROPRIÉTAIRE</div>
+      <div style="font-family:Montserrat, Arial, sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;line-height:1.75;text-align:left;color:#187a57;">VOTRE COMPTE EQUITAB</div>
 
                 </td>
               </tr>
 
               <tr>
-                <td align="left" class="email-copy" style="overflow-wrap: anywhere; word-wrap: break-word; font-size: 0px; padding: 0 0 20px; word-break: break-word;">
+                <td align="left" class="notification-copy email-copy" style="overflow-wrap: anywhere; word-wrap: break-word; font-size: 0px; padding: 0; word-break: break-word;">
 
-      <div style="font-family:Montserrat, Arial, sans-serif;font-size:30px;font-weight:600;letter-spacing:-1px;line-height:1.2;text-align:left;color:#303b37;"><h1 style="margin: 0; font-size: inherit; line-height: inherit; font-weight: inherit;">Votre identité est vérifiée.</h1></div>
-
-                </td>
-              </tr>
-
-              <tr>
-                <td align="left" class="email-copy" style="overflow-wrap: anywhere; word-wrap: break-word; font-size: 0px; padding: 0 0 16px; word-break: break-word;">
-
-      <div style="font-family:Montserrat, Arial, sans-serif;font-size:15px;line-height:1.75;text-align:left;color:#303b37;">Bonjour <strong>{{ $userName }}</strong>, votre identité a été confirmée par Stripe Identity.</div>
-
-                </td>
-              </tr>
-
-        </tbody>
-      </table>
-
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      </div>
-
-          <!--[if mso | IE]></td></tr></table><![endif]-->
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-      </div>
-
-
-      <!--[if mso | IE]></td></tr></table></td></tr><tr><td class="email-section-outlook" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="email-section-outlook" role="presentation" style="width:598px;" width="598" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
-
-
-      <div class="email-section" style="margin:0px auto;max-width:598px;">
-
-        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
-          <tbody>
-            <tr>
-              <td style="direction:ltr;font-size:0px;padding:0 32px;padding-bottom:24px;text-align:center;">
-                <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:534px;" ><![endif]-->
-
-      <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
-
-      <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%" style="border-collapse:separate;">
-        <tbody>
-          <tr>
-            <td style="background-color:#f6f8f6;border:1px solid #dce5df;border-radius:16px;vertical-align:top;border-collapse:separate;padding:20px;">
-
-      <table border="0" cellpadding="0" cellspacing="0" role="presentation" style width="100%">
-        <tbody>
-
-              <tr>
-                <td align="left" style="font-size:0px;padding:0 0 6px;word-break:break-word;">
-
-      <div style="font-family:Montserrat, Arial, sans-serif;font-size:15px;font-weight:600;line-height:1.75;text-align:left;color:#303b37;">Vous pouvez poursuivre votre préparation</div>
+      <div style="font-family:Montserrat, Arial, sans-serif;font-size:15px;line-height:1.75;text-align:left;color:#303b37;">{!! Illuminate\Mail\Markdown::parse($slot) !!}</div>
 
                 </td>
               </tr>
@@ -244,73 +188,7 @@ a:focus-visible { outline: 3px solid #187a57; outline-offset: 4px; }
               <tr>
                 <td align="left" style="font-size:0px;padding:0;word-break:break-word;">
 
-      <div style="font-family:Montserrat, Arial, sans-serif;font-size:14px;line-height:1.75;text-align:left;color:#303b37;">Retrouvez votre profil pour consulter votre activation Stripe, puis reprenez votre brouillon dans « Mes abonnements ». La publication reste une action que vous confirmez vous-même.</div>
-
-                </td>
-              </tr>
-
-        </tbody>
-      </table>
-
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      </div>
-
-          <!--[if mso | IE]></td></tr></table><![endif]-->
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-      </div>
-
-
-      <!--[if mso | IE]></td></tr></table></td></tr><tr><td class="email-section-outlook" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="email-section-outlook" role="presentation" style="width:598px;" width="598" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
-
-
-      <div class="email-section" style="margin:0px auto;max-width:598px;">
-
-        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
-          <tbody>
-            <tr>
-              <td style="direction:ltr;font-size:0px;padding:0 32px;text-align:center;">
-                <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:534px;" ><![endif]-->
-
-      <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
-
-      <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
-        <tbody>
-          <tr>
-            <td style="vertical-align:top;padding:0;">
-
-      <table border="0" cellpadding="0" cellspacing="0" role="presentation" style width="100%">
-        <tbody>
-
-              <tr>
-                <td align="left" style="font-size:0px;padding:0 0 16px;word-break:break-word;">
-
-      <div style="font-family:Montserrat, Arial, sans-serif;font-size:14px;line-height:1.75;text-align:left;color:#303b37;">Pour publier, votre identité doit être vérifiée et votre compte de paiements actif. Si Stripe vous demande encore des renseignements, complétez cette étape depuis votre profil.</div>
-
-                </td>
-              </tr>
-
-              <tr>
-                <td align="left" style="font-size:0px;padding:8px 0 0;word-break:break-word;">
-
-      <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:separate;line-height:100%;">
-        <tbody>
-          <tr>
-            <td align="center" bgcolor="#187a57" role="presentation" style="border:none;border-radius:28px;cursor:auto;mso-padding-alt:16px 28px;background:#187a57;" valign="middle">
-              <a href="{{ $dashboardUrl }}" style="display:inline-block;background:#187a57;color:#ffffff;font-family:Montserrat, Arial, sans-serif;font-size:14px;font-weight:600;line-height:20px;margin:0;text-decoration:none;text-transform:none;padding:16px 28px;mso-padding-alt:0px;border-radius:28px;" target="_blank">
-                Retrouver mon profil
-              </a>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div style="font-family:Montserrat, Arial, sans-serif;font-size:13px;line-height:1.7;text-align:left;color:#686b70;">{!! $subcopy ?? '' !!}</div>
 
                 </td>
               </tr>

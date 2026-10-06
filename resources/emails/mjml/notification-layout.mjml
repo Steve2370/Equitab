@@ -1,0 +1,18 @@
+<mjml lang="fr">
+  <mj-head>
+    <mj-include path="./partials/head.mjml" />
+    <mj-title>Votre compte EquitAb</mj-title>
+    <mj-preview>Une étape pour votre compte EquitAb.</mj-preview>
+  </mj-head>
+  <mj-body background-color="#f6f8f6" width="600px">
+    <mj-include path="./partials/header.mjml" />
+    <mj-wrapper background-color="#ffffff" border="1px solid #dce5df" border-radius="24px" padding="32px 0" css-class="email-card">
+      <mj-section css-class="email-section"><mj-column>
+        <mj-text mj-class="eyebrow">VOTRE COMPTE EQUITAB</mj-text>
+        <mj-text css-class="notification-copy email-copy" padding="0">{!! Illuminate\Mail\Markdown::parse($slot) !!}</mj-text>
+        <mj-text mj-class="note" padding="0">{!! $subcopy ?? '' !!}</mj-text>
+      </mj-column></mj-section>
+    </mj-wrapper>
+    <mj-include path="./partials/footer.mjml" />
+  </mj-body>
+</mjml>
