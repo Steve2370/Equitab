@@ -12,7 +12,7 @@ final class GroupAccess
     {
         return ! $group->trashed()
             && in_array($group->status, ['open', 'full'], true)
-            && in_array($group->visibility, ['private', 'invite_only'], true)
+            && in_array($group->visibility, GroupVisibility::RESTRICTED, true)
             && filled($token) && filled($group->invite_token)
             && hash_equals($group->invite_token, $token);
     }

@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
-import { ref, computed } from 'vue';
+import { Head, Link } from '@inertiajs/vue3';
+import { ref, computed, watch } from 'vue';
 import { Shield, Users, Lock } from 'lucide-vue-next';
 import { getBrandGradient } from '@/config/brandGradients';
 import StripeCardForm from '@/Components/StripeCardForm.vue';
+import EquitabWordmark from '@/Components/Experience/EquitabWordmark.vue';
 
 interface Group {
     id: number;
@@ -12,7 +13,7 @@ interface Group {
     subscriptionSlug: string;
     description?: string | null;
     ownerName: string;
-    ownerTrustScore: number;
+    ownerTrustScore: number | null;
     pricePerMember: number;
     spotsAvailable: number;
     maxMembers: number;
@@ -21,10 +22,14 @@ interface Group {
 interface Props {
     group: Group;
     inviteToken: string;
+    accessState: 'guest' | 'verify_email' | 'checkout' | 'owner' | 'member' | 'full' | 'unavailable';
+    continueUrl: string;
 }
 
 const props = defineProps<Props>();
 const showForm = ref(false);
+const canCheckout = computed(() => props.accessState === 'checkout');
+watch(() => props.accessState, () => { showForm.value = false; });
 
 const gradient = computed(() => getBrandGradient(props.group.subscriptionSlug));
 
@@ -46,7 +51,7 @@ function onSuccess(): void {
         <div class="w-full max-w-md">
 
             <div class="text-center mb-8">
-                <a href="/" class="text-2xl font-semibold text-equitab-navy">Equitab</a>
+                <Link href="/" aria-label="EquitAb — accueil"><EquitabWordmark /></Link>
                 <p class="mt-1 text-sm text-gray-500">Vous avez reçu une invitation privée</p>
             </div>
 
@@ -75,7 +80,7 @@ function onSuccess(): void {
                         <span>{{ group.spotsAvailable }} place{{ group.spotsAvailable > 1 ? 's' : '' }} disponible{{ group.spotsAvailable > 1 ? 's' : '' }} sur {{ group.maxMembers }}</span>
                     </div>
 
-                    <div class="flex items-center gap-3 text-sm text-gray-600">
+                    <div v-if="group.ownerTrustScore !== null" class="flex items-center gap-3 text-sm text-gray-600">
                         <Shield class="h-4 w-4 text-gray-400 shrink-0" />
                         <span>Score de confiance du propriétaire :
                             <strong
@@ -97,20 +102,35 @@ function onSuccess(): void {
                 </div>
             </div>
 
-            <div v-if="!showForm">
+            <div v-if="accessState === 'guest'" class="space-y-3">
+                <p class="text-sm text-gray-600">Créez votre compte ou connectez-vous pour rejoindre ce groupe. Vous reviendrez ici après la confirmation de votre courriel.</p>
+                <Link :href="`${continueUrl}?auth=register`" class="block w-full rounded-xl bg-equitab-emerald px-4 py-3.5 text-center text-sm font-semibold text-white hover:bg-equitab-emerald-dark">Créer mon compte</Link>
+                <Link :href="`${continueUrl}?auth=login`" class="block w-full rounded-xl border border-gray-200 bg-white px-4 py-3.5 text-center text-sm font-semibold text-equitab-navy">J’ai déjà un compte</Link>
+            </div>
+            <div v-else-if="accessState === 'verify_email'" class="space-y-3">
+                <p class="text-sm text-gray-600">Confirmez votre adresse courriel avant de payer. Votre invitation sera conservée pendant cette étape.</p>
+                <Link :href="continueUrl" class="block w-full rounded-xl bg-equitab-emerald px-4 py-3.5 text-center text-sm font-semibold text-white hover:bg-equitab-emerald-dark">Confirmer mon courriel</Link>
+            </div>
+            <div v-else-if="accessState === 'full'" role="status" class="rounded-xl border border-gray-200 bg-white p-4 text-center text-sm text-gray-600">
+                Ce groupe est complet. Aucune nouvelle place n’est disponible pour le moment.
+            </div>
+            <div v-else-if="accessState === 'owner' || accessState === 'member'" class="space-y-3">
+                <p class="text-sm text-gray-600">{{ accessState === 'owner' ? 'Vous êtes le propriétaire de ce groupe.' : 'Vous avez déjà accès à ce groupe.' }}</p>
+                <Link :href="accessState === 'owner' ? '/dashboard/subscriptions?tab=owned' : '/dashboard/subscriptions'" class="block w-full rounded-xl bg-equitab-emerald px-4 py-3.5 text-center text-sm font-semibold text-white">Voir dans mon espace</Link>
+            </div>
+            <div v-else-if="accessState === 'unavailable'" role="status" class="rounded-xl border border-gray-200 bg-white p-4 text-center text-sm text-gray-600">
+                Cette invitation ne vous permet pas de rejoindre ce groupe. Consultez votre espace ou contactez le soutien.
+            </div>
+            <div v-else-if="canCheckout && !showForm">
                 <button
-                    v-if="group.spotsAvailable > 0"
                     @click="showForm = true"
                     class="w-full rounded-xl bg-equitab-emerald py-3.5 text-sm font-semibold text-white hover:bg-equitab-emerald-dark"
                 >
-                    Rejoindre ce groupe
+                    Continuer vers le paiement
                 </button>
-                <div v-else class="rounded-xl bg-red-50 border border-red-100 p-4 text-center text-sm text-red-600">
-                    Ce groupe est complet; aucune place disponible.
-                </div>
             </div>
 
-            <div v-if="showForm" class="rounded-2xl border border-gray-100 bg-white p-5">
+            <div v-if="canCheckout && showForm" class="rounded-2xl border border-gray-100 bg-white p-5">
                 <StripeCardForm
                     :group-id="group.id"
                     :price-per-member="group.pricePerMember"
@@ -122,7 +142,7 @@ function onSuccess(): void {
             </div>
 
             <p class="mt-6 text-center text-xs text-gray-400">
-                Paiements sécurisés par Stripe · Commission 5% · Remboursement garanti sous 48h si accès non fourni
+                Paiements traités par Stripe · Commission 5% · Les accès au service restent réservés aux membres dont le paiement est confirmé.
             </p>
         </div>
     </div>

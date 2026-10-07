@@ -64,35 +64,13 @@ class GroupController extends Controller
             ->response();
     }
 
-    public function showInvite(string $token): Response
-    {
-        $group = Group::where('invite_token', $token)
-            ->where('status', 'open')
-            ->whereIn('visibility', ['invite_only', 'private'])
-            ->whereHas('owner')
-            ->with(['owner', 'subscription'])
-            ->firstOrFail();
-
-        return Inertia::render('InvitePage', [
-            'inviteToken' => $token,
-            'group' => [
-                'id' => $group->id,
-                'name' => $group->name,
-                'subscriptionName' => $group->subscription->name,
-                'subscriptionSlug' => $group->subscription->slug,
-                'description' => $group->description,
-                'ownerName' => $group->owner->name,
-                'ownerTrustScore' => $group->owner->calculateTrustScore(),
-                'pricePerMember' => $group->calculatePricePerMemberIfJoined(),
-                'spotsAvailable' => $group->max_members - $group->current_members,
-                'maxMembers' => $group->max_members,
-            ],
-        ]);
-    }
-
     public function update(UpdateGroupRequest $request, Group $group): JsonResponse
     {
-        $updated = $this->groupService->update($request->user(), $group, $request->validated());
+        try {
+            $updated = $this->groupService->update($request->user(), $group, $request->validated());
+        } catch (BillingUnavailable) {
+            return response()->json(['message' => 'Ce groupe est en cours de traitement. Réessayez dans un instant.'], 503);
+        }
 
         return response()->json([
             'message' => 'Groupe mis à jour.',

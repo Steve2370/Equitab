@@ -32,7 +32,7 @@ class OwnerGroupPage
     {
         return [
             'id' => $draft->id, 'version' => $draft->version, 'status' => $draft->status,
-            'data' => $draft->data, 'updated_at' => $draft->updated_at->toIso8601String(),
+            'data' => GroupVisibility::normalizeData($draft->data), 'updated_at' => $draft->updated_at->toIso8601String(),
             'published_group_id' => $draft->published_group_id,
             'preview' => $this->data->preview($draft->data),
         ];

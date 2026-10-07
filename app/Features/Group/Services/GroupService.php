@@ -29,6 +29,7 @@ class GroupService
         private readonly BillingOperationLock $billingLock,
         private readonly SubscriptionCancellationService $cancellations,
         private readonly MembershipState $memberships,
+        private readonly GroupInvitationLinks $invitationLinks,
     ) {}
 
     public function create(User $owner, array $data): Group
@@ -40,6 +41,7 @@ class GroupService
         return DB::transaction(function () use ($owner, $data) {
             $group = $this->groupRepository->create([
                 ...$data,
+                ...$this->invitationLinks->attributes($data['visibility'] ?? 'public'),
                 'owner_id' => $owner->id,
                 'current_members' => 1,
                 'status' => 'open',
@@ -69,11 +71,6 @@ class GroupService
                 'share_amount' => $group->calculateCurrentPricePerMember(),
                 'joined_at' => now(),
             ]);
-
-            if (in_array($data['visibility'] ?? 'public', ['invite_only', 'private'])) {
-                $token = bin2hex(random_bytes(16));
-                $group->update(['invite_token' => $token]);
-            }
 
             return $group;
         });
@@ -175,7 +172,13 @@ class GroupService
                 abort_if($current->status === 'closed' && isset($data['status']) && $data['status'] !== 'closed', 409, 'Ce groupe est fermé.');
                 $assertOwned();
 
-                return $this->groupRepository->update($current, $data);
+                return $this->groupRepository->update($current, [
+                    ...$data,
+                    ...$this->invitationLinks->attributes(
+                        $data['visibility'] ?? $current->visibility,
+                        $current->visibility === 'public' ? null : $current->invite_token,
+                    ),
+                ]);
             });
         });
     }

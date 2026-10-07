@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Features\Group\Services\GroupVisibility;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 class Group extends Model
@@ -34,6 +36,14 @@ class Group extends Model
             'credential_password' => 'encrypted',
             'credential_notes' => 'encrypted',
         ];
+    }
+
+    protected function visibility(): Attribute
+    {
+        return Attribute::make(
+            get: fn (?string $value) => GroupVisibility::normalize($value),
+            set: fn (?string $value) => GroupVisibility::normalize($value),
+        );
     }
 
     protected static function booted(): void

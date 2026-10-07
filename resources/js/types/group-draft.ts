@@ -1,5 +1,5 @@
 export type GroupTier = "standard" | "premium" | "famille";
-export type GroupVisibility = "public" | "private" | "invite_only";
+export type GroupVisibility = "public" | "private";
 
 export interface OwnerSubscription {
     id: number;

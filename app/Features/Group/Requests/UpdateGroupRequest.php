@@ -2,8 +2,10 @@
 
 namespace App\Features\Group\Requests;
 
+use App\Features\Group\Services\GroupVisibility;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateGroupRequest extends FormRequest
 {
@@ -26,7 +28,7 @@ class UpdateGroupRequest extends FormRequest
             'name' => ['sometimes', 'string', 'max:255'],
             'description' => ['sometimes', 'nullable', 'string', 'max:1000'],
             'price_per_member' => ['sometimes', 'integer', 'min:100'],
-            'visibility' => ['sometimes', 'in:public,private,invite_only'],
+            'visibility' => ['sometimes', Rule::in(GroupVisibility::ACCEPTED)],
             'status' => ['sometimes', 'in:open,full,closed,suspended'],
             'auto_renew' => ['sometimes', 'boolean'],
         ];

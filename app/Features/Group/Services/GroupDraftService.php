@@ -23,6 +23,7 @@ class GroupDraftService
     public function create(User $user, string $id, array $data): GroupDraft
     {
         $this->eligibility->assertCanPrepare($user);
+        $data = GroupVisibility::normalizeData($data);
 
         // firstOrCreate recovers a unique-key race; a retry never overwrites a newer save.
         // Deleted UUIDs remain reserved: an old in-flight publication or retry
@@ -31,7 +32,7 @@ class GroupDraftService
             'owner_id' => $user->id, 'data' => $data, 'version' => 1, 'status' => 'draft',
         ]));
         $this->owned($user, $draft);
-        if (! $draft->wasRecentlyCreated && ($draft->data != $data || $draft->status !== 'draft')) {
+        if (! $draft->wasRecentlyCreated && (GroupVisibility::normalizeData($draft->data) != $data || $draft->status !== 'draft')) {
             throw new ConflictHttpException('Ce brouillon existe déjà. Rechargez-le pour reprendre sa dernière version.');
         }
 
@@ -47,7 +48,7 @@ class GroupDraftService
             $locked = GroupDraft::whereKey($draft->id)->lockForUpdate()->firstOrFail();
             $this->owned($user, $locked);
             $this->assertEditable($locked, $version);
-            $locked->forceFill(['data' => $data, 'version' => $version + 1])->save();
+            $locked->forceFill(['data' => GroupVisibility::normalizeData($data), 'version' => $version + 1])->save();
 
             return $locked;
         });

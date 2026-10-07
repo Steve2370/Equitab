@@ -12,7 +12,7 @@ export function safeDraftData(data: DraftInput): DraftInput {
     // An explicit allowlist also strips unexpected fields in server responses/history.
     return Object.fromEntries(draftKeys
         .filter((key) => data[key] !== undefined)
-        .map((key) => [key, data[key]])) as DraftInput;
+        .map((key) => [key, key === "visibility" && String(data[key]) === "invite_only" ? "private" : data[key]])) as DraftInput;
 }
 
 export function emptyDraftData(): DraftInput {

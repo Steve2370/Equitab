@@ -97,7 +97,7 @@ class DashboardController extends Controller
                 'pricePerMember' => $g->calculateCurrentPricePerMember(),
                 'totalPrice' => $g->total_price,
                 'status' => $g->status,
-                'inviteLink' => $g->invite_token ? config('app.url').'/invite/'.$g->invite_token : null,
+                'inviteLink' => $g->visibility === 'private' && $g->invite_token ? route('invite.show', $g->invite_token) : null,
                 'renewalDate' => $g->renewal_date?->format('d M Y'),
             ]);
 

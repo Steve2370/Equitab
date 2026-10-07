@@ -26,7 +26,7 @@ class GroupDraftData
             'max_members' => [$presence, 'integer', 'min:2', 'max:10'],
             'total_price' => [$presence, 'integer', 'min:'.($publishing ? 100 : 0), 'max:99999999'],
             'split_type' => [$presence, Rule::in(['equal'])],
-            'visibility' => [$presence, Rule::in(['public', 'private', 'invite_only'])],
+            'visibility' => [$presence, Rule::in(GroupVisibility::ACCEPTED)],
             'renewal_date' => $publishing ? ['required', 'date_format:Y-m-d', 'after:today'] : ['nullable', 'date_format:Y-m-d'],
             'auto_renew' => [$presence, 'boolean'],
         ];
@@ -49,7 +49,7 @@ class GroupDraftData
             }
         });
 
-        return $validator->validate();
+        return GroupVisibility::normalizeData($validator->validate());
     }
 
     /** @return array<string, string> */

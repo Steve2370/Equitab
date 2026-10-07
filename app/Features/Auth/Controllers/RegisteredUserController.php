@@ -58,6 +58,6 @@ class RegisteredUserController extends Controller
         $request->session()->regenerate();
         app(AccountSession::class)->remember($request->session(), $user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect()->intended(route('dashboard', absolute: false));
     }
 }

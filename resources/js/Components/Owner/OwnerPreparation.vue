@@ -26,8 +26,7 @@ function setMembers(event: Event): void {
 const descriptionFor = (key: string, hint?: string) => [hint, props.errors[key] ? `owner-error-${key}` : ""].filter(Boolean).join(" ") || undefined;
 const visibilities = [
     { value: "public", label: "Public", description: "Visible dans le catalogue des groupes." },
-    { value: "invite_only", label: "Sur invitation", description: "Accessible aux personnes invitées." },
-    { value: "private", label: "Privé", description: "Absent du catalogue public." },
+    { value: "private", label: "Privé — sur invitation", description: "Absent du catalogue. Toute personne disposant de votre lien pourra demander une place et payer." },
 ] as const;
 </script>
 

@@ -24,8 +24,8 @@ const labels: Record<string, string> = {
     resolved_refund: "Remboursé",
     resolved_rejected: "Rejeté",
     public: "Public",
-    private: "Privé",
-    invite_only: "Sur invitation",
+    private: "Privé — sur invitation",
+    invite_only: "Privé — sur invitation",
 };
 export function adminLabel(value: string | null | undefined) {
     return value

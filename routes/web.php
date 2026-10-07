@@ -6,6 +6,7 @@ use App\Features\Chat\Controllers\ChatController;
 use App\Features\Dashboard\Controllers\DashboardController;
 use App\Features\Group\Controllers\GroupController;
 use App\Features\Group\Controllers\GroupDraftController;
+use App\Features\Group\Controllers\GroupInvitationController;
 use App\Features\Payment\Controllers\PaymentController;
 use App\Features\Payment\Controllers\StripeWebhookController;
 use App\Features\Subscription\Controllers\SubscriptionController;
@@ -136,4 +137,6 @@ Route::post('/groups', [GroupController::class, 'store'])
 Route::patch('/groups/{group}/close', [GroupController::class, 'close'])
     ->middleware(['auth', 'verified']);
 
-Route::get('/invite/{token}', [GroupController::class, 'showInvite'])->name('invite.show');
+Route::get('/invite/{token}', [GroupInvitationController::class, 'show'])->name('invite.show');
+Route::get('/invite/{token}/continue', [GroupInvitationController::class, 'continue'])
+    ->middleware('throttle:60,1')->name('invite.continue');

@@ -20,6 +20,7 @@ class PublishGroupDraft
         private readonly OwnerPublicationEligibility $eligibility,
         private readonly OwnerOnboardingService $onboarding,
         private readonly GroupProductGateway $products,
+        private readonly GroupInvitationLinks $invitationLinks,
     ) {}
 
     /** @param array<string, string|null> $credentials */
@@ -88,7 +89,7 @@ class PublishGroupDraft
                 'owner_id' => $owner->id,
                 'current_members' => 1,
                 'status' => 'open',
-                'invite_token' => $data['visibility'] === 'public' ? null : bin2hex(random_bytes(16)),
+                ...$this->invitationLinks->attributes($data['visibility']),
             ]);
             StripePrice::create([
                 'group_id' => $group->id,
