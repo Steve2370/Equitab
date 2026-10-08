@@ -118,3 +118,41 @@ test('legacy known price still renders monthly catalogue amount and owner-entere
     assert.match(html, /id="owner-field-total_price"[^>]*value="37,68"/);
     assert.doesNotMatch(html, /Aucun tarif prérempli|vous avancez ce coût/);
 });
+
+test('NordPass annual CAD reference prefills a monthly cost but preserves the owner real price', async () => {
+    const subscription = { ...services[1], monthly_price: 749, billing_cycle: 'yearly' };
+    const defaults = draft.serviceDefaults(subscription);
+    assert.equal(defaults.total_price, 749);
+    assert.equal(draft.fullGroupShare(defaults), 125);
+    assert.equal(presentation.indicativeShare(subscription.monthly_price, subscription.max_members), 125);
+    assert.equal(draft.serviceDefaults(subscription, 'EUR').total_price, null);
+    const picker = await render('Components/Owner/OwnerServicePicker.vue', { subscriptions: [subscription], selected: 2, disabled: false });
+    assert.match(picker, /7,49\u00a0CAD/);
+    assert.doesNotMatch(picker, /Coût à renseigner/);
+    const html = await render('Components/Owner/OwnerPreparation.vue', {
+        subscription, modelValue: { ...defaults, total_price: 900 }, errors: {}, disabled: false,
+        supportedCurrencies: ['CAD', 'EUR'], enabledCurrencies: ['CAD'],
+    });
+    assert.match(html, /Catalogue : 7,49\u00a0CAD/);
+    assert.match(html, /id="owner-field-total_price"[^>]*value="9,00"/);
+    assert.ok(html.includes('cotisations EquitAb sont mensuelles'));
+    assert.ok(html.includes('vous avancez ce coût'));
+});
+
+test('Dropbox CAD reference calculates the same six-person share and stays editable', async () => {
+    const subscription = { ...services[0], monthly_price: 2649, billing_cycle: 'monthly' };
+    const defaults = draft.serviceDefaults(subscription);
+    assert.equal(defaults.total_price, 2649);
+    assert.equal(draft.fullGroupShare(defaults), 442);
+    assert.equal(presentation.indicativeShare(subscription.monthly_price, subscription.max_members), 442);
+    assert.equal(draft.serviceDefaults(subscription, 'EUR').total_price, null);
+    const picker = await render('Components/Owner/OwnerServicePicker.vue', { subscriptions: [subscription], selected: 1, disabled: false });
+    assert.match(picker, /26,49\u00a0CAD/);
+    assert.doesNotMatch(picker, /Coût à renseigner/);
+    const html = await render('Components/Owner/OwnerPreparation.vue', {
+        subscription, modelValue: { ...defaults, total_price: 3000 }, errors: {}, disabled: false,
+        supportedCurrencies: ['CAD', 'EUR'], enabledCurrencies: ['CAD'],
+    });
+    assert.match(html, /Catalogue : 26,49\u00a0CAD/);
+    assert.match(html, /id="owner-field-total_price"[^>]*value="30,00"/);
+});

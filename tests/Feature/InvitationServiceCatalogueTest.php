@@ -41,9 +41,9 @@ class InvitationServiceCatalogueTest extends GroupDraftTestCase
         $this->assertDatabaseCount('subscriptions', 2);
         $this->assertDatabaseCount('subscription_categories', 2);
         foreach ([
-            ['Dropbox Family', 'dropbox-family', 'Productivité', 'dropbox.svg', null],
-            ['NordPass Family', 'nordpass-family', 'Sécurité', 'nordpass.png', null],
-        ] as [$name, $slug, $category, $logo, $cycle]) {
+            ['Dropbox Family', 'dropbox-family', 'Productivité', 'dropbox.svg', 'monthly', 2649],
+            ['NordPass Family', 'nordpass-family', 'Sécurité', 'nordpass.png', 'yearly', 749],
+        ] as [$name, $slug, $category, $logo, $cycle, $price]) {
             $offer = Subscription::where('slug', $slug)->sole();
             $this->assertSame($name, $offer->name);
             $this->assertSame($category, $offer->category->name);
@@ -55,8 +55,8 @@ class InvitationServiceCatalogueTest extends GroupDraftTestCase
             $this->assertSame('famille', $offer->tier);
             $this->assertSame('invitation', $offer->access_mode);
             $this->assertSame($cycle, $offer->billing_cycle);
-            $this->assertNull($offer->monthly_price);
-            $this->assertNull($offer->price_in_dollars);
+            $this->assertSame($price, $offer->monthly_price);
+            $this->assertSame($slug === 'nordpass-family' ? 7.49 : 26.49, $offer->price_in_dollars);
             $this->assertTrue($offer->is_active);
             $this->assertFalse($offer->is_verified);
         }

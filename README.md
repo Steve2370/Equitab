@@ -492,15 +492,35 @@ déjà persistés restent récupérables et les accès des membres existants con
 
 | Offre préparée | Catégorie / icône locale | Données nouvelles |
 | --- | --- | --- |
-| Dropbox Family (`dropbox-family`) | Productivité / `dropbox.svg` | CAD, 6 personnes propriétaire inclus, prix et cycle inconnus |
-| NordPass Family (`nordpass-family`) | Sécurité / `nordpass.png` | CAD, 6 personnes propriétaire inclus, prix et cycle inconnus |
+| Dropbox Family (`dropbox-family`) | Productivité / `dropbox.svg` | CAD, 6 personnes propriétaire inclus, référence 2649 cents/mois, fournisseur mensuel |
+| NordPass Family (`nordpass-family`) | Sécurité / `nordpass.png` | CAD, 6 personnes propriétaire inclus, référence 749 cents/mois, fournisseur annuel |
 
 Les deux nouvelles offres sont `is_active=true`, `is_verified=false`,
 `access_mode=invitation`, `tier=famille`. Elles sont proposées au public et dans
 le sélecteur propriétaire ; aucun faux groupe ni sixième place invitée n'est
 créé. Les icônes fournies restent dans `public/Images/services/`.
-La devise CAD désigne la future cotisation EquitAb, **pas un tarif canadien
-officiel du fournisseur** ; aucune variante EUR n'est créée.
+Aucune variante EUR n'est créée ; aucune conversion d'un tarif USD n'est utilisée.
+
+La migration additive `2026_10_08_000400_set_invitation_reference_prices` renseigne
+uniquement les tarifs et cycles encore inconnus de ces deux offres CAD :
+
+- Dropbox : **26,49 CAD/mois**, soit une part indicative arrondie de **442 cents/mois
+  pour six personnes**. Référence officielle de l'achat intégré « Dropbox Family -
+  Monthly » sur la [fiche App Store canadienne publiée par Dropbox, Inc.](https://apps.apple.com/ca/app/dropbox-files-photo-storage/id327630330),
+  consultée le 8 octobre 2026. Le tarif du site web peut différer ; le catalogue
+  n'affirme pas qu'il s'agit du tarif web. La facture réelle fait autorité, y compris
+  ses taxes. Aucun achat ni compte fournisseur n'a été créé pour cette vérification.
+- NordPass : **89,88 CAD/an au renouvellement, hors taxes**, soit **749 cents/mois**
+  et une part indicative arrondie de **125 cents/mois pour six personnes**. Référence
+  lue le 7 octobre 2026 sur le [récapitulatif officiel canadien NordPass Family](https://order.nordpass.com/fr/?product_group=nordpass&product_filters%5Bsubgroup%5D=family).
+  Le prix promotionnel initial (3,19 CAD/mois sur 27 mois) n'est pas utilisé.
+
+Ce sont des références de catalogue, pas des prix garantis à chaque propriétaire.
+Le calcul de carte existant reste `round(monthly_price / max_members)` ; aucun
+arrondi de paiement ni commission n'est modifié. Les valeurs déjà renseignées par
+un opérateur, les groupes, brouillons, tentatives et paiements restent inchangés.
+Les nouvelles installations/commandes de préparation utilisent la même référence.
+Inclure cette migration dans toute liste explicite de migrations de déploiement.
 
 Décision produit : les cotisations EquitAb restent mensuelles et le propriétaire
 saisit son coût réel total ramené au mois avant répartition. Aucun prix nul ou
@@ -523,8 +543,9 @@ Preuves officielles consultées le **7 octobre 2026** :
   Le lien d'invitation partageable est réservé à Enterprise, pas à Families ;
   afficher un paiement réussi n'automatise pas ces étapes fournisseur.
 - [NordPass Family](https://support.nordpass.com/hc/en-us/articles/360006700458-Premium-vs-Free-version-of-NordPass) :
-  six comptes pour la famille et les amis. Cette page ne valide ni un tarif CAD
-  récurrent ni une commercialisation à des inconnus ; le cycle reste inconnu.
+  six comptes pour la famille et les amis. Le tarif récurrent CAD provient du
+  récapitulatif d'achat ci-dessus, pas de cette page d'aide. Aucun de ces documents
+  ne prouve une autorisation de commercialisation à des inconnus.
 
 L'activation demandée par l'exploitant n'est pas une autorisation des fournisseurs :
 les droits de partage payant, marchés et modalités restent à clarifier. Le parcours

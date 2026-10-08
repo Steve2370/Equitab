@@ -20,7 +20,8 @@ trait InvitationCatalogueSelectionChecks
         foreach (Subscription::all() as $offer) {
             $this->assertTrue($offer->is_active);
             $this->assertFalse($offer->is_verified);
-            $this->assertNull($offer->monthly_price);
+            $this->assertSame($offer->slug === 'nordpass-family' ? 749 : 2649, $offer->monthly_price);
+            $this->assertSame($offer->slug === 'nordpass-family' ? 'yearly' : 'monthly', $offer->billing_cycle);
             $this->assertSame('invitation', $offer->access_mode);
             $this->assertSame('CAD', $offer->currency);
             $this->assertSame(6, $offer->max_members);

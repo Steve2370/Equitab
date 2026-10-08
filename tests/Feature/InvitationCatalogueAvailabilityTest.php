@@ -24,13 +24,18 @@ class InvitationCatalogueAvailabilityTest extends GroupDraftTestCase
         $expected = ['dropbox-family', 'nordpass-family'];
         $this->get('/')->assertOk()->assertInertia(fn (Assert $page) => $page
             ->where('catalogServices', fn ($services) => collect($services)->pluck('slug')->sort()->values()->all() === $expected
-                && collect($services)->every(fn ($service) => $service['pricePerMember'] === null)));
+                && collect($services)->every(fn ($service) => $service['pricePerMember'] === ($service['slug'] === 'nordpass-family' ? 7.49 : 26.49))));
         $this->get('/services')->assertOk()->assertInertia(fn (Assert $page) => $page
             ->where('categories', fn ($categories) => collect($categories)->flatMap(fn ($category) => $category['subscriptions'])
-                ->pluck('slug')->sort()->values()->all() === $expected));
+                ->pluck('slug')->sort()->values()->all() === $expected
+                && collect($categories)->flatMap(fn ($category) => $category['subscriptions'])
+                    ->every(fn ($service) => $service['monthly_price'] === ($service['slug'] === 'nordpass-family' ? 749 : 2649)
+                        && $service['currency'] === 'CAD' && $service['max_members'] === 6)));
         $this->actingAs(User::factory()->create())->get('/dashboard/groups/create')->assertOk()
             ->assertInertia(fn (Assert $page) => $page->has('subscriptions', 2)
-                ->where('subscriptions.0.slug', 'dropbox-family')->where('subscriptions.1.slug', 'nordpass-family'));
+                ->where('subscriptions.0.slug', 'dropbox-family')->where('subscriptions.1.slug', 'nordpass-family')
+                ->where('subscriptions.0.monthly_price', 2649)->where('subscriptions.0.currency', 'CAD')
+                ->where('subscriptions.1.monthly_price', 749)->where('subscriptions.1.currency', 'CAD'));
         $this->get('/groups/service/bitwarden-families')->assertNotFound();
         $this->assertNoDraftSideEffects();
     }
@@ -54,7 +59,7 @@ class InvitationCatalogueAvailabilityTest extends GroupDraftTestCase
         $this->assertSame('invitation', $group->access_mode);
         $this->assertSame(1999, $group->total_price);
         $this->assertSame('CAD', $group->currency);
-        $this->assertNull($offer->fresh()->monthly_price);
+        $this->assertSame($slug === 'nordpass-family' ? 749 : 2649, $offer->fresh()->monthly_price);
         $this->assertDatabaseCount('payments', 0);
         $this->get('/groups/service/'.$slug)->assertOk()->assertInertia(fn (Assert $page) => $page->has('groups', 1));
     }

@@ -12,9 +12,13 @@ final class InvitationServiceCatalogue
 {
     private const OFFERS = [
         ['name' => 'Dropbox Family', 'slug' => 'dropbox-family', 'category' => 'Productivité',
-            'logo' => '/Images/services/dropbox.svg', 'website' => 'https://www.dropbox.com/family', 'billing_cycle' => null],
+            'logo' => '/Images/services/dropbox.svg', 'website' => 'https://www.dropbox.com/family',
+            // Canadian App Store monthly reference; web checkout prices may differ.
+            'monthly_price' => 2649, 'billing_cycle' => 'monthly'],
         ['name' => 'NordPass Family', 'slug' => 'nordpass-family', 'category' => 'Sécurité',
-            'logo' => '/Images/services/nordpass.png', 'website' => 'https://nordpass.com/family-password-manager/', 'billing_cycle' => null],
+            'logo' => '/Images/services/nordpass.png', 'website' => 'https://nordpass.com/family-password-manager/',
+            // CAD renewal: 8,988 cents/year / 12. See README for the dated official source.
+            'monthly_price' => 749, 'billing_cycle' => 'yearly'],
     ];
 
     /** @return list<array{name: string, slug: string, action: string, id: ?int}> */
@@ -68,7 +72,7 @@ final class InvitationServiceCatalogue
                     $subscription = Subscription::create([
                         'category_id' => $category->id, 'name' => $offer['name'], 'slug' => $offer['slug'],
                         'logo' => $offer['logo'], 'website' => $offer['website'],
-                        'max_members' => 6, 'monthly_price' => null, 'currency' => 'CAD',
+                        'max_members' => 6, 'monthly_price' => $offer['monthly_price'], 'currency' => 'CAD',
                         'billing_cycle' => $offer['billing_cycle'], 'tier' => 'famille',
                         'access_mode' => 'invitation', 'is_active' => true, 'is_verified' => false,
                     ]);
