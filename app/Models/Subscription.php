@@ -15,7 +15,7 @@ class Subscription extends Model
         'category_id', 'name', 'logo', 'website',
         'max_members', 'monthly_price', 'currency',
         'billing_cycle', 'is_active', 'is_verified',
-        'tier', 'slug',
+        'tier', 'slug', 'access_mode',
     ];
 
     protected function casts(): array
@@ -27,9 +27,9 @@ class Subscription extends Model
         ];
     }
 
-    public function getPriceInDollarsAttribute(): float
+    public function getPriceInDollarsAttribute(): ?float
     {
-        return $this->monthly_price / 100;
+        return $this->monthly_price === null ? null : $this->monthly_price / 100;
     }
 
     public function category(): BelongsTo

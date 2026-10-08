@@ -35,11 +35,15 @@ class GroupDraftTest extends GroupDraftTestCase
             ->component('Dashboard/Groups/Create')
             ->where('draft', null)
             ->has('ownerReadiness')
-            ->has('subscriptions', 1)
-            ->where('subscriptions.0.id', $subscription->id)
-            ->where('subscriptions.0.name', $subscription->name)
-            ->where('subscriptions.0.monthly_price', 2345)
-            ->where('subscriptions.0.max_members', 5));
+            ->has('subscriptions', 3)
+            ->where('subscriptions', function ($subscriptions) use ($subscription) {
+                $row = collect($subscriptions)->firstWhere('id', $subscription->id);
+
+                return $row['name'] === $subscription->name && $row['monthly_price'] === 2345
+                    && $row['max_members'] === 5
+                    && collect($subscriptions)->pluck('slug')->contains('dropbox-family')
+                    && collect($subscriptions)->pluck('slug')->contains('nordpass-family');
+            }));
 
         $this->assertDatabaseCount('group_drafts', 0);
         $this->assertNoDraftSideEffects();

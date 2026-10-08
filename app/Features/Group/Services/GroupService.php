@@ -19,6 +19,7 @@ use App\Support\Currency;
 use Closure;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use LogicException;
 
 class GroupService
@@ -33,18 +34,24 @@ class GroupService
         private readonly SubscriptionCancellationService $cancellations,
         private readonly MembershipState $memberships,
         private readonly GroupInvitationLinks $invitationLinks,
+        private readonly ServiceAccessPublication $serviceAccess,
     ) {}
 
     public function create(User $owner, array $data): Group
     {
         $this->eligibility->assertCanPrepare($owner);
         $subscription = Subscription::where('is_active', true)->findOrFail($data['subscription_id']);
+        $this->serviceAccess->validate($subscription, $data);
+        if (($data['max_members'] ?? 0) > $subscription->max_members) {
+            throw ValidationException::withMessages(['max_members' => 'Le nombre de membres dépasse la capacité de ce service.']);
+        }
         $data['currency'] = Currency::normalize($data['currency'] ?? $subscription->currency);
         BillingCurrencies::assertEnabled($data['currency']);
         $this->onboarding->refresh($owner);
         $this->eligibility->assertCanPublish($owner->fresh());
 
         return DB::transaction(function () use ($owner, $data) {
+            Subscription::where('is_active', true)->whereKey($data['subscription_id'])->sharedLock()->firstOrFail();
             $group = $this->groupRepository->create([
                 ...$data,
                 ...$this->invitationLinks->attributes($data['visibility'] ?? 'public'),

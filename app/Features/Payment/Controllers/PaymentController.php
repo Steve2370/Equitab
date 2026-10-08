@@ -3,6 +3,7 @@
 namespace App\Features\Payment\Controllers;
 
 use App\Features\Group\Services\GroupAccess;
+use App\Features\Group\Services\ServiceAccessDelivery;
 use App\Features\Payment\Services\OwnerOnboardingAccess;
 use App\Features\Payment\Services\OwnerOnboardingException;
 use App\Features\Payment\Services\OwnerOnboardingService;
@@ -139,7 +140,7 @@ class PaymentController extends Controller
         }
     }
 
-    public function success(Request $request): Response
+    public function success(Request $request, ServiceAccessDelivery $delivery): Response
     {
         $groupId = $request->query('group_id');
         $group = Group::with(['subscription', 'owner'])->findOrFail($groupId);
@@ -147,9 +148,13 @@ class PaymentController extends Controller
         abort_unless($this->access->canView($user, $group), 404);
 
         $member = $group->members()->where('user_id', $user->id)->first();
-        $isMemberActive = $this->access->canUseService($user, $group);
+        $accessState = $member || $group->owner_id === $user->id
+            ? $delivery->state($user, $group)
+            : ['status' => 'unavailable', 'mode' => $group->access_mode];
 
         return Inertia::render('PaymentSuccess', [
+            // Secrets come only from the no-store endpoint, never Inertia's history.
+            'serviceAccess' => ['status' => $accessState['status'], 'mode' => $accessState['mode'], 'credentials' => null, 'invitation' => null],
             'group' => [
                 'id' => $group->id,
                 'name' => $group->name,
@@ -165,11 +170,7 @@ class PaymentController extends Controller
                 'renewalDate' => $group->renewal_date?->format('d M Y'),
                 'memberStatus' => $member?->status ?? 'pending_payment',
             ],
-            'credentials' => $isMemberActive ? [
-                'email' => $group->credential_email,
-                'password' => $group->credential_password,
-                'notes' => $group->credential_notes,
-            ] : null,
+            'credentials' => null,
         ]);
     }
 

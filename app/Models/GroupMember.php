@@ -10,6 +10,8 @@ class GroupMember extends Model
 {
     use HasFactory;
 
+    protected $hidden = ['service_invitation_url', 'service_invitation_email'];
+
     protected $fillable = [
         'group_id', 'user_id', 'role', 'status',
         'share_amount', 'joined_at',
@@ -35,6 +37,10 @@ class GroupMember extends Model
             'next_payment_at' => 'date',
             'current_period_end' => 'datetime',
             'cancellation_requested_at' => 'datetime',
+            'service_invitation_url' => 'encrypted',
+            'service_invitation_email' => 'encrypted',
+            'service_invitation_provided_at' => 'datetime',
+            'service_access_revoked_at' => 'datetime',
         ];
     }
 

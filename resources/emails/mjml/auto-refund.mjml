@@ -17,7 +17,7 @@
       </mj-column></mj-section>
       <mj-section css-class="email-section"><mj-column>
 <mj-text font-weight="600" padding="0 0 6px">Pourquoi ce remboursement ?</mj-text>
-<mj-text font-size="14px">Le propriétaire du groupe <strong>{{ $groupName }}</strong> n’a pas fourni les identifiants d’accès dans les 48 heures suivant votre paiement. Celui-ci a donc été remboursé automatiquement.</mj-text>
+<mj-text font-size="14px">Le propriétaire du groupe <strong>{{ $groupName }}</strong> n’a pas fourni les éléments nécessaires à l’accès dans les 48 heures suivant votre paiement. Celui-ci a donc été remboursé automatiquement.</mj-text>
 <mj-text mj-class="note">Le délai d’apparition du remboursement sur votre relevé dépend de votre banque.</mj-text>        <mj-button href="{{ $dashboardUrl }}">Voir mes paiements</mj-button>        <mj-text mj-class="note" padding="20px 0 0">Une question ? <a href="{{ $supportUrl }}" style="color:#187a57;">Contactez notre équipe</a>.</mj-text>
       </mj-column></mj-section>
     </mj-wrapper>

@@ -20,7 +20,10 @@ final class GroupInvitationController extends Controller
 
     public function continue(Request $request, string $token): RedirectResponse
     {
-        $this->page->find($token);
+        $group = $this->page->find($token);
+        if (! $group->subscription?->is_active && (! $request->user() || ! $request->user()->hasVerifiedEmail())) {
+            return redirect()->route('invite.show', $token);
+        }
         $data = $request->validate(['auth' => ['nullable', 'in:login,register']]);
         if (! $request->user() || ! $request->user()->hasVerifiedEmail()) {
             // Only a validated invitation route can become the return destination.

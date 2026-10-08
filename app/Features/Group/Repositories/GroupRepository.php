@@ -49,6 +49,7 @@ class GroupRepository implements GroupRepositoryInterface
         return Group::with(['subscription', 'owner'])
             ->where('status', 'open')
             ->where('visibility', 'public')
+            ->whereHas('subscription', fn ($query) => $query->where('is_active', true))
             ->whereHas('owner')
             ->whereColumn('current_members', '<', 'max_members')
             ->paginate(15);

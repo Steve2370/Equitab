@@ -2,7 +2,7 @@
 import { computed, ref } from "vue";
 import ServiceBrandMark from "@/Components/Experience/ServiceBrandMark.vue";
 import type { OwnerSubscription } from "@/types/group-draft";
-import { formatGroupMoney, memberLimit } from "@/utils/groupDraft";
+import { formatGroupMoney, hasCataloguePrice, memberLimit } from "@/utils/groupDraft";
 
 const props = defineProps<{ subscriptions: OwnerSubscription[]; selected: number | null; disabled: boolean; error?: string }>();
 defineEmits<{ select: [subscription: OwnerSubscription] }>();
@@ -30,8 +30,9 @@ const filtered = computed(() => {
                 <span class="owner-service-top"><ServiceBrandMark :slug="service.slug" :name="service.name" /><span class="owner-selection" aria-hidden="true">{{ selected === service.id ? '✓' : '+' }}</span></span>
                 <span class="owner-service-name">{{ service.name }}</span>
                 <span class="owner-hint">{{ service.category }} · {{ service.tier }}</span>
-                <span class="owner-service-price">{{ formatGroupMoney(service.monthly_price, service.currency) }} <span>/ mois</span></span>
-                <span class="owner-hint">Prix du catalogue · {{ service.currency }}</span>
+                <span v-if="hasCataloguePrice(service)" class="owner-service-price">{{ formatGroupMoney(service.monthly_price, service.currency) }} <span>/ mois</span></span>
+                <span v-else class="owner-service-price">Coût à renseigner</span>
+                <span class="owner-hint">{{ hasCataloguePrice(service) ? 'Prix du catalogue' : 'Votre coût réel, ramené au mois' }} · {{ service.currency }}</span>
                 <span class="owner-service-capacity">{{ memberLimit(service) >= 2 ? `Jusqu’à ${memberLimit(service)} personnes, vous compris` : 'Partage indisponible pour cette offre' }}</span>
             </button>
         </div>

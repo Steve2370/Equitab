@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import type { DraftErrors, DraftInput, OwnerSubscription } from "@/types/group-draft";
-import { centsFromInput, formatGroupMoney, memberLimit } from "@/utils/groupDraft";
+import { centsFromInput, formatGroupMoney, hasCataloguePrice, memberLimit } from "@/utils/groupDraft";
 import { isSupportedCurrency } from "@/utils/money";
 
 const data = defineModel<DraftInput>({ required: true });
@@ -75,7 +75,7 @@ const visibilities = [
                 <div>
                     <label class="owner-label" for="owner-field-total_price">Prix total par mois ({{ isSupportedCurrency(data.currency) ? data.currency : 'devise à choisir' }})</label>
                     <input id="owner-field-total_price" :value="priceText" type="text" inputmode="decimal" class="owner-input" placeholder="0,00" :aria-invalid="priceInvalid || !!errors.total_price" :aria-describedby="descriptionFor('total_price', 'owner-price-hint') + (priceNotice ? ' owner-price-notice' : '') + (priceInvalid && !errors.total_price ? ' owner-price-format-error' : '')" @input="setPrice" />
-                    <p id="owner-price-hint" class="owner-hint"><template v-if="subscription">Catalogue : {{ formatGroupMoney(subscription.monthly_price, subscription.currency) }} / mois. </template>Indiquez votre prix réel.</p>
+                    <p id="owner-price-hint" class="owner-hint"><template v-if="subscription && hasCataloguePrice(subscription)">Catalogue : {{ formatGroupMoney(subscription.monthly_price, subscription.currency) }} / mois. </template><template v-else>Aucun tarif prérempli. </template>Indiquez votre coût réel total ramené au mois, avant répartition entre les personnes du groupe.<template v-if="subscription?.access_mode === 'invitation'"> Les cotisations EquitAb sont mensuelles. Si votre fournisseur vous facture à l’année, vous avancez ce coût ; indiquez son équivalent mensuel sans modifier votre contrat fournisseur.</template></p>
                     <p v-if="priceNotice" id="owner-price-notice" class="owner-hint" role="status" aria-live="polite">{{ priceNotice }}</p>
                     <p v-if="priceInvalid && !errors.total_price" id="owner-price-format-error" class="owner-error">Utilisez un montant avec deux décimales au maximum, ou laissez le champ vide.</p>
                     <p v-if="errors.total_price" id="owner-error-total_price" class="owner-error">{{ errors.total_price }}</p>

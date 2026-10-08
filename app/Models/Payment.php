@@ -26,7 +26,7 @@ class Payment extends Model
         'stripe_payment_intent_id', 'stripe_transfer_id', 'platform_fee_amount', 'stripe_invoice_id',
         'refunded_at', 'refund_reason', 'stripe_refund_id',
         'confirmation_notified_at',
-        'credentials_check_due_at', 'credentials_check_queued_at',
+        'credentials_check_due_at', 'credentials_check_queued_at', 'access_check_version',
     ];
 
     protected function casts(): array
@@ -42,6 +42,7 @@ class Payment extends Model
             'confirmation_notified_at' => 'datetime',
             'credentials_check_due_at' => 'datetime',
             'credentials_check_queued_at' => 'datetime',
+            'access_check_version' => 'integer',
         ];
     }
 

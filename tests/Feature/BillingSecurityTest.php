@@ -110,6 +110,30 @@ class BillingSecurityTest extends BillingTestCase
         ];
     }
 
+    public function test_retired_service_refuses_checkout_before_any_provider_operation(): void
+    {
+        $group = $this->group();
+        $group->subscription->update(['is_active' => false]);
+        $this->actingAs(User::factory()->create())->postJson('/api/groups/'.$group->id.'/subscribe', ['payment_method_id' => 'pm_test'])->assertForbidden();
+        $this->assertDatabaseCount('subscription_attempts', 0);
+        $this->assertDatabaseCount('payments', 0);
+        $this->assertSame(1, $group->members()->count());
+    }
+
+    public function test_retirement_during_remote_account_check_cannot_start_a_new_commitment(): void
+    {
+        $group = $this->group();
+        $this->gateway->shouldReceive('isAccountActive')->once()->andReturnUsing(function () use ($group): bool {
+            $group->subscription->update(['is_active' => false]);
+
+            return true;
+        });
+        $this->actingAs(User::factory()->create())->postJson('/api/groups/'.$group->id.'/subscribe', ['payment_method_id' => 'pm_test'])->assertForbidden();
+        $this->assertDatabaseCount('subscription_attempts', 0);
+        $this->assertDatabaseCount('payments', 0);
+        $this->assertSame(1, $group->members()->count());
+    }
+
     public function test_unverified_and_suspended_accounts_cannot_subscribe(): void
     {
         $group = $this->group();
@@ -247,15 +271,22 @@ class BillingSecurityTest extends BillingTestCase
         $this->assertStringNotContainsString('pm_test', DB::table('subscription_attempts')->value('parameters'));
     }
 
-    public function test_existing_subscription_is_reused_without_creating_another_charge(): void
+    #[DataProvider('catalogueAvailability')]
+    public function test_existing_subscription_is_reused_without_creating_another_charge(bool $active): void
     {
         $member = $this->member();
+        $member->group->subscription->update(['is_active' => $active]);
         $snapshots = $this->snapshots();
         $this->reader->shouldReceive('retrieveSubscription')->once()->with('sub_test')->andReturn($snapshots[0]);
         $this->mockSnapshots($snapshots);
         $this->actingAs($member->user)->postJson('/api/groups/'.$member->group_id.'/subscribe', ['payment_method_id' => 'pm_test'])->assertOk();
         $this->assertDatabaseCount('subscription_attempts', 0);
         $this->assertDatabaseCount('payments', 1);
+    }
+
+    public static function catalogueAvailability(): array
+    {
+        return ['available' => [true], 'retired' => [false]];
     }
 
     public function test_pending_refund_is_not_marked_refunded_and_retry_only_reads_existing_refund(): void

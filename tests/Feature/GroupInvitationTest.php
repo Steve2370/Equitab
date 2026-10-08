@@ -43,6 +43,20 @@ class GroupInvitationTest extends BillingTestCase
         $this->get('/invite/synthetic-invitation')->assertOk()->assertInertia(fn (Assert $page) => $page->where('accessState', 'checkout'));
     }
 
+    public function test_retired_service_invitation_does_not_prompt_guests_or_unverified_users_to_register(): void
+    {
+        $group = $this->group();
+        $group->subscription->update(['is_active' => false]);
+        $this->get('/invite/synthetic-invitation')->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->where('accessState', 'unavailable'));
+        $this->get('/invite/synthetic-invitation/continue?auth=register')
+            ->assertRedirect(route('invite.show', 'synthetic-invitation'))->assertSessionMissing('url.intended');
+        $this->actingAs(User::factory()->unverified()->create())->get('/invite/synthetic-invitation')->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->where('accessState', 'unavailable'));
+        $this->get('/invite/synthetic-invitation/continue')
+            ->assertRedirect(route('invite.show', 'synthetic-invitation'))->assertSessionMissing('url.intended');
+    }
+
     public function test_registration_preserves_the_invitation_through_signed_email_verification(): void
     {
         $this->group();

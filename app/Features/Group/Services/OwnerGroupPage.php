@@ -25,6 +25,7 @@ class OwnerGroupPage
             'subscriptions' => Subscription::where('is_active', true)->with('category')->orderBy('name')->get()->map(fn ($s) => [
                 'id' => $s->id, 'name' => $s->name, 'slug' => $s->slug,
                 'max_members' => $s->max_members, 'monthly_price' => $s->monthly_price,
+                'access_mode' => $s->access_mode,
                 'category' => $s->category?->name ?? '', 'currency' => $s->currency, 'tier' => $s->tier,
             ]),
             'draft' => $draft ? $this->draft($draft) : null,

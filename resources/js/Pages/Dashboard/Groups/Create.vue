@@ -38,6 +38,7 @@ function rememberConfirmedDraft(draft: GroupDraft): Promise<void> {
 }
 const { state, saved, busy, locked, save, activate, publish, reopen, changeCurrency } = useGroupDraft(() => props.draft, rememberConfirmedDraft);
 const selected = computed(() => props.subscriptions.find((service) => service.id === state.data.subscription_id));
+const usesInvitation = computed(() => selected.value?.access_mode === "invitation");
 const isReady = computed(() => props.ownerReadiness.ready && props.ownerReadiness.identityVerified && props.ownerReadiness.connectActive);
 const canAttemptPublication = computed(() => !state.conflict && !state.leaving && state.saved?.status !== "published");
 const edited = computed(() => state.saved
@@ -106,7 +107,7 @@ async function publishGroup(): Promise<void> {
     if (busy.value || !canAttemptPublication.value) return;
     state.errors = preparationErrors(state.data, selected.value, props.enabledCurrencies);
     if (Object.keys(state.errors).length || priceInvalid.value) { await goToStep(3); return; }
-    const result = await publish(props.ownerReadiness, certify.value, credentials.value);
+    const result = await publish(props.ownerReadiness, certify.value, usesInvitation.value ? emptyCredentials() : credentials.value);
     if (result) {
         clearCredentials();
         router.visit(result.redirect);
@@ -143,6 +144,7 @@ async function focusField(key: string): Promise<void> {
     if (target) document.getElementById(target)?.focus();
 }
 watch(() => state.data, () => { certify.value = false; }, { deep: true });
+watch(usesInvitation, () => clearCredentials());
 watch(() => props.draft?.id, (id, previous) => {
     if (previous && id !== previous) {
         clearCredentials();
@@ -213,7 +215,7 @@ onBeforeUnmount(() => {
                         <h2 id="owner-publication-title" tabindex="-1" class="owner-step-title">Tout est prêt pour partager ?</h2>
                         <OwnerActivation :readiness="ownerReadiness" :disabled="busy || locked || priceInvalid" :operation="state.operation" @activate="startActivation" @refresh="refreshReadiness" />
                         <div v-if="isReady && canAttemptPublication" class="owner-publication">
-                            <OwnerCredentials v-model="credentials" :errors="state.errors" :disabled="busy" />
+                            <OwnerCredentials v-model="credentials" :errors="state.errors" :disabled="busy" :access-mode="selected?.access_mode ?? 'credentials'" />
                             <label class="owner-check" for="owner-field-certify">
                                 <input id="owner-field-certify" v-model="certify" type="checkbox" :disabled="busy" :aria-invalid="!!state.errors.certify" :aria-describedby="state.errors.certify ? 'owner-error-certify' : undefined" />
                                 <span>Je certifie que cet abonnement m’appartient et que son partage respecte les conditions du service.</span>

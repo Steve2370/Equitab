@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Models\GroupMember;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
@@ -23,6 +24,11 @@ class ModelFillableTest extends TestCase
     /** Security fields changed only by explicit, trusted operations. */
     private const INTENTIONALLY_GUARDED_COLUMNS = [
         User::class => ['is_admin', 'auth_version'],
+        // Only ServiceAccessDelivery may attest delivery or revoke a member's access.
+        GroupMember::class => [
+            'service_invitation_url', 'service_invitation_channel', 'service_invitation_email',
+            'service_invitation_provided_at', 'service_access_revoked_at',
+        ],
     ];
 
     /**
@@ -114,5 +120,22 @@ class ModelFillableTest extends TestCase
 
         $this->assertFalse($user->fresh()->is_admin);
         $this->assertSame(0, $user->fresh()->auth_version);
+    }
+
+    public function test_service_delivery_columns_cannot_be_mass_assigned(): void
+    {
+        $member = new GroupMember;
+        $untrusted = [];
+        foreach (self::INTENTIONALLY_GUARDED_COLUMNS[GroupMember::class] as $column) {
+            $this->assertTrue(Schema::hasColumn($member->getTable(), $column));
+            $this->assertFalse($member->isFillable($column));
+            $untrusted[$column] = 'untrusted-delivery-attestation';
+        }
+
+        $member->fill($untrusted);
+
+        foreach (array_keys($untrusted) as $column) {
+            $this->assertArrayNotHasKey($column, $member->getAttributes());
+        }
     }
 }

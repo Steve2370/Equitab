@@ -176,6 +176,7 @@ final class PaymentSynchronizationService
                         'platform_fee_amount' => (int) round($amount * 0.05),
                         'stripe_payment_intent_id' => $intentId, 'stripe_invoice_id' => $invoice['id'],
                         'credentials_check_due_at' => ! $refunded && $amount > 0 ? now()->addHours(48) : null,
+                        'access_check_version' => 2,
                         'refunded_at' => $refunded ? now() : null,
                         'refund_reason' => $refunded ? 'stripe_refund' : null,
                     ]);

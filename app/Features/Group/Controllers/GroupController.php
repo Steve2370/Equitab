@@ -114,10 +114,10 @@ class GroupController extends Controller
         }
 
         return response()->json([
-            'email' => $group->credential_email,
-            'password' => $group->credential_password,
-            'notes' => $group->credential_notes,
-        ]);
+            'email' => $group->access_mode === 'credentials' ? $group->credential_email : null,
+            'password' => $group->access_mode === 'credentials' ? $group->credential_password : null,
+            'notes' => $group->access_mode === 'credentials' ? $group->credential_notes : null,
+        ])->header('Cache-Control', 'private, no-store');
     }
 
     public function leave(Request $request, Group $group): JsonResponse

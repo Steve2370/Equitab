@@ -461,12 +461,135 @@ Le retour arrière du schéma est refusé dès qu'il ferait perdre un contrat EU
 nouvelles opérations EUR, désactiver le réglage puis recharger la configuration
 et les workers ; conserver le code capable de traiter les engagements existants.
 
-Dropbox Family, Bitwarden Families et NordPass Family disposent de leurs icônes
-et alias de présentation. Aucune offre commerciale n'est créée par cette livraison.
-Avant leur activation, vérifier les tarifs natifs, marchés, conditions de partage,
-cycles annuels éventuels et la fourniture/révocation des accès par invitation.
-Ne jamais demander un mot de passe maître ni fabriquer des identifiants pour
-contourner le remboursement automatique si l'accès n'a pas été fourni.
+### Catalogue sur invitation : Dropbox Family et NordPass Family
+
+La migration `2026_10_08_000100_prepare_invitation_catalog` autorise un prix
+catalogue et un cycle fournisseur inconnus (`null`) et ajoute `access_mode`
+(`credentials` par défaut, sans modifier les groupes historiques).
+Elle ne crée ni n'active d'offre. La migration suivante
+`2026_10_08_000300_activate_selected_invitation_services` applique le choix de
+l'exploitant : création/activation de **Dropbox Family et NordPass Family** et
+retrait de **Bitwarden Families**. Un déploiement exécutant `php artisan migrate
+--force` applique donc aussi les données du catalogue, sans seeder global.
+Contrôle ou réapplication ciblée :
+
+```bash
+php artisan equitab:prepare-invitation-services --dry-run
+php artisan equitab:prepare-invitation-services --apply
+```
+
+Sans option, la commande simule seulement. `InvitationServiceSeeder` utilise le
+même mécanisme ; ne pas lancer tous les seeders pour ces ajouts. Le lot est
+transactionnel : collision de nom/slug (y compris casse/espaces), devise/mode
+incompatibles ou catégorie ambiguë = refus sans changement. Une relance préserve
+identifiants, prix, vérification et groupes existants ; elle réactive uniquement
+les deux offres choisies. Elle ne constitue pas une vérification fournisseur.
+Bitwarden est supprimé seulement sans groupe ni brouillon associé (archives
+incluses). Sinon il est désactivé, sans supprimer contrats, membres ou paiements.
+Ses anciennes icônes et son mode d'accès restent compatibles avec cet historique.
+Les nouvelles publications/adhésions sont refusées ; les engagements Stripe
+déjà persistés restent récupérables et les accès des membres existants conservés.
+
+| Offre préparée | Catégorie / icône locale | Données nouvelles |
+| --- | --- | --- |
+| Dropbox Family (`dropbox-family`) | Productivité / `dropbox.svg` | CAD, 6 personnes propriétaire inclus, prix et cycle inconnus |
+| NordPass Family (`nordpass-family`) | Sécurité / `nordpass.png` | CAD, 6 personnes propriétaire inclus, prix et cycle inconnus |
+
+Les deux nouvelles offres sont `is_active=true`, `is_verified=false`,
+`access_mode=invitation`, `tier=famille`. Elles sont proposées au public et dans
+le sélecteur propriétaire ; aucun faux groupe ni sixième place invitée n'est
+créé. Les icônes fournies restent dans `public/Images/services/`.
+La devise CAD désigne la future cotisation EquitAb, **pas un tarif canadien
+officiel du fournisseur** ; aucune variante EUR n'est créée.
+
+Décision produit : les cotisations EquitAb restent mensuelles et le propriétaire
+saisit son coût réel total ramené au mois avant répartition. Aucun prix nul ou
+promotionnel fictif n'est prérempli. Un paiement annuel fournisseur reste annuel :
+le propriétaire avance ce coût, sans transformer son contrat en abonnement mensuel.
+La préparation ne change ni les commissions ni les règles de résiliation.
+
+Preuves officielles consultées le **7 octobre 2026** :
+
+- [Dropbox Family](https://help.dropbox.com/plans/dropbox-family-plan) : six
+  comptes individuels au total, dont le responsable (cinq invitations), quota
+  partagé de 2 To, usage personnel. Les invitations et retraits se gèrent chez
+  Dropbox. Cette description ne prouve pas une autorisation de revente payante.
+- [Bitwarden Families](https://bitwarden.com/help/password-manager-plans/) :
+  propriétaire et cinq proches, facturation annuelle. Les
+  [conditions, section C.3](https://bitwarden.com/terms/) exigent une permission
+  écrite expresse pour revendre l'accès ; aucune permission n'est présumée ici.
+  [Ajout des membres](https://bitwarden.com/help/managing-users/) : invitation
+  par courriel, acceptation chez Bitwarden puis confirmation du propriétaire.
+  Le lien d'invitation partageable est réservé à Enterprise, pas à Families ;
+  afficher un paiement réussi n'automatise pas ces étapes fournisseur.
+- [NordPass Family](https://support.nordpass.com/hc/en-us/articles/360006700458-Premium-vs-Free-version-of-NordPass) :
+  six comptes pour la famille et les amis. Cette page ne valide ni un tarif CAD
+  récurrent ni une commercialisation à des inconnus ; le cycle reste inconnu.
+
+L'activation demandée par l'exploitant n'est pas une autorisation des fournisseurs :
+les droits de partage payant, marchés et modalités restent à clarifier. Le parcours
+réel de livraison/révocation chez chaque fournisseur reste à vérifier séparément
+des tests automatisés de l'application. Ne jamais collecter
+de mot de passe maître, coffre ou code de récupération. Ne pas fabriquer des
+identifiants pour contourner la protection d'un membre sans accès.
+
+Déployer ce lot en maintenance, workers arrêtés, requêtes en cours terminées,
+avec sauvegarde préalable. La commande `--apply` exige la même fenêtre de
+maintenance : ne pas modifier ce catalogue pendant des sauvegardes de brouillons.
+Retour arrière : la migration de choix du catalogue refuse de deviner les anciens
+statuts ou de recréer des lignes supprimées. Utiliser une correction ciblée ou la
+sauvegarde vérifiée ; conserver le schéma/code compatible si une offre utilise le
+mode invitation ou une valeur inconnue. Le `down()` refuse ces cas plutôt que
+d'inventer un montant, de perdre le mode d'accès ou de supprimer une offre liée.
+
+## Accès après paiement : identifiants et invitations
+
+Le serveur reste la source de vérité : facture Stripe payée, paiement vérifié,
+adhésion active et non expirée. Le retour du navigateur, l’URL de succès ou une
+case cochée ne donnent aucun accès. `GET /api/groups/{group}/service-access`
+renvoie `payment_pending`, `awaiting_owner`, `ready` (éléments mis à disposition,
+pas preuve de bon fonctionnement) ou `unavailable`. Les secrets sont chiffrés,
+absents des props/historiques Inertia et fournis seulement par une réponse
+authentifiée `private, no-store`. La page et la fenêtre d’accès se mettent à jour
+automatiquement, avec attente bornée et bouton de reprise sans nouveau paiement.
+
+Dans **Mes abonnements → Je partage → Gérer les accès**, le propriétaire peut
+mettre à jour une paire complète d’identifiants ou fournir une invitation par
+membre. Le mode est fixé à la création du groupe ; il ne dépend pas d’un choix
+envoyé par le client. Les liens HTTPS sont limités aux domaines prévus des
+fournisseurs, sans requête distante : leur validité fonctionnelle n’est donc pas
+certifiée. Pour un éventuel **groupe historique** Bitwarden Families, le courriel fournisseur reste pris en charge (envoi déclaré
+par le propriétaire après paiement, acceptation puis confirmation dans Bitwarden),
+pas un lien Enterprise inventé ni un mot de passe maître. Le membre n’a aucune
+confirmation à faire **dans EquitAb** pour conserver son accès ou son paiement.
+
+Le contrôle prévu après 48 h est conservé pour les éléments non fournis ; ni
+l’absence d’ouverture ni le silence du membre ne déclenchent un remboursement.
+Les nouveaux paiements utilisent `access_check_version=2` : identifiant **et**
+mot de passe, ou invitation destinataire enregistrée/envoi fournisseur déclaré.
+Les paiements historiques conservent la version 1 pour éviter des remboursements
+rétroactifs liés au changement de règle. Une intention de remboursement déjà
+engagée reste durable et prioritaire. Fourniture et contrôle automatique utilisent
+le même verrou ; aucun secret factice ne remplace une invitation. Un signalement
+d’accès invalide ouvre un dossier via le flux de litige existant, sans remboursement
+automatique sur simple déclaration du membre. Une mise à disposition enregistrée
+n’est pas une preuve indépendante de connexion chez le fournisseur.
+La trace de livraison est conservée après un retrait : recevoir l’invitation puis
+quitter le groupe ne transforme pas cet accès livré en accès « non fourni » au
+contrôle des 48 h. Le lien retiré ne reste pas consultable.
+
+Après annulation/expiration, l’accès EquitAb est refusé. Les invitations à retirer
+sont signalées au propriétaire, même pour un groupe archivé. Il doit réellement
+retirer le membre chez le fournisseur puis le déclarer ; EquitAb ne prétend pas
+effectuer une révocation distante. Un lien déjà copié ne peut pas être effacé du
+côté du membre par la seule révocation EquitAb.
+
+Déploiement distinct : sauvegarder, arrêter workers/scheduler, appliquer les deux
+migrations additives, remplacer l’application et reconstruire les assets, puis
+redémarrer les processus compatibles. Garder `APP_KEY` et les flags Europe actuels.
+La commande de préparation du catalogue n’active aucun service. Ne pas utiliser
+`migrate:rollback` après de nouveaux accès/paiements : le retour arrière refuse
+la perte de ces contrats ; conserver le schéma et les workers compatibles.
 
 ## Propriétaires : Canada et zone euro
 

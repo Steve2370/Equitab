@@ -2,6 +2,7 @@
 
 namespace App\Features\Dashboard\Controllers;
 
+use App\Features\Group\Services\ServiceAccessDelivery;
 use App\Features\Payment\Services\OwnerCountrySettings;
 use App\Features\Payment\Services\OwnerOnboardingException;
 use App\Features\Payment\Services\OwnerOnboardingService;
@@ -50,7 +51,7 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function subscriptions(Request $request): Response
+    public function subscriptions(Request $request, ServiceAccessDelivery $delivery): Response
     {
         $user = $request->user();
 
@@ -90,6 +91,11 @@ class DashboardController extends Controller
             ]);
 
         return Inertia::render('Dashboard/Subscriptions', [
+            'accessRevocations' => $user->ownedGroups()->withTrashed()
+                ->where('access_mode', 'invitation')->with(['members.user'])->get()
+                ->filter(fn ($group) => $group->members->contains(fn ($member) => $delivery->revocationRequired($group, $member)))
+                ->map(fn ($group) => ['id' => $group->id, 'name' => $group->name,
+                    'url' => route('groups.access', $group->id, absolute: false)])->values(),
             'initialTab' => $request->query('tab') === 'owned' ? 'owned' : 'joined',
             'joinedSubscriptions' => $joined,
             'ownedSubscriptions' => $owned,

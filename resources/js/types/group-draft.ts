@@ -6,7 +6,8 @@ export interface OwnerSubscription {
     name: string;
     slug: string;
     max_members: number;
-    monthly_price: number;
+    monthly_price: number | null;
+    access_mode?: "credentials" | "invitation";
     category: string;
     currency: string;
     tier: GroupTier;

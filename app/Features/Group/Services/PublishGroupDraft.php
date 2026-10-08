@@ -8,6 +8,7 @@ use App\Features\Payment\Services\OwnerOnboardingService;
 use App\Models\Group;
 use App\Models\GroupDraft;
 use App\Models\StripePrice;
+use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
@@ -21,6 +22,7 @@ class PublishGroupDraft
         private readonly OwnerOnboardingService $onboarding,
         private readonly GroupProductGateway $products,
         private readonly GroupInvitationLinks $invitationLinks,
+        private readonly ServiceAccessPublication $serviceAccess,
     ) {}
 
     /** @param array<string, string|null> $credentials */
@@ -32,6 +34,10 @@ class PublishGroupDraft
         }
         if ($draft->status === 'published') {
             return Group::findOrFail($draft->published_group_id);
+        }
+
+        if ($subscription = Subscription::find($draft->data['subscription_id'] ?? null)) {
+            $this->serviceAccess->validate($subscription, $credentials);
         }
 
         $this->eligibility->assertCanPublish($owner->fresh());
@@ -102,6 +108,7 @@ class PublishGroupDraft
             $currentOwner = User::whereKey($owner->id)->lockForUpdate()->firstOrFail();
             $this->eligibility->assertCanPublish($currentOwner);
             $data = $this->data->forPublication($locked->data);
+            $this->serviceAccess->validate(Subscription::findOrFail($data['subscription_id']), $credentials);
             $group = Group::create([
                 ...$data,
                 ...$credentials,

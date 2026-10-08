@@ -7,6 +7,7 @@ use App\Features\Dashboard\Controllers\DashboardController;
 use App\Features\Group\Controllers\GroupController;
 use App\Features\Group\Controllers\GroupDraftController;
 use App\Features\Group\Controllers\GroupInvitationController;
+use App\Features\Group\Controllers\ServiceAccessController;
 use App\Features\Payment\Controllers\PaymentController;
 use App\Features\Payment\Controllers\StripeWebhookController;
 use App\Features\Subscription\Controllers\SubscriptionController;
@@ -81,7 +82,7 @@ Route::get('/', function () {
         ->map(fn ($sub) => [
             'name' => $sub->name,
             'slug' => $sub->slug,
-            'pricePerMember' => $sub->monthly_price / 100,
+            'pricePerMember' => $sub->price_in_dollars,
             'currency' => $sub->currency,
             'discountPercent' => 50,
         ]);
@@ -89,6 +90,7 @@ Route::get('/', function () {
     $openGroups = Group::with(['subscription', 'owner'])
         ->where('status', 'open')
         ->where('visibility', 'public')
+        ->whereHas('subscription', fn ($query) => $query->where('is_active', true))
         ->whereHas('owner')
         ->limit(10)
         ->get()
@@ -140,5 +142,7 @@ Route::patch('/groups/{group}/close', [GroupController::class, 'close'])
     ->middleware(['auth', 'verified']);
 
 Route::get('/invite/{token}', [GroupInvitationController::class, 'show'])->name('invite.show');
+Route::get('/dashboard/groups/{group}/access', [ServiceAccessController::class, 'manage'])
+    ->whereNumber('group')->withTrashed()->middleware(['auth', 'verified'])->name('groups.access');
 Route::get('/invite/{token}/continue', [GroupInvitationController::class, 'continue'])
     ->middleware('throttle:60,1')->name('invite.continue');

@@ -59,9 +59,14 @@ export function serviceDefaults(subscription: OwnerSubscription, currentCurrency
         subscription_id: subscription.id, name: `Groupe ${subscription.name}`,
         tier: subscription.tier, max_members: memberLimit(subscription),
         currency,
-        total_price: currency === subscription.currency && isSupportedCurrency(currency)
+        total_price: currency === subscription.currency && isSupportedCurrency(currency) && hasCataloguePrice(subscription)
             ? subscription.monthly_price : null,
     };
+}
+
+export function hasCataloguePrice(subscription?: OwnerSubscription): subscription is OwnerSubscription & { monthly_price: number } {
+    return typeof subscription?.monthly_price === "number"
+        && Number.isSafeInteger(subscription.monthly_price) && subscription.monthly_price >= 0;
 }
 
 export function centsFromInput(value: string): number | null {

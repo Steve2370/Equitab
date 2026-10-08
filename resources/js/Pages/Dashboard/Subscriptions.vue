@@ -39,6 +39,7 @@ interface Props {
     joinedSubscriptions: JoinedSubscription[];
     ownedSubscriptions: OwnedSubscription[];
     drafts?: { id: string; name: string; status: string; updatedAt: string; url: string }[];
+    accessRevocations?: { id: number; name: string; url: string }[];
 }
 
 const props = defineProps<Props>();
@@ -125,6 +126,16 @@ function confirmCloseGroup(): void {
                 }}</Link
             >
         </div>
+        <section v-if="accessRevocations?.length" class="eq-panel mb-8 p-5" aria-labelledby="access-revocations-title">
+            <h2 id="access-revocations-title" class="text-lg font-semibold">Des accès restent à retirer</h2>
+            <p class="mt-2 text-sm leading-6 text-gray-600">La fermeture d’un groupe ne retire pas les invitations chez le fournisseur. Retirez les membres dans son interface, puis déclarez ce retrait ici.</p>
+            <ul class="mt-4 divide-y divide-gray-100">
+                <li v-for="group in accessRevocations" :key="group.id" class="flex flex-wrap items-center justify-between gap-3 py-3">
+                    <p class="min-w-0 break-words font-medium">{{ group.name }}</p>
+                    <Link :href="group.url" class="eq-button eq-button-secondary" :aria-label="`Gérer les retraits de ${group.name}`">Gérer les retraits <ArrowUpRight :size="16" /></Link>
+                </li>
+            </ul>
+        </section>
         <section v-if="drafts?.length" class="eq-panel mb-8 p-5" aria-labelledby="owner-drafts-title">
             <h2 id="owner-drafts-title" class="text-lg font-semibold">Vos partages en préparation</h2>
             <p class="mt-1 text-sm text-gray-600">Privés et sans paiement. Reprenez quand vous le souhaitez.</p>
@@ -260,17 +271,15 @@ function confirmCloseGroup(): void {
                         </p></template
                     >
                     <template #action
-                        ><button
-                            @click="
-                                openCredentials(sub.id, sub.subscriptionName)
-                            "
+                        ><Link
+                            :href="`/dashboard/groups/${sub.id}/access`"
                             :aria-label="
-                                'Gérer les identifiants de ' +
+                                'Gérer les accès de ' +
                                 sub.subscriptionName
                             "
                         >
                             <Key :size="15" /> Gérer les accès
-                        </button></template
+                        </Link></template
                     >
                     <div class="subscription-actions">
                         <button

@@ -66,12 +66,13 @@ return Application::configure(basePath: dirname(__DIR__))
         });
         // These endpoints are JSON even for a handcrafted HTML-form request.
         // Never flash an unvalidated draft payload (including nested secrets).
-        $exceptions->shouldRenderJsonWhen(fn (Request $request, Throwable $e) => $request->is('group-drafts', 'group-drafts/*', 'api/group-drafts', 'api/group-drafts/*')
+        $exceptions->shouldRenderJsonWhen(fn (Request $request, Throwable $e) => $request->is('group-drafts', 'group-drafts/*', 'api/group-drafts', 'api/group-drafts/*', 'api/groups/*/service-access', 'api/groups/*/service-access/revoke')
             || $request->expectsJson()
         );
         $exceptions->dontFlash([
             'credential_email', 'credential_password', 'credential_notes',
             'data.credential_email', 'data.credential_password', 'data.credential_notes',
+            'invitation_url',
         ]);
         $exceptions->respond(function (Response $response, Throwable $e, Request $request) {
             // Keep the draft API contract in production too, including expired

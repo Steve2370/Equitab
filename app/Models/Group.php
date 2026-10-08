@@ -24,7 +24,7 @@ class Group extends Model
         'price_per_member', 'total_price', 'currency', 'split_type', 'status',
         'visibility', 'renewal_date', 'auto_renew', 'settings',
         'credential_email', 'credential_password', 'credential_notes',
-        'tier', 'invite_token',
+        'tier', 'invite_token', 'access_mode',
     ];
 
     protected function casts(): array
@@ -54,11 +54,15 @@ class Group extends Model
         static::creating(function (Group $group) {
             $group->uuid ??= Str::uuid();
             $group->currency = Currency::normalize($group->currency ?? $group->subscription->currency);
+            $group->access_mode ??= $group->subscription->access_mode ?? 'credentials';
         });
 
         static::updating(function (Group $group): void {
             if ($group->isDirty('currency')) {
                 throw new LogicException('La devise d’un groupe publié ne peut pas être modifiée.');
+            }
+            if ($group->isDirty('access_mode')) {
+                throw new LogicException('Le mode d’accès d’un groupe publié ne peut pas être modifié.');
             }
         });
     }

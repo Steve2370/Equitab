@@ -21,6 +21,26 @@ const require = createRequire(import.meta.url);
 const empty = defineComponent({ setup: () => () => null });
 const icons = new Proxy({}, { get: () => empty });
 const cache = new Map();
+const ssrEffects = [];
+const forbiddenSsrEffect = name => () => {
+    ssrEffects.push(name);
+    throw new Error(`Unexpected SSR side effect: ${name}`);
+};
+// Load the actual composable, not a synthetic ready/pending implementation.
+// Vue's real SSR lifecycle must defer its GET and polling until client mount.
+const serviceAccessModule = { exports: {} };
+vm.runInNewContext(ts.transpileModule(readFileSync(resolve(root, 'composables/useServiceAccess.ts'), 'utf8'), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+}).outputText, {
+    exports: serviceAccessModule.exports, URL, AbortController, performance,
+    fetch: forbiddenSsrEffect('fetch'),
+    setTimeout: forbiddenSsrEffect('setTimeout'),
+    clearTimeout: forbiddenSsrEffect('clearTimeout'),
+    require(name) {
+        if (name === 'vue') return require(name);
+        throw new Error(`Unexpected composable dependency: ${name}`);
+    },
+});
 function component(relative, { setupOnly = false, fetch = () => { throw new Error('Unexpected network'); } } = {}) {
     const path = resolve(root, relative);
     if (!setupOnly && cache.has(path)) return cache.get(path);
@@ -37,7 +57,7 @@ function component(relative, { setupOnly = false, fetch = () => { throw new Erro
             if (name === 'vue' || name === 'vue/server-renderer') return require(name);
             if (name === 'lucide-vue-next') return icons;
             if (name === '@inertiajs/vue3') return {
-                Head: empty,
+                Head: defineComponent({ props: ['title'], setup: props => () => h('title', props.title) }),
                 Link: defineComponent({ props: ['href'], setup: (props, { slots }) => () => h('a', { href: props.href }, slots.default?.()) }),
                 usePage: () => ({ url: '/services', props: { auth: { user: null } } }),
             };
@@ -47,7 +67,8 @@ function component(relative, { setupOnly = false, fetch = () => { throw new Erro
             if (name === '@/config/servicePresentation') return presentation;
             if (name === '@/config/brandGradients') return { getBrandGradient: () => ({ from: '#187a57', to: '#187a57' }) };
             if (name === '@/composables/useExperienceMotion') return { useExperienceMotion: () => ({ motion: ref(false) }) };
-            if (/\/(ServiceArtwork|ServiceBrandMark|EquitabWordmark|ExperienceDialog|TierBadge|NavbarWithSearch|Footer|CollectionHeader)\.vue$/.test(name)) return { __esModule: true, default: empty };
+            if (name === '@/composables/useServiceAccess') return serviceAccessModule.exports;
+            if (/\/(EquitabWordmark|ExperienceDialog|TierBadge|NavbarWithSearch|Footer|CollectionHeader)\.vue$/.test(name)) return { __esModule: true, default: empty };
             if (name.endsWith('.vue')) {
                 const child = name.startsWith('@/') ? name.slice(2) : resolve(dirname(path), name);
                 return { __esModule: true, default: component(child) };
@@ -101,6 +122,17 @@ test('catalogue prices retain the catalogue currency', async () => {
     assert.ok(picker.includes('15,99 CAD'));
 });
 
+test('selected invitation catalogue cards render supplied icons without a made-up zero price', async () => {
+    const subscriptions = [
+        { ...service, id: 10, name: 'Dropbox Family', slug: 'dropbox-family', monthly_price: null },
+        { ...service, id: 11, name: 'NordPass Family', slug: 'nordpass-family', monthly_price: null },
+    ];
+    const html = await render('Pages/Services.vue', { categories: [{ id: 1, name: 'Test', subscriptions }] });
+    assert.ok(html.includes('/Images/services/dropbox.svg'));
+    assert.ok(html.includes('/Images/services/nordpass.png'));
+    assert.doesNotMatch(html, /Bitwarden|0,00|NaN/);
+});
+
 test('invitation and success use server group currency independently from catalogue', async () => {
     for (const currency of ['CAD', 'EUR']) {
         const data = { ...group, currency };
@@ -113,6 +145,35 @@ test('invitation and success use server group currency independently from catalo
         const html = await render(page, { group: { ...group, currency: undefined }, credentials: null, inviteToken: 'synthetic', accessState: 'guest', continueUrl: '/invite/synthetic/continue' });
         assert.ok(html.includes('Montant indisponible'));
         assert.ok(!html.includes('7,89 CAD'));
+    }
+});
+
+test('payment SSR preserves CAD/EUR amounts but cannot claim success or reveal access before its authorized GET', async () => {
+    const credentials = { email: 'ssr-synthetic@example.test', password: 'SSR-SYNTHETIC-NOT-REAL', notes: 'SSR-SYNTHETIC-NOTE' };
+    const invitation = { channel: 'link', url: 'https://provider.example.test/invite/ssr-synthetic', provided_at: '2026-10-07T17:00:00Z', recipient_email: null };
+    const states = [
+        [undefined, 'Vérification de votre abonnement'],
+        [{ status: 'payment_pending', mode: 'credentials', credentials: null, invitation: null }, 'Confirmation du paiement en cours'],
+        [{ status: 'unavailable', mode: 'invitation', credentials: null, invitation: null }, 'Accès indisponible'],
+        [{ status: 'ready', mode: 'credentials', credentials: null, invitation: null }, 'Vérification de votre abonnement'],
+        [{ status: 'ready', mode: 'invitation', credentials: null, invitation: null }, 'Vérification de votre abonnement'],
+        // Legacy/history props containing secrets must not bypass a fresh GET either.
+        [{ status: 'ready', mode: 'credentials', credentials, invitation: null }, 'Vérification de votre abonnement'],
+        [{ status: 'ready', mode: 'invitation', credentials: null, invitation }, 'Vérification de votre abonnement'],
+    ];
+    for (const currency of ['CAD', 'EUR']) {
+        for (const [serviceAccess, expectedTitle] of states) {
+            const html = await render('Pages/PaymentSuccess.vue', { group: { ...group, currency, memberStatus: 'active' }, credentials, serviceAccess });
+            assert.ok(html.includes(`7,89 ${currency}`));
+            assert.match(html, new RegExp(`<title>${expectedTitle} — Equitab</title>`));
+            assert.match(html, new RegExp(`<h1[^>]*>${expectedTitle}</h1>`));
+            assert.doesNotMatch(html, /Paiement confirmé|réalisé avec succès|Votre abonnement est actif/);
+            for (const secret of [...Object.values(credentials), invitation.url]) {
+                assert.ok(!html.includes(secret), 'SSR cannot serialize access from initial props');
+            }
+            assert.doesNotMatch(html, /Afficher le mot de passe|Ouvrir mon invitation/);
+            assert.deepEqual(ssrEffects, [], 'SSR must not perform GET, poll or arm timers');
+        }
     }
 });
 

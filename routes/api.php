@@ -5,6 +5,7 @@ use App\Features\Auth\Controllers\Api\RegisterController;
 use App\Features\Chat\Controllers\ChatController;
 use App\Features\Group\Controllers\GroupController;
 use App\Features\Group\Controllers\GroupDraftController;
+use App\Features\Group\Controllers\ServiceAccessController;
 use App\Features\Payment\Controllers\OwnerCountryController;
 use App\Features\Payment\Controllers\PaymentController;
 use Illuminate\Support\Facades\Route;
@@ -47,6 +48,12 @@ Route::middleware(['auth:sanctum', 'session_current', 'not_suspended', 'throttle
     Route::post('/groups/{group}/join', [GroupController::class, 'join']);
     Route::post('/groups/{group}/leave', [GroupController::class, 'leave']);
     Route::get('/groups/{group}/credentials', [GroupController::class, 'credentials']);
+    Route::middleware('verified')->group(function () {
+        Route::get('/groups/{group}/service-access', [ServiceAccessController::class, 'show']);
+        Route::put('/groups/{group}/service-access', [ServiceAccessController::class, 'store'])->middleware('throttle:20,1');
+        Route::put('/groups/{group}/members/{member}/service-access', [ServiceAccessController::class, 'store'])->whereNumber('member')->middleware('throttle:20,1');
+        Route::post('/groups/{group}/members/{member}/service-access/revoke', [ServiceAccessController::class, 'revoke'])->whereNumber('member')->withTrashed()->middleware('throttle:20,1');
+    });
 
     Route::middleware(['throttle:20,1'])->group(function () {
         Route::post('/groups/{group}/subscribe', [PaymentController::class, 'subscribe']);

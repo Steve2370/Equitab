@@ -53,7 +53,10 @@ final class GroupInvitationPage
             return 'full';
         }
         if (! $user) {
-            return 'guest';
+            return $group->subscription?->is_active ? 'guest' : 'unavailable';
+        }
+        if (! $group->subscription?->is_active && ! $user->hasVerifiedEmail()) {
+            return 'unavailable';
         }
         if (! $user->hasVerifiedEmail()) {
             return 'verify_email';

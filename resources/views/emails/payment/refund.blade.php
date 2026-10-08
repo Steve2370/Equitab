@@ -296,7 +296,7 @@ a:focus-visible { outline: 3px solid #187a57; outline-offset: 4px; }
               <tr>
                 <td align="left" style="font-size:0px;padding:0 0 16px;word-break:break-word;">
 
-      <div style="font-family:Montserrat, Arial, sans-serif;font-size:14px;line-height:1.75;text-align:left;color:#303b37;">Le propriétaire du groupe <strong>{{ $groupName }}</strong> n’a pas fourni les identifiants d’accès dans les 48 heures suivant votre paiement. Celui-ci a donc été remboursé automatiquement.</div>
+      <div style="font-family:Montserrat, Arial, sans-serif;font-size:14px;line-height:1.75;text-align:left;color:#303b37;">Le propriétaire du groupe <strong>{{ $groupName }}</strong> n’a pas fourni les éléments nécessaires à l’accès dans les 48 heures suivant votre paiement. Celui-ci a donc été remboursé automatiquement.</div>
 
                 </td>
               </tr>

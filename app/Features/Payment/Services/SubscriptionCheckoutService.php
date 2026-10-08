@@ -8,6 +8,7 @@ use App\Features\Payment\Contracts\CheckoutGatewayInterface;
 use App\Features\Payment\Contracts\PaymentGatewayInterface;
 use App\Models\Group;
 use App\Models\GroupMember;
+use App\Models\Subscription;
 use App\Models\User;
 use App\Support\BillingCurrencies;
 use App\Support\Currency;
@@ -73,6 +74,10 @@ final class SubscriptionCheckoutService
                 DB::transaction(function () use ($payer, $group, $member, $parameters, $assertOwned): void {
                     $locked = Group::lockForUpdate()->findOrFail($group->id);
                     $assertOwned();
+                    // Serialize the first financial commitment with catalogue retirement.
+                    // The earlier authorization can predate the remote account check.
+                    $offer = Subscription::whereKey($locked->subscription_id)->sharedLock()->first();
+                    abort_unless($offer?->is_active, 403, 'Ce service ne propose plus de nouvelles adhésions.');
                     PaymentSynchronizationService::assertCurrency($locked->currency, $parameters['price']['currency']);
                     if (! $member) {
                         $locked->members()->create([

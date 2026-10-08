@@ -20,7 +20,7 @@ import { useExperienceMotion } from "@/composables/useExperienceMotion";
 interface CatalogService {
     name: string;
     slug: string;
-    pricePerMember: number;
+    pricePerMember: number | null;
     discountPercent: number;
 }
 interface OpenGroup {
