@@ -5,6 +5,7 @@ import TierBadge from "@/Components/TierBadge.vue";
 import StripeCardForm from "@/Components/StripeCardForm.vue";
 import CollectionCard from "@/Components/Experience/CollectionCard.vue";
 import ExperienceDialog from "@/Components/Experience/ExperienceDialog.vue";
+import { isPaymentQuote, type PaymentQuote } from "@/utils/paymentQuote";
 interface Props {
     groupId: number;
     ownerName: string;
@@ -13,6 +14,7 @@ interface Props {
     ownerTrustScore: number | null;
     tier: "standard" | "premium" | "famille";
     pricePerMember: number;
+    currency: string;
     spotsAvailable: number;
     maxMembers: number;
     createdAt: string;
@@ -37,11 +39,7 @@ const slug = computed(
             .replace(/\+/g, "-plus")
             .replace(/\s+/g, "-"),
 );
-const prorationData = ref<{
-    amount_today: number;
-    amount_recurring: number;
-    next_billing_date: string;
-} | null>(null);
+const prorationData = ref<PaymentQuote | null>(null);
 async function openSubscribeForm(): Promise<void> {
     if (loading.value || props.spotsAvailable <= 0) return;
     loading.value = true;
@@ -49,7 +47,7 @@ async function openSubscribeForm(): Promise<void> {
     try {
         const response = await fetch(
             "/api/groups/" + props.groupId + "/proration",
-            { headers: { Accept: "application/json" } },
+            { headers: { Accept: "application/json" }, cache: "no-store" },
         );
         const data = await response.json();
         if (!response.ok) {
@@ -58,10 +56,7 @@ async function openSubscribeForm(): Promise<void> {
                 "Impossible de charger les montants. Veuillez réessayer.";
             return;
         }
-        if (
-            !Number.isFinite(data.amount_today) ||
-            !Number.isFinite(data.amount_recurring)
-        )
+        if (!isPaymentQuote(data))
             throw new Error("Invalid amounts");
         prorationData.value = data;
         showForm.value = true;
@@ -90,6 +85,7 @@ function onSuccess() {
         category="À PARTAGER ENSEMBLE"
         eyebrow="UN GROUPE À DÉCOUVRIR"
         :price="pricePerMember"
+        :currency="currency"
         price-label="Part estimée après votre arrivée"
         :members="maxMembers - spotsAvailable"
         :capacity="maxMembers"
@@ -179,6 +175,7 @@ function onSuccess() {
                 :group-id="groupId"
                 :price-per-member="prorationData.amount_recurring"
                 :amount-today="prorationData.amount_today"
+                :currency="prorationData.currency"
                 :next-billing-date="prorationData.next_billing_date"
                 :subscription-name="subscriptionName"
                 @success="onSuccess"

@@ -156,6 +156,7 @@ class GroupController extends Controller
                 'tier' => $group->subscription->tier ?? 'standard',
                 'pricePerMember' => $group->calculatePricePerMemberIfJoined(),
                 'totalPrice' => $group->total_price,
+                'currency' => $group->currency,
                 'spotsAvailable' => $group->max_members - $group->current_members,
                 'maxMembers' => $group->max_members,
                 'createdAt' => $group->created_at->format('d M Y'),

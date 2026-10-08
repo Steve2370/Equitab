@@ -4,15 +4,16 @@ import { Link } from "@inertiajs/vue3";
 import { ArrowUpRight, Users } from "lucide-vue-next";
 import ServiceArtwork from "./ServiceArtwork.vue";
 import {
-    formatCad,
     indicativeShare,
     servicePresentation,
 } from "@/config/servicePresentation";
+import { formatMoney } from "@/utils/money";
 const props = defineProps<{
     name: string;
     slug: string;
     category: string;
     monthlyPrice: number | null;
+    currency: string;
     maxMembers: number | null;
     motion: boolean;
 }>();
@@ -73,8 +74,8 @@ function reset() {
                         >Part indicative · groupe complet</span
                     >
                     <p v-if="share !== null">
-                        {{ formatCad(share)
-                        }}<small>CAD / mois · hors frais éventuels</small>
+                        {{ formatMoney(share, currency)
+                        }}<small>/ mois · hors frais éventuels</small>
                     </p>
                     <p v-else class="unknown-price">
                         À confirmer<small
@@ -156,10 +157,16 @@ function reset() {
 }
 .catalog-value {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: end;
     gap: 10px;
     margin-block: 25px 24px;
+}
+.catalog-value > div {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
 }
 .value-label {
     display: block;
@@ -191,6 +198,7 @@ function reset() {
     align-items: end;
     gap: 5px;
     flex: none;
+    margin-left: auto;
     text-align: right;
     color: #636b64;
     font-size: 10px;

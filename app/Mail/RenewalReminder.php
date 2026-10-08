@@ -3,6 +3,7 @@
 namespace App\Mail;
 
 use App\Models\GroupMember;
+use App\Support\MoneyFormatter;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -26,7 +27,7 @@ class RenewalReminder extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Rappel de Votre abonnement ' . $this->member->group->subscription->name . ' se renouvelle dans 3 jours',
+            subject: 'Rappel de Votre abonnement '.$this->member->group->subscription->name.' se renouvelle dans 3 jours',
         );
     }
 
@@ -41,9 +42,9 @@ class RenewalReminder extends Mailable
                 'memberName' => $this->member->user->name,
                 'subscriptionName' => $this->member->group->subscription->name,
                 'groupName' => $this->member->group->name,
-                'amount' => number_format($this->member->share_amount / 100, 2),
+                'amount' => MoneyFormatter::format($this->member->share_amount, $this->member->group->currency),
                 'renewalDate' => $this->member->next_payment_at?->format('d M Y'),
-                'dashboardUrl' => config('app.url') . '/dashboard/subscriptions',
+                'dashboardUrl' => config('app.url').'/dashboard/subscriptions',
             ],
         );
     }

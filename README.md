@@ -24,6 +24,7 @@
 - [Structure du projet](#structure-du-projet)
 - [API Routes](#api-routes)
 - [Flux de paiement](#flux-de-paiement)
+- [Devises CAD/EUR](#devises-cadeur)
 - [Sécurité](#sécurité)
 - [Déploiement](#déploiement)
 - [Tests](#tests)
@@ -410,6 +411,116 @@ Si identifiants non fournis après 48h → remboursement automatique
 ```
 
 ---
+
+## Devises CAD/EUR
+
+Les montants contractuels restent des entiers en cents. Chaque groupe conserve
+sa propre `currency`, figée dès sa publication ; le catalogue conserve sa devise
+indépendante. Modifier le catalogue ne convertit ni les groupes ni les paiements.
+Changer la devise d'un brouillon impose de ressaisir le prix. Les rapports,
+historiques et courriels distinguent CAD et EUR ; aucun total multidevise ni taux
+de change implicite n'est calculé.
+
+`EQUITAB_EUR_ENABLED=false` est le réglage par défaut. Il autorise la préparation
+des brouillons EUR mais bloque leur publication et les nouvelles réservations ou
+tentatives de paiement EUR. Une tentative financière déjà persistée garde ses
+paramètres et sa clé d'idempotence. Les renouvellements, recalculs et remboursements
+des engagements EUR existants restent traitables lorsque ce réglage est désactivé.
+Le recalcul des parts concerne les groupes ouverts **et complets** : l'arrivée
+du dernier membre ne doit pas figer le prix des membres précédents. Les groupes
+fermés restent exclus. Le prix recalculé conserve la devise du groupe et la
+politique de prorata existante.
+
+Avant toute activation EUR : valider les pays propriétaires autorisés et
+l'éligibilité des comptes Connect, puis effectuer le parcours propriétaire/membre
+dans une sandbox Stripe isolée (authentification, webhook, renouvellement,
+recalcul et remboursement). Les doubles automatisés ne remplacent pas cette
+recette. Ce réglage n'ouvre aucun nouveau pays à lui seul.
+
+Pour les destination charges sans `on_behalf_of`, la devise encaissée, celle du
+solde de la plateforme et celle du règlement au propriétaire peuvent différer.
+Comparer directement le montant EUR de la charge au montant CAD du transfert
+est incorrect. Le vérificateur de recette
+`scripts/stripe-qa/DestinationChargeProof.php` contrôle les liens entre objets,
+la destination, les montants dans chaque devise, les taux fournis par Stripe et
+la commission ; il refuse les objets live et n'effectue aucun appel ni écriture.
+Son périmètre est CAD vers propriétaire réglé en CAD et EUR vers propriétaire
+réglé en EUR ; un autre règlement nécessite une recette distincte. Les 5 % sont
+une commission brute, pas une garantie de bénéfice net après frais et change.
+
+La migration `2026_10_07_180000_add_native_currency_to_groups` déduit la devise
+historique des paiements, des prix et des tentatives chiffrées. Sans engagement
+financier, elle utilise le catalogue. Une ambiguïté arrête la migration entière
+sans conversion. Prévoir une sauvegarde vérifiée et interrompre les écritures
+web/queue/scheduler pendant la migration et le remplacement du code ; conserver
+la clé de chiffrement existante. Tester d'abord sur une copie de recette protégée.
+Ne pas ignorer un échec ou réécrire l'historique pour le contourner.
+
+Le retour arrière du schéma est refusé dès qu'il ferait perdre un contrat EUR
+(y compris archivé) ou réinterpréterait la devise d'un groupe. Pour suspendre les
+nouvelles opérations EUR, désactiver le réglage puis recharger la configuration
+et les workers ; conserver le code capable de traiter les engagements existants.
+
+Dropbox Family, Bitwarden Families et NordPass Family disposent de leurs icônes
+et alias de présentation. Aucune offre commerciale n'est créée par cette livraison.
+Avant leur activation, vérifier les tarifs natifs, marchés, conditions de partage,
+cycles annuels éventuels et la fourniture/révocation des accès par invitation.
+Ne jamais demander un mot de passe maître ni fabriquer des identifiants pour
+contourner le remboursement automatique si l'accès n'a pas été fourni.
+
+## Propriétaires : Canada et zone euro
+
+Le pays du propriétaire est demandé explicitement dans son profil ou lors de
+l'activation des versements. Il est indépendant de la devise du groupe. Les pays
+pris en charge sont le Canada et les 21 États de la zone euro : Allemagne,
+Autriche, Belgique, Bulgarie, Chypre, Croatie, Espagne, Estonie, Finlande,
+France, Grèce, Irlande, Italie, Lettonie, Lituanie, Luxembourg, Malte, Pays-Bas,
+Portugal, Slovaquie et Slovénie. Le Royaume-Uni, la Suisse et les pays de l'UE
+hors zone euro ne sont pas inclus dans cette ouverture.
+
+`EQUITAB_EUROZONE_CONNECT_ENABLED=false` bloque la création de nouveaux comptes
+Connect européens, mais laisse préparer les profils et brouillons. Le Canada
+reste disponible. Ce réglage est **distinct** de `EQUITAB_EUR_ENABLED` : il faut
+valider puis activer les deux pour ouvrir le parcours propriétaire européen en
+EUR. Ni la migration ni le déploiement du code ne les activent automatiquement.
+
+Le pays est figé dès qu'une tentative Connect a été persistée, avant l'appel
+réseau. Les reprises réutilisent le même compte ou les mêmes paramètres chiffrés
+et la même clé, même si le réglage est ensuite désactivé. Une tentative ambiguë
+de plus de 23 heures nécessite une réconciliation opérateur ; ne jamais supprimer
+sa trace pour la relancer. Les comptes existants ne sont ni recréés ni affectés à
+un pays deviné ; leur pays historique peut rester non renseigné localement.
+Un changement de pays avant activation efface l'ancienne adresse du profil pour
+éviter de transmettre une adresse canadienne avec un compte belge, par exemple.
+
+La migration `2026_10_07_190000_add_owner_country_to_users` est additive et
+élargit les champs région/code postal. Son retour arrière refuse de perdre un
+pays renseigné ou de tronquer une adresse. Sauvegarder et interrompre les écritures
+pendant les migrations. Pour fermer de nouvelles inscriptions européennes,
+désactiver le réglage et recharger la configuration ainsi que les workers, sans
+supprimer les comptes ni casser les engagements existants.
+
+Avant ouverture publique :
+
+- Vérifier l'éligibilité **du compte Stripe EquitAb** aux versements Canada/EEE,
+  les pays activés dans Connect, les capacités et les devises de règlement.
+  La disponibilité générale dans la documentation ne garantit pas celle du compte.
+- Réaliser une recette Stripe sandbox : propriétaire canadien et européen
+  (notamment Belgique), lien expiré/reprise, identité, activation, membre avec
+  authentification 3D Secure, webhook rejoué, renouvellement et remboursement.
+  Vérifier le transfert et les frais réels ; aucune conversion ni baisse de frais
+  n'est promise par l'application.
+- Valider les conditions de partage et la disponibilité territoriale de chaque
+  service, les obligations de protection des données, consommateurs, fiscalité
+  et documents contractuels applicables. L'interface reste francophone ; le code
+  n'est pas une certification juridique ou une autorisation du fournisseur.
+
+Sources officielles consultées le 7 octobre 2026 :
+[zone euro](https://european-union.europa.eu/institutions-law-budget/euro/countries-using-euro_en),
+[Stripe Connect transfrontalier](https://docs.stripe.com/connect/cross-border-payouts),
+[onboarding Express international](https://docs.stripe.com/connect/express-accounts).
+Le flux existant de destination charges sans `on_behalf_of`, le taux de commission
+et les vérifications d'identité sont conservés.
 
 ## Sécurité
 

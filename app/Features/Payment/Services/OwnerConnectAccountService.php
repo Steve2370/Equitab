@@ -16,6 +16,8 @@ final class OwnerConnectAccountService
         private readonly OwnerStripeGatewayInterface $gateway,
         private readonly OwnerOnboardingAccess $access,
         private readonly OwnerOnboardingLock $lock,
+        private readonly OwnerCountries $countries,
+        private readonly OwnerConnectAddress $address,
     ) {}
 
     public function accountId(User $user, ?string $draftId = null): string
@@ -85,9 +87,10 @@ final class OwnerConnectAccountService
     /** @return array<string, mixed> */
     private function parameters(User $user): array
     {
+        $country = $this->countries->assertCanStart($user->country);
         $parameters = [
             'type' => 'express',
-            'country' => 'CA',
+            'country' => $country,
             'email' => $user->email,
             'business_type' => 'individual',
             'capabilities' => [
@@ -95,20 +98,8 @@ final class OwnerConnectAccountService
                 'transfers' => ['requested' => true],
             ],
         ];
-        $province = strtoupper(trim((string) $user->province));
-        $postalCode = strtoupper(trim((string) $user->postal_code));
-        // Only complete, user-supplied Canadian addresses are prefilled.
-        // Stripe's hosted form lets the owner confirm/correct these fields.
-        if (filled($user->address) && filled($user->city)
-            && in_array($province, ['AB', 'BC', 'MB', 'NB', 'NL', 'NS', 'NT', 'NU', 'ON', 'PE', 'QC', 'SK', 'YT'], true)
-            && preg_match('/^[ABCEGHJ-NPRSTVXY][0-9][ABCEGHJ-NPRSTV-Z] ?[0-9][ABCEGHJ-NPRSTV-Z][0-9]$/', $postalCode)) {
-            $parameters['individual']['address'] = [
-                'line1' => trim($user->address),
-                'city' => trim($user->city),
-                'state' => $province,
-                'postal_code' => $postalCode,
-                'country' => 'CA',
-            ];
+        if ($address = $this->address->forUser($user, $country)) {
+            $parameters['individual']['address'] = $address;
         }
 
         return $parameters;

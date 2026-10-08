@@ -2,8 +2,9 @@
 
 namespace App\Mail;
 
-use App\Models\Payment;
 use App\Models\GroupMember;
+use App\Models\Payment;
+use App\Support\MoneyFormatter;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -28,7 +29,7 @@ class PaymentConfirmed extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Votre paiement a été confirmé ' . $this->payment->group->name,
+            subject: 'Votre paiement a été confirmé '.$this->payment->group->name,
         );
     }
 
@@ -37,15 +38,21 @@ class PaymentConfirmed extends Mailable
      */
     public function content(): Content
     {
+        $amount = MoneyFormatter::format($this->payment->amount, $this->payment->currency);
+        // Preserve the existing smaller currency label in the amount heading.
+        [$amountValue, $amountCurrencyLabel] = explode("\u{00A0}", $amount, 2);
+
         return new Content(
             view: 'emails.payment.confirmed',
             with: [
                 'memberName' => $this->member->user->name,
                 'groupName' => $this->payment->group->name,
                 'subscriptionName' => $this->payment->group->subscription->name,
-                'amount' => number_format($this->payment->amount / 100, 2),
+                'amount' => $amount,
+                'amountValue' => $amountValue,
+                'amountCurrencyLabel' => $amountCurrencyLabel,
                 'nextBillingDate' => $this->member->next_payment_at?->format('d M Y'),
-                'dashboardUrl' => config('app.url') . '/dashboard/subscriptions',
+                'dashboardUrl' => config('app.url').'/dashboard/subscriptions',
             ],
         );
     }

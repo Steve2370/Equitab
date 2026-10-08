@@ -35,7 +35,27 @@ class PublishGroupDraft
         }
 
         $this->eligibility->assertCanPublish($owner->fresh());
-        $this->data->forPublication($draft->data);
+        $prepared = DB::transaction(function () use ($owner, $draft, $version) {
+            $locked = GroupDraft::whereKey($draft->id)->lockForUpdate()->firstOrFail();
+            $this->drafts->owned($owner, $locked);
+            if ($locked->version !== $version) {
+                throw new ConflictHttpException('Le brouillon a changé. Rechargez-le avant de publier.');
+            }
+            if ($locked->status === 'published') {
+                return $locked;
+            }
+            $validated = $this->data->forPublication($locked->data);
+            // Readiness itself calls Stripe. Persist the currency first, while
+            // leaving the draft editable until readiness has been confirmed.
+            if (! array_key_exists('currency', $locked->data)) {
+                $locked->forceFill(['data' => [...$locked->data, 'currency' => $validated['currency']]])->save();
+            }
+
+            return $locked;
+        });
+        if ($prepared->status === 'published') {
+            return Group::findOrFail($prepared->published_group_id);
+        }
 
         // Do not keep a database lock open while waiting for Stripe.
         try {
@@ -96,7 +116,7 @@ class PublishGroupDraft
                 'stripe_product_id' => $productId,
                 'stripe_price_id' => null,
                 'unit_amount' => $group->total_price,
-                'currency' => $group->subscription->currency,
+                'currency' => $group->currency,
             ]);
             $group->members()->create([
                 'user_id' => $owner->id, 'role' => 'owner', 'status' => 'active',

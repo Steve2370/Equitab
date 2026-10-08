@@ -82,6 +82,7 @@ Route::get('/', function () {
             'name' => $sub->name,
             'slug' => $sub->slug,
             'pricePerMember' => $sub->monthly_price / 100,
+            'currency' => $sub->currency,
             'discountPercent' => 50,
         ]);
 
@@ -97,6 +98,7 @@ Route::get('/', function () {
             'subscriptionSlug' => $group->subscription->slug,
             'ownerName' => $group->owner->display_name,
             'pricePerMember' => $group->calculateCurrentPricePerMember(),
+            'currency' => $group->currency,
             'currentMembers' => $group->current_members,
             'maxMembers' => $group->max_members,
         ]);

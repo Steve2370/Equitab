@@ -22,7 +22,7 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $fillable = [
         'name', 'email', 'password',
         'avatar', 'status', 'phone',
-        'address', 'city', 'province', 'postal_code',
+        'address', 'city', 'province', 'postal_code', 'country',
         'timezone', 'two_factor_enabled', 'stripe_connect_account_id',
         'stripe_connect_status', 'stripe_customer_id', 'stripe_identity_session_id',
         'identity_status', 'identity_verified_at', 'trust_score',

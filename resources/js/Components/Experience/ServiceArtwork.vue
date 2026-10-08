@@ -3,6 +3,7 @@ import type { ArtworkScene } from "@/config/servicePresentation";
 import { serviceBrand } from "@/config/servicePresentation";
 import { computed } from "vue";
 import ServiceBrandMark from "./ServiceBrandMark.vue";
+import XboxControllerArtwork from "./XboxControllerArtwork.vue";
 const props = withDefaults(
     defineProps<{
         scene: ArtworkScene;
@@ -112,9 +113,7 @@ const brandStyle = computed(() =>
                 <template v-else-if="scene === 'arcade'"
                     ><div class="game-orbit" />
                     <div class="gamepad">
-                        <div class="game-cross" />
-                        <div class="game-buttons"><i /><i /><i /><i /></div>
-                        <span>À VOUS DE JOUER.</span>
+                        <XboxControllerArtwork />
                     </div></template
                 >
                 <template v-else-if="scene === 'shield'"
@@ -257,9 +256,6 @@ const brandStyle = computed(() =>
 .artwork-host.service-branded .book-cover {
     background: var(--service-accent);
     color: var(--service-ink);
-}
-.artwork-host.service-branded .game-buttons i {
-    background: var(--service-accent);
 }
 .scene-topline {
     position: absolute;
@@ -778,62 +774,12 @@ const brandStyle = computed(() =>
 }
 .gamepad {
     position: absolute;
-    left: calc(50% - 100px);
-    top: 40px;
-    width: 200px;
-    height: 125px;
-    background: linear-gradient(150deg, #faf6e9, #c6cdb7);
-    border: 2px solid #fffffa;
-    border-radius: 42px 42px 25px 25px;
-    box-shadow:
-        7px 17px 20px #344a3855,
-        inset -4px -5px 2px #798a7266;
+    left: calc(50% - 118px);
+    top: 16px;
+    width: 236px;
+    height: 162px;
+    filter: drop-shadow(7px 15px 10px #142b1c66);
     transform: rotate(-12deg);
-}
-.game-cross {
-    position: absolute;
-    top: 34px;
-    left: 30px;
-    width: 45px;
-    height: 15px;
-    background: #445542;
-    border-radius: 4px;
-}
-.game-cross::after {
-    content: "";
-    position: absolute;
-    width: 15px;
-    height: 45px;
-    left: 15px;
-    top: -15px;
-    background: inherit;
-    border-radius: 4px;
-}
-.game-buttons {
-    position: absolute;
-    top: 21px;
-    right: 31px;
-    display: grid;
-    grid-template-columns: 12px 12px;
-    gap: 7px;
-    transform: rotate(-45deg);
-}
-.game-buttons i {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: #819967;
-}
-.game-buttons i:nth-child(2) {
-    background: #d79d80;
-}
-.gamepad span {
-    position: absolute;
-    bottom: 24px;
-    width: 100%;
-    text-align: center;
-    font-size: 8px;
-    letter-spacing: 0.13em;
 }
 .shield-object {
     position: absolute;

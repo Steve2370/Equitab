@@ -2,10 +2,12 @@
 import { computed, ref, watch } from "vue";
 import type { DraftErrors, DraftInput, OwnerSubscription } from "@/types/group-draft";
 import { centsFromInput, formatGroupMoney, memberLimit } from "@/utils/groupDraft";
+import { isSupportedCurrency } from "@/utils/money";
 
 const data = defineModel<DraftInput>({ required: true });
-const props = defineProps<{ subscription?: OwnerSubscription; errors: DraftErrors; disabled: boolean }>();
-const emit = defineEmits<{ invalidPrice: [invalid: boolean] }>();
+const props = defineProps<{ subscription?: OwnerSubscription; errors: DraftErrors; disabled: boolean; supportedCurrencies: string[]; enabledCurrencies: string[]; priceNotice?: string }>();
+const emit = defineEmits<{ invalidPrice: [invalid: boolean]; currencyChange: [currency: string] }>();
+const currencies = computed(() => props.supportedCurrencies.filter(isSupportedCurrency));
 const priceText = ref("");
 const priceInvalid = computed(() => priceText.value.trim() !== "" && centsFromInput(priceText.value) === null);
 watch(() => data.value.total_price, (cents) => {
@@ -14,6 +16,10 @@ watch(() => data.value.total_price, (cents) => {
     }
 }, { immediate: true });
 watch(priceInvalid, (invalid) => emit("invalidPrice", invalid));
+watch(() => data.value.currency, () => {
+    // Also clear raw invalid text when both the old and new minor-unit values are null.
+    priceText.value = typeof data.value.total_price === "number" ? (data.value.total_price / 100).toFixed(2).replace(".", ",") : "";
+});
 
 function setPrice(event: Event): void {
     priceText.value = (event.target as HTMLInputElement).value;
@@ -44,6 +50,16 @@ const visibilities = [
             </div>
             <div class="owner-form-grid">
                 <div>
+                    <label class="owner-label" for="owner-field-currency">Devise du groupe</label>
+                    <select id="owner-field-currency" :value="data.currency ?? ''" class="owner-input" :aria-invalid="!!errors.currency" :aria-describedby="descriptionFor('currency', 'owner-currency-hint')" @change="emit('currencyChange', ($event.target as HTMLSelectElement).value)">
+                        <option value="" disabled>Choisir une devise</option>
+                        <option v-for="currency in currencies" :key="currency" :value="currency">{{ currency }}{{ enabledCurrencies.includes(currency) ? '' : ' · brouillon seulement' }}</option>
+                    </select>
+                    <p id="owner-currency-hint" class="owner-hint">La devise sera fixe après publication. La changer ici efface le prix à ressaisir.</p>
+                    <p v-if="data.currency && !enabledCurrencies.includes(data.currency)" class="owner-hint" role="status">Vous pouvez enregistrer ce brouillon. La publication et les nouveaux paiements dans cette devise ne sont pas encore activés.</p>
+                    <p v-if="errors.currency" id="owner-error-currency" class="owner-error">{{ errors.currency }}</p>
+                </div>
+                <div>
                     <label class="owner-label" for="owner-field-tier">Offre partagée</label>
                     <select id="owner-field-tier" v-model="data.tier" class="owner-input" :aria-invalid="!!errors.tier" :aria-describedby="descriptionFor('tier')">
                         <option value="standard">Standard</option><option value="premium">Premium</option><option value="famille">Famille</option>
@@ -57,9 +73,10 @@ const visibilities = [
                     <p v-if="errors.max_members" id="owner-error-max_members" class="owner-error">{{ errors.max_members }}</p>
                 </div>
                 <div>
-                    <label class="owner-label" for="owner-field-total_price">Prix total par mois ({{ subscription?.currency ?? 'CAD' }})</label>
-                    <input id="owner-field-total_price" :value="priceText" type="text" inputmode="decimal" class="owner-input" placeholder="0,00" :aria-invalid="priceInvalid || !!errors.total_price" :aria-describedby="descriptionFor('total_price', 'owner-price-hint') + (priceInvalid && !errors.total_price ? ' owner-price-format-error' : '')" @input="setPrice" />
+                    <label class="owner-label" for="owner-field-total_price">Prix total par mois ({{ isSupportedCurrency(data.currency) ? data.currency : 'devise à choisir' }})</label>
+                    <input id="owner-field-total_price" :value="priceText" type="text" inputmode="decimal" class="owner-input" placeholder="0,00" :aria-invalid="priceInvalid || !!errors.total_price" :aria-describedby="descriptionFor('total_price', 'owner-price-hint') + (priceNotice ? ' owner-price-notice' : '') + (priceInvalid && !errors.total_price ? ' owner-price-format-error' : '')" @input="setPrice" />
                     <p id="owner-price-hint" class="owner-hint"><template v-if="subscription">Catalogue : {{ formatGroupMoney(subscription.monthly_price, subscription.currency) }} / mois. </template>Indiquez votre prix réel.</p>
+                    <p v-if="priceNotice" id="owner-price-notice" class="owner-hint" role="status" aria-live="polite">{{ priceNotice }}</p>
                     <p v-if="priceInvalid && !errors.total_price" id="owner-price-format-error" class="owner-error">Utilisez un montant avec deux décimales au maximum, ou laissez le champ vide.</p>
                     <p v-if="errors.total_price" id="owner-error-total_price" class="owner-error">{{ errors.total_price }}</p>
                 </div>

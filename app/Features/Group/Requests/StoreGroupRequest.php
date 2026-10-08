@@ -3,6 +3,7 @@
 namespace App\Features\Group\Requests;
 
 use App\Features\Group\Services\GroupVisibility;
+use App\Support\Currency;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -30,7 +31,8 @@ class StoreGroupRequest extends FormRequest
             'description' => ['nullable', 'string', 'max:1000'],
             'tier' => ['required', 'in:standard,premium,famille'],
             'max_members' => ['required', 'integer', 'min:2', 'max:10'],
-            'total_price' => ['required', 'integer', 'min:100'],
+            'total_price' => ['required', 'integer', 'min:100', 'max:99999999'],
+            'currency' => ['sometimes', 'required', Rule::in(Currency::SUPPORTED)],
             'split_type' => ['required', 'in:equal,custom,usage_based'],
             'visibility' => ['required', Rule::in(GroupVisibility::ACCEPTED)],
             'renewal_date' => ['required', 'date', 'after:today'],

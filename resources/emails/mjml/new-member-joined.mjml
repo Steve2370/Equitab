@@ -12,7 +12,7 @@
         <mj-table css-class="details-table">
           <tr><td>Groupe</td><td>{{ $groupName }}</td></tr>
           <tr><td>Service</td><td>{{ $subscriptionName }}</td></tr>
-          <tr><td>Contribution du membre</td><td>{{ $pricePerMember }} $ CAD</td></tr>
+          <tr><td>Contribution du membre</td><td>{{ $pricePerMember }}</td></tr>
           <tr><td>Places restantes</td><td>{{ $spotsLeft }}</td></tr>
         </mj-table>
       </mj-column></mj-section>

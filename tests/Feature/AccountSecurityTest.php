@@ -266,7 +266,8 @@ class AccountSecurityTest extends AccountSecurityTestCase
         $user = User::where('email', 'briceyouatchui@gmail.com')->firstOrFail();
         $this->assertFalse($user->is_admin);
         $this->assertFalse($user->hasVerifiedEmail());
-        $this->actingAs($user)->get('/admin')->assertStatus(409);
+        $this->actingAs($user)->get('/admin')->assertRedirect(route('verification.notice'));
+        $this->getJson('/admin')->assertStatus(409);
         $user->markEmailAsVerified();
         $this->actingAs($user)->get('/admin')->assertForbidden();
     }
@@ -286,7 +287,8 @@ class AccountSecurityTest extends AccountSecurityTestCase
         $user = User::factory()->unverified()->create();
         $user->forceFill(['is_admin' => true])->save();
         $this->assertFalse($user->isAdmin());
-        $this->actingAs($user)->get('/admin')->assertStatus(409);
+        $this->actingAs($user)->get('/admin')->assertRedirect(route('verification.notice'));
+        $this->getJson('/admin')->assertStatus(409);
         $user->markEmailAsVerified();
         $this->actingAs($user)->get('/admin')->assertOk();
         $user->forceFill(['status' => 'banned'])->save();
@@ -307,7 +309,8 @@ class AccountSecurityTest extends AccountSecurityTestCase
         $this->assertNotSame($old->id, $new->id);
         $this->assertFalse($new->is_admin);
         $this->assertTrue(User::withTrashed()->findOrFail($old->id)->is_admin);
-        $this->actingAs($new)->get('/admin')->assertStatus(409);
+        $this->actingAs($new)->get('/admin')->assertRedirect(route('verification.notice'));
+        $this->getJson('/admin')->assertStatus(409);
         $new->markEmailAsVerified();
         $this->actingAs($new)->get('/admin')->assertForbidden();
     }
@@ -418,12 +421,16 @@ class AccountSecurityTest extends AccountSecurityTestCase
         $expired = URL::temporarySignedRoute('verification.verify', now()->subMinute(), [
             'id' => $user->id, 'hash' => sha1($user->email),
         ]);
-        $this->get($expired)->assertForbidden();
+        $this->get($expired)->assertRedirect(route('verification.notice'))
+            ->assertSessionHas('status', 'verification-link-invalid');
+        $this->getJson($expired)->assertForbidden();
         $this->assertFalse($user->fresh()->hasVerifiedEmail());
         $valid = URL::temporarySignedRoute('verification.verify', now()->addHour(), [
             'id' => $user->id, 'hash' => sha1($user->email),
         ]);
-        $this->get($valid.'&modified=1')->assertForbidden();
+        $this->get($valid.'&modified=1')->assertRedirect(route('verification.notice'))
+            ->assertSessionHas('status', 'verification-link-invalid');
+        $this->getJson($valid.'&modified=1')->assertForbidden();
         $this->assertFalse($user->fresh()->hasVerifiedEmail());
         $this->get($valid)->assertRedirect('/dashboard?verified=1');
         $this->get('/dashboard/preferences')->assertOk();

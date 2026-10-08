@@ -4,6 +4,7 @@ namespace App\Mail;
 
 use App\Models\Group;
 use App\Models\User;
+use App\Support\MoneyFormatter;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -29,7 +30,7 @@ class NewMemberJoined extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Nouveau membre dans votre groupe ' . $this->group->name,
+            subject: 'Nouveau membre dans votre groupe '.$this->group->name,
         );
     }
 
@@ -45,9 +46,9 @@ class NewMemberJoined extends Mailable
                 'memberName' => $this->newMember->name,
                 'groupName' => $this->group->name,
                 'subscriptionName' => $this->group->subscription->name,
-                'pricePerMember' => number_format(($this->amountInCents ?? $this->group->calculateCurrentPricePerMember()) / 100, 2),
+                'pricePerMember' => MoneyFormatter::format($this->amountInCents ?? $this->group->calculateCurrentPricePerMember(), $this->group->currency),
                 'spotsLeft' => $this->group->max_members - $this->group->current_members,
-                'dashboardUrl' => config('app.url') . '/dashboard/subscriptions',
+                'dashboardUrl' => config('app.url').'/dashboard/subscriptions',
             ],
         );
     }

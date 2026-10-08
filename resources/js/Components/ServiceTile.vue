@@ -2,18 +2,15 @@
 import { Link } from "@inertiajs/vue3";
 import { ArrowUpRight, Users } from "lucide-vue-next";
 import { getBrandGradient } from "@/config/brandGradients";
+import { formatMoney } from "@/utils/money";
 defineProps<{
     name: string;
     slug: string;
     category?: string;
     monthlyPrice?: number;
+    currency: string;
     maxMembers?: number;
 }>();
-const formatPrice = (cents: number) =>
-    new Intl.NumberFormat("fr-CA", {
-        style: "currency",
-        currency: "CAD",
-    }).format(cents / 100);
 </script>
 
 <template>
@@ -44,9 +41,9 @@ const formatPrice = (cents: number) =>
                 Part indicative · groupe complet
             </p>
             <p class="mt-1 text-xl font-semibold tracking-tight">
-                {{ formatPrice(Math.round(monthlyPrice / maxMembers)) }}
+                {{ formatMoney(Math.round(monthlyPrice / maxMembers), currency) }}
                 <span class="text-xs font-normal text-eq-muted"
-                    >CAD / mois</span
+                    >/ mois</span
                 >
             </p>
             <p class="mt-3 flex items-center gap-1.5 text-xs text-eq-muted">

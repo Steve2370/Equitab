@@ -74,8 +74,10 @@ class DeletedOwnerHistoryTest extends BillingTestCase
 
         $this->actingAs($user)->get('/dashboard')->assertOk()
             ->assertInertia(fn (Assert $page) => $page->component('Dashboard/Index')
-                ->where('activeSubscriptionsCount', 1)->where('monthlySpend', 5)
-                ->where('totalSavings', 19)
+                ->where('activeSubscriptionsCount', 1)
+                ->where('monthlyTotalsByCurrency', [[
+                    'currency' => 'CAD', 'monthlySpend' => 500, 'totalSavings' => 1900, 'unavailableSavingsCount' => 0,
+                ]])
                 ->has('upcomingPayments', 1)->where('upcomingPayments.0.id', $pending->id)
                 ->where('upcomingPayments.0.groupName', 'Synthetic service — Historical group')
                 ->where('upcomingPayments.0.amount', 477)->where('upcomingPayments.0.status', 'pending'));

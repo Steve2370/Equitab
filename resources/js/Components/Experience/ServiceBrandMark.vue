@@ -17,6 +17,7 @@ watch(
 <template>
     <span
         class="service-brand-mark"
+        role="img"
         :class="{ 'service-brand-wide': brand?.logoWide }"
         :aria-label="brand?.name || name"
     >

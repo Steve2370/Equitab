@@ -5,6 +5,7 @@ use App\Features\Auth\Controllers\Api\RegisterController;
 use App\Features\Chat\Controllers\ChatController;
 use App\Features\Group\Controllers\GroupController;
 use App\Features\Group\Controllers\GroupDraftController;
+use App\Features\Payment\Controllers\OwnerCountryController;
 use App\Features\Payment\Controllers\PaymentController;
 use Illuminate\Support\Facades\Route;
 
@@ -24,6 +25,7 @@ Route::middleware(['throttle:60,1'])->group(function () {
 Route::middleware(['auth:sanctum', 'session_current', 'not_suspended', 'throttle:120,1'])->group(function () {
 
     Route::middleware('verified')->group(function () {
+        Route::patch('/owner/country', OwnerCountryController::class)->middleware('throttle:20,1,owner-country:');
         Route::get('/group-drafts', [GroupDraftController::class, 'index']);
         Route::post('/group-drafts', [GroupDraftController::class, 'store']);
         Route::get('/group-drafts/{draft}', [GroupDraftController::class, 'show'])->whereUuid('draft');

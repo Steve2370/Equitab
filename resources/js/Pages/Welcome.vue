@@ -29,6 +29,7 @@ interface OpenGroup {
     subscriptionSlug: string;
     ownerName?: string;
     pricePerMember: number;
+    currency: string;
     currentMembers: number;
     maxMembers: number;
 }
@@ -56,6 +57,7 @@ const cards = computed(() =>
               name: g.subscriptionName,
               slug: g.subscriptionSlug,
               price: g.pricePerMember,
+              currency: g.currency,
               members: g.currentMembers,
               capacity: g.maxMembers,
               owner: g.ownerName,
@@ -70,6 +72,7 @@ const cards = computed(() =>
               name: s.name,
               slug: s.slug,
               price: null,
+              currency: undefined,
               members: undefined,
               capacity: undefined,
               owner: undefined,
@@ -263,7 +266,7 @@ const faqs = [
                         {{ openGroups.length ? "groupe(s)" : "service(s)" }} à
                         découvrir
                     </p>
-                    <span>En dollars canadiens</span>
+                    <span>Prix dans la devise de chaque groupe</span>
                 </div>
                 <div v-if="filtered.length" class="eq-collection-grid">
                     <CollectionCard

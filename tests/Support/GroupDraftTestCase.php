@@ -134,6 +134,7 @@ abstract class GroupDraftTestCase extends TestCase
             'tier' => 'standard',
             'max_members' => 4,
             'total_price' => 1999,
+            'currency' => 'CAD',
             'split_type' => 'equal',
             'visibility' => 'public',
             'renewal_date' => now()->addMonth()->toDateString(),

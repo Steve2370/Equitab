@@ -31,6 +31,7 @@ class GroupResource extends JsonResource
             'tier' => $this->tier,
             'visibility' => $this->visibility,
             'status' => $this->status,
+            'currency' => $this->currency,
             'pricePerMember' => $this->status === 'open' && $this->current_members < $this->max_members
                 ? $this->calculatePricePerMemberIfJoined()
                 : $this->calculateCurrentPricePerMember(),

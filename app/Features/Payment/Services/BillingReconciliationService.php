@@ -45,7 +45,7 @@ final class BillingReconciliationService
     {
         $result = ['cancellations' => 0, 'subscriptions' => 0, 'refunds' => 0, 'checks' => 0, 'errors' => 0];
         $cancellations = GroupMember::whereNotNull('cancellation_requested_at')
-            ->where(fn ($query) => $query->whereNull('subscription_status')->orWhere('subscription_status', '!=', 'canceled'));
+            ->where(fn ($query) => $query->whereNull('subscription_status')->orWhereNotIn('subscription_status', ['canceled', 'incomplete_expired']));
         // A missed renewal/cancellation webhook also leaves ACTIVE memberships
         // stale. Poll every live entitlement, not only initial checkout failures.
         $subscriptions = GroupMember::whereIn('status', ['pending_payment', 'active', 'suspended'])

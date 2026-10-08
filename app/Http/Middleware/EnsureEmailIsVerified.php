@@ -19,7 +19,22 @@ class EnsureEmailIsVerified
         if (! $request->user() ||
             ! ($request->user() instanceof MustVerifyEmail) ||
             ! $request->user()->hasVerifiedEmail()) {
-            return response()->json(['message' => 'Your email address is not verified.'], 409);
+            // JSON endpoints retain their refusal contract, even with HTML headers.
+            if ($request->is('api/*', 'group-drafts', 'group-drafts/*')
+                || ($request->expectsJson() && ! $request->header('X-Inertia'))) {
+                return response()->json(['message' => 'Veuillez confirmer votre adresse courriel.'], 409);
+            }
+
+            // Remember only an internal GET page, never a rejected mutation or an
+            // untrusted return URL. An existing invitation destination takes priority.
+            if ($request->isMethod('GET') && $request->hasSession()
+                && ! $request->session()->has('url.intended')) {
+                $path = '/'.ltrim($request->getPathInfo(), '/');
+                $query = $request->getQueryString();
+                $request->session()->put('url.intended', $path.($query ? '?'.$query : ''));
+            }
+
+            return redirect()->route('verification.notice');
         }
 
         return $next($request);

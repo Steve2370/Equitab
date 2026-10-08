@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Features\Group\Services\GroupVisibility;
+use App\Support\Currency;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
+use LogicException;
 
 class Group extends Model
 {
@@ -19,7 +21,7 @@ class Group extends Model
     protected $fillable = [
         'uuid', 'subscription_id', 'owner_id', 'name',
         'description', 'max_members', 'current_members',
-        'price_per_member', 'total_price', 'split_type', 'status',
+        'price_per_member', 'total_price', 'currency', 'split_type', 'status',
         'visibility', 'renewal_date', 'auto_renew', 'settings',
         'credential_email', 'credential_password', 'credential_notes',
         'tier', 'invite_token',
@@ -29,6 +31,7 @@ class Group extends Model
     {
         return [
             'price_per_member' => 'integer',
+            'total_price' => 'integer',
             'auto_renew' => 'boolean',
             'renewal_date' => 'date',
             'settings' => 'array',
@@ -50,6 +53,13 @@ class Group extends Model
     {
         static::creating(function (Group $group) {
             $group->uuid ??= Str::uuid();
+            $group->currency = Currency::normalize($group->currency ?? $group->subscription->currency);
+        });
+
+        static::updating(function (Group $group): void {
+            if ($group->isDirty('currency')) {
+                throw new LogicException('La devise d’un groupe publié ne peut pas être modifiée.');
+            }
         });
     }
 

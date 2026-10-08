@@ -19,7 +19,9 @@ class RecalculateGroupPrices implements ShouldQueue
 
     public function handle(PaymentGatewayInterface $gateway): void
     {
-        $groups = Group::where('status', 'open')
+        // Filling the last seat must not freeze earlier members at their old price.
+        // Closed groups remain excluded; full groups still have active subscriptions.
+        $groups = Group::whereIn('status', ['open', 'full'])
             ->whereHas('members', fn ($q) => $q->where('status', 'active'))
             ->get();
 

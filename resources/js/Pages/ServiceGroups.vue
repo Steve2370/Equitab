@@ -17,6 +17,7 @@ interface OwnerGroup {
     ownerTrustScore: number | null;
     tier: "standard" | "premium" | "famille";
     pricePerMember: number;
+    currency: string;
     spotsAvailable: number;
     maxMembers: number;
     createdAt: string;
@@ -99,6 +100,7 @@ defineProps<Props>();
                     :owner-trust-score="group.ownerTrustScore"
                     :tier="group.tier"
                     :price-per-member="group.pricePerMember"
+                    :currency="group.currency"
                     :spots-available="group.spotsAvailable"
                     :max-members="group.maxMembers"
                     :created-at="group.createdAt"

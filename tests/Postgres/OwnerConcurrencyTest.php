@@ -46,7 +46,10 @@ class OwnerConcurrencyTest extends PostgresTestCase
         $results = [$this->workerResult($a), $this->workerResult($b)];
         $this->assertEqualsCanonicalizing([200, 409], array_column($results, 'status'));
         $this->assertSame(2, $draft->fresh()->version);
-        $this->assertSame(['name' => $results[0]['status'] === 200 ? 'A' : 'B'], $draft->fresh()->data);
+        $this->assertSame([
+            'name' => $results[0]['status'] === 200 ? 'A' : 'B',
+            'currency' => 'CAD',
+        ], $draft->fresh()->data);
         $this->assertNoPublication();
     }
 
@@ -159,7 +162,7 @@ class OwnerConcurrencyTest extends PostgresTestCase
 
     public function test_connect_account_creation_is_serialized_across_processes(): void
     {
-        $owner = $this->readyOwner(['stripe_connect_account_id' => null, 'stripe_connect_status' => 'not_started']);
+        $owner = $this->readyOwner(['country' => 'CA', 'stripe_connect_account_id' => null, 'stripe_connect_status' => 'not_started']);
         $a = $this->worker('connect-a', 'connect', $owner, null, ['pause' => 'account']);
         $this->awaitSignal('account:connect-a');
         $this->assertDatabaseCount('owner_connect_attempts', 1);
@@ -175,7 +178,7 @@ class OwnerConcurrencyTest extends PostgresTestCase
 
     public function test_a_lost_account_response_reuses_the_durable_key_and_frozen_parameters(): void
     {
-        $owner = $this->readyOwner(['stripe_connect_account_id' => null, 'stripe_connect_status' => 'not_started']);
+        $owner = $this->readyOwner(['country' => 'CA', 'stripe_connect_account_id' => null, 'stripe_connect_status' => 'not_started']);
         $this->assertSame(503, $this->workerResult($this->worker('lost', 'connect', $owner, null, ['lost_response' => true]))['status']);
         $attempt = DB::table('owner_connect_attempts')->sole();
         $owner->update(['email' => 'changed-pg@example.test']);
@@ -205,7 +208,7 @@ class OwnerConcurrencyTest extends PostgresTestCase
 
     public function test_an_expired_lock_fences_off_the_old_process_after_another_one_recovers(): void
     {
-        $owner = $this->readyOwner(['stripe_connect_account_id' => null, 'stripe_connect_status' => 'not_started']);
+        $owner = $this->readyOwner(['country' => 'CA', 'stripe_connect_account_id' => null, 'stripe_connect_status' => 'not_started']);
         $old = $this->worker('expired-lock', 'connect', $owner, null, ['pause' => 'account']);
         $this->awaitSignal('account:expired-lock');
         $lock = DB::table('cache_locks')->sole();
@@ -221,7 +224,7 @@ class OwnerConcurrencyTest extends PostgresTestCase
 
     public function test_process_termination_preserves_the_attempt_and_recovers_after_lock_expiry(): void
     {
-        $owner = $this->readyOwner(['stripe_connect_account_id' => null, 'stripe_connect_status' => 'not_started']);
+        $owner = $this->readyOwner(['country' => 'CA', 'stripe_connect_account_id' => null, 'stripe_connect_status' => 'not_started']);
         $crashed = $this->worker('terminated', 'connect', $owner, null, ['pause' => 'account']);
         $this->awaitSignal('account:terminated');
         $attempt = DB::table('owner_connect_attempts')->sole();

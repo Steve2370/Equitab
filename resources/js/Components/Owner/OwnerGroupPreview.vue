@@ -5,7 +5,7 @@ import type { DraftInput, DraftPreview, OwnerSubscription } from "@/types/group-
 import { formatGroupMoney, fullGroupShare } from "@/utils/groupDraft";
 
 const props = defineProps<{ data: DraftInput; subscription?: OwnerSubscription; preview?: DraftPreview | null }>();
-const currency = computed(() => props.subscription?.currency ?? "CAD");
+const currency = computed(() => props.data.currency ?? "");
 const confirmedPreview = computed(() => props.preview
     && props.preview.total_price === props.data.total_price
     && props.preview.max_members === props.data.max_members

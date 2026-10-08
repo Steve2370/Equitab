@@ -2,8 +2,10 @@
 
 namespace App\Features\Dashboard\Controllers;
 
+use App\Features\Payment\Services\OwnerCountrySettings;
 use App\Features\Payment\Services\OwnerOnboardingException;
 use App\Features\Payment\Services\OwnerOnboardingService;
+use App\Features\Reports\Services\CurrencyReportService;
 use App\Http\Controllers\Controller;
 use App\Mail\IdentityVerified;
 use App\Models\GroupDraft;
@@ -17,24 +19,9 @@ use Inertia\Response;
 
 class DashboardController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request, CurrencyReportService $reports): Response
     {
         $user = $request->user();
-
-        $activeGroups = $user->groupMembers()
-            ->with('group.subscription')
-            ->where('status', 'active')
-            ->whereHas('group', fn ($q) => $q->whereNotIn('status', ['closed']))
-            ->get();
-
-        $totalSavings = $activeGroups->sum(function ($member) {
-            $fullPrice = $member->group->subscription->monthly_price;
-            $sharedPrice = $member->share_amount;
-
-            return ($fullPrice - $sharedPrice) / 100;
-        });
-
-        $monthlySpend = $activeGroups->sum(fn ($m) => $m->share_amount / 100);
 
         $upcomingPayments = $user->payments()
             // History remains visible after a group is archived. Do not alter
@@ -50,17 +37,16 @@ class DashboardController extends Controller
                     ? ($p->group->subscription?->name ?? 'Service indisponible').' — '.$p->group->name
                     : 'Groupe indisponible',
                 'amount' => $p->amount,
+                'currency' => $p->currency,
                 'status' => $p->status,
                 'paidAt' => $p->paid_at?->format('d M Y'),
-                'dueDate' => $p->due_date->format('d M Y'),
+                'dueDate' => $p->due_date?->format('d M Y'),
             ]);
 
         return Inertia::render('Dashboard/Index', [
             'userName' => $user->name,
-            'totalSavings' => $totalSavings,
-            'monthlySpend' => $monthlySpend,
+            ...$reports->monthlyMemberships($user),
             'upcomingPayments' => $upcomingPayments,
-            'activeSubscriptionsCount' => $activeGroups->count(),
         ]);
     }
 
@@ -76,13 +62,14 @@ class DashboardController extends Controller
             ->get()
             ->map(fn ($m) => [
                 'id' => $m->group->id,
-                'subscriptionName' => $m->group->subscription->name,
+                'subscriptionName' => $m->group->subscription?->name ?? 'Service indisponible',
                 'ownerName' => $m->group->owner?->display_name ?? 'Utilisateur supprimé',
                 'pricePerMember' => $m->share_amount,
+                'currency' => $m->group->currency,
                 'joinedAt' => $m->joined_at?->format('d/m/Y'),
                 'status' => $m->status,
                 'spotsLeft' => $m->group->max_members - $m->group->current_members,
-                'subscriptionSlug' => $m->group->subscription->slug,
+                'subscriptionSlug' => $m->group->subscription?->slug,
             ]);
 
         $owned = $user->ownedGroups()
@@ -91,11 +78,12 @@ class DashboardController extends Controller
             ->get()
             ->map(fn ($g) => [
                 'id' => $g->id,
-                'subscriptionName' => $g->subscription->name,
+                'subscriptionName' => $g->subscription?->name ?? 'Service indisponible',
                 'membersCount' => $g->current_members,
                 'maxMembers' => $g->max_members,
                 'pricePerMember' => $g->calculateCurrentPricePerMember(),
                 'totalPrice' => $g->total_price,
+                'currency' => $g->currency,
                 'status' => $g->status,
                 'inviteLink' => $g->visibility === 'private' && $g->invite_token ? route('invite.show', $g->invite_token) : null,
                 'renewalDate' => $g->renewal_date?->format('d M Y'),
@@ -117,23 +105,27 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function payments(Request $request): Response
+    public function payments(Request $request, CurrencyReportService $reports): Response
     {
         $payments = $request->user()->payments()
             ->with(['group' => fn ($query) => $query->withTrashed()->with('subscription')])
             ->latest('paid_at')
-            ->paginate(20)
-            ->through(fn ($p) => [
-                'id' => $p->id,
-                'groupName' => $p->group?->subscription?->name ?? 'Service indisponible',
-                'amount' => $p->amount,
-                'status' => $p->status,
-                'paidAt' => $p->paid_at?->format('d M Y'),
-                'dueDate' => $p->due_date->format('d M Y'),
-            ]);
+            ->paginate(20);
+
+        $paidTotalsByCurrency = $reports->completedPaymentsOnPage($payments->getCollection());
+        $payments->through(fn ($p) => [
+            'id' => $p->id,
+            'groupName' => $p->group?->subscription?->name ?? 'Service indisponible',
+            'amount' => $p->amount,
+            'currency' => $p->currency,
+            'status' => $p->status,
+            'paidAt' => $p->paid_at?->format('d M Y'),
+            'dueDate' => $p->due_date?->format('d M Y'),
+        ]);
 
         return Inertia::render('Dashboard/Payments', [
             'payments' => $payments,
+            'paidTotalsByCurrency' => $paidTotalsByCurrency,
         ]);
     }
 
@@ -156,7 +148,7 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function profile(Request $request, OwnerOnboardingService $onboarding): Response
+    public function profile(Request $request, OwnerOnboardingService $onboarding, OwnerCountrySettings $countries): Response
     {
         $user = $request->user();
 
@@ -177,6 +169,7 @@ class DashboardController extends Controller
             ->where('status', '!=', 'published')->first();
 
         return Inertia::render('Dashboard/Profile', [
+            'ownerCountry' => $countries->state($user),
             'resumeDraftUrl' => $resumeDraft ? route('group-drafts.edit', $resumeDraft, absolute: false) : null,
             'user' => [
                 'name' => $user->name,
@@ -194,20 +187,20 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function updateProfile(Request $request): RedirectResponse
+    public function updateProfile(Request $request, OwnerCountrySettings $countries): RedirectResponse
     {
-        $request->validate([
+        $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:20'],
             'address' => ['nullable', 'string', 'max:255'],
             'city' => ['nullable', 'string', 'max:100'],
-            'province' => ['nullable', 'string', 'max:2'],
-            'postal_code' => ['nullable', 'string', 'max:10'],
+            'province' => ['nullable', 'string', 'max:100'],
+            'postal_code' => ['nullable', 'string', 'max:20'],
+            'country' => ['sometimes', 'required', 'string', 'size:2'],
+            'expected_country' => ['sometimes', 'nullable', 'string', 'size:2'],
         ]);
 
-        $request->user()->update($request->only([
-            'name', 'phone', 'address', 'city', 'province', 'postal_code',
-        ]));
+        $countries->updateProfile($request->user(), $data);
 
         return back()->with('success', 'Profil mis à jour avec succès.');
     }

@@ -13,10 +13,11 @@ const toast = useToast();
 interface JoinedSubscription {
     id: number;
     subscriptionName: string;
-    subscriptionSlug: string;
+    subscriptionSlug: string | null;
     ownerName: string;
     pricePerMember: number;
-    joinedAt: string;
+    currency: string;
+    joinedAt: string | null;
     status: string;
     spotsLeft: number;
 }
@@ -27,8 +28,9 @@ interface OwnedSubscription {
     membersCount: number;
     maxMembers: number;
     pricePerMember: number;
+    currency: string;
     status: string;
-    renewalDate: string;
+    renewalDate: string | null;
     inviteLink: string | null;
 }
 
@@ -170,11 +172,12 @@ function confirmCloseGroup(): void {
                     presentation="workspace"
                     :key="sub.id"
                     :name="sub.subscriptionName"
-                    :slug="sub.subscriptionSlug"
+                    :slug="sub.subscriptionSlug ?? ''"
                     category="DANS VOTRE QUOTIDIEN"
                     eyebrow="ABONNEMENT REJOINT"
                     :status="statusLabel(sub.status)"
                     :price="sub.pricePerMember"
+                    :currency="sub.currency"
                     price-label="Votre part"
                     :owner="sub.ownerName"
                 >
@@ -200,6 +203,7 @@ function confirmCloseGroup(): void {
                         </button></template
                     >
                     <Link
+                        v-if="sub.subscriptionSlug"
                         :href="
                             '/groups/service/' +
                             encodeURIComponent(sub.subscriptionSlug)
@@ -240,6 +244,7 @@ function confirmCloseGroup(): void {
                     eyebrow="ABONNEMENT PARTAGÉ"
                     :status="statusLabel(sub.status)"
                     :price="sub.pricePerMember"
+                    :currency="sub.currency"
                     price-label="Part actuelle par membre"
                     :members="sub.membersCount"
                     :capacity="sub.maxMembers"

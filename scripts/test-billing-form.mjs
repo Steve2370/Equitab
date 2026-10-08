@@ -9,6 +9,8 @@ import { test } from 'node:test';
 import vm from 'node:vm';
 import { parse, compileScript } from '@vue/compiler-sfc';
 import ts from 'typescript';
+import * as money from '../resources/js/utils/money.ts';
+import * as quotes from '../resources/js/utils/paymentQuote.ts';
 
 const require = createRequire(import.meta.url);
 const source = readFileSync(new URL('../resources/js/Components/StripeCardForm.vue', import.meta.url), 'utf8');
@@ -24,7 +26,7 @@ async function exercise(options = {}) {
     const mounted = [], unmounted = [], calls = [], events = [], logs = [], challenges = [];
     let paymentMethods = 0;
     let destroyedCards = 0;
-    const quote = options.quote ?? { amount_today: 420, amount_recurring: 500 };
+    const quote = options.quote ?? { amount_today: 420, amount_recurring: 500, currency: 'CAD' };
     const location = { href: '/invite/synthetic' };
     const stripe = {
         elements: () => ({ create: () => ({ mount() {}, destroy() { destroyedCards++; } }) }),
@@ -49,6 +51,8 @@ async function exercise(options = {}) {
                 };
             }
             if (name === 'lucide-vue-next') return {};
+            if (name === '@/utils/money') return money;
+            if (name === '@/utils/paymentQuote') return quotes;
             throw new Error(`Unexpected component dependency: ${name}`);
         },
         URLSearchParams,
@@ -74,8 +78,9 @@ async function exercise(options = {}) {
         },
     });
     const props = {
-        groupId: 15, subscriptionName: 'Synthetic service', pricePerMember: 500,
+        groupId: 15, subscriptionName: 'Synthetic service', pricePerMember: 500, currency: 'CAD',
         inviteToken: options.withoutToken ? undefined : 'invite+synthetic&token',
+        ...options.props,
     };
     const state = module.exports.default.setup(props, { expose() {}, emit: (...args) => events.push(args) });
     await Promise.all(mounted.map(callback => callback()));
@@ -156,4 +161,38 @@ test('a successful 3DS challenge still requires backend confirmation and does no
     assert.equal(result.calls.filter(call => call.url.endsWith('/confirm')).length, 1);
     assert.deepEqual(result.events, [['success', 'sub_synthetic']]);
     assert.equal(result.location.href, '/payment/success?group_id=15');
+});
+
+test('both checkout amounts use the server quote currency independently of initial group props', async () => {
+    const result = await exercise({ quote: { amount_today: 321, amount_recurring: 789, currency: 'EUR' } });
+    assert.equal(result.state.currency.value, 'EUR');
+    assert.match(result.state.formatCurrency(result.state.amountToday.value), /3,21\sEUR/);
+    assert.match(result.state.formatCurrency(result.state.pricePerMember.value), /7,89\sEUR/);
+    assert.equal(result.events.length, 1);
+});
+
+test('missing or unsupported quote currency cannot initiate checkout or display a CAD fallback', async () => {
+    for (const currency of [undefined, null, '', 'USD', 'eur']) {
+        const result = await exercise({ quote: { amount_today: 420, amount_recurring: 500, currency } });
+        assert.equal(result.paymentMethods, 0);
+        assert.equal(result.state.prorationReady.value, false);
+        assert.equal(result.state.formatCurrency(500), 'Montant à confirmer');
+        assertNoSuccess(result);
+    }
+});
+
+test('a validated EUR quote supplied by the parent retains its currency and needs no second quote', async () => {
+    const result = await exercise({ props: { currency: 'EUR', amountToday: 123, pricePerMember: 456 } });
+    assert.equal(result.calls.some(call => call.url.includes('/proration')), false);
+    assert.match(result.state.formatCurrency(result.state.amountToday.value), /1,23\sEUR/);
+    assert.match(result.state.formatCurrency(result.state.pricePerMember.value), /4,56\sEUR/);
+    assert.equal(result.events.length, 1);
+});
+
+test('invalid supplied amounts or currency trigger verification before accepting payment', async () => {
+    for (const props of [{ amountToday: -1 }, { amountToday: 1.1 }, { amountToday: 420, pricePerMember: NaN }, { amountToday: 420, currency: '' }]) {
+        const result = await exercise({ props, quoteFailure: true });
+        assert.equal(result.paymentMethods, 0);
+        assertNoSuccess(result);
+    }
 });

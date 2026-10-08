@@ -5,6 +5,8 @@ namespace App\Features\Group\Services;
 use App\Models\GroupDraft;
 use App\Models\Subscription;
 use App\Models\User;
+use App\Support\BillingCurrencies;
+use App\Support\Currency;
 
 class OwnerGroupPage
 {
@@ -18,6 +20,8 @@ class OwnerGroupPage
         $this->eligibility->assertCanPrepare($user);
 
         return [
+            'supportedCurrencies' => Currency::SUPPORTED,
+            'enabledCurrencies' => BillingCurrencies::enabled(),
             'subscriptions' => Subscription::where('is_active', true)->with('category')->orderBy('name')->get()->map(fn ($s) => [
                 'id' => $s->id, 'name' => $s->name, 'slug' => $s->slug,
                 'max_members' => $s->max_members, 'monthly_price' => $s->monthly_price,

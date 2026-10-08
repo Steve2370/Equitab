@@ -3,9 +3,7 @@
 namespace App\Features\Subscription\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Subscription;
 use App\Models\SubscriptionCategory;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -15,14 +13,15 @@ class SubscriptionController extends Controller
     {
         $categories = SubscriptionCategory::with(['subscriptions' => function ($q) {
             $q->where('is_active', true)->orderBy('name');
-        }])->get()->map(fn($cat) => [
+        }])->get()->map(fn ($cat) => [
             'id' => $cat->id,
             'name' => $cat->name,
-            'subscriptions' => $cat->subscriptions->map(fn($s) => [
+            'subscriptions' => $cat->subscriptions->map(fn ($s) => [
                 'id' => $s->id,
                 'name' => $s->name,
                 'slug' => $s->slug,
                 'monthly_price' => $s->monthly_price,
+                'currency' => $s->currency,
                 'max_members' => $s->max_members,
             ]),
         ]);

@@ -12,7 +12,10 @@ use App\Features\Payment\Services\SubscriptionCancellationService;
 use App\Models\Group;
 use App\Models\GroupMember;
 use App\Models\StripePrice;
+use App\Models\Subscription;
 use App\Models\User;
+use App\Support\BillingCurrencies;
+use App\Support\Currency;
 use Closure;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -35,6 +38,9 @@ class GroupService
     public function create(User $owner, array $data): Group
     {
         $this->eligibility->assertCanPrepare($owner);
+        $subscription = Subscription::where('is_active', true)->findOrFail($data['subscription_id']);
+        $data['currency'] = Currency::normalize($data['currency'] ?? $subscription->currency);
+        BillingCurrencies::assertEnabled($data['currency']);
         $this->onboarding->refresh($owner);
         $this->eligibility->assertCanPublish($owner->fresh());
 
@@ -61,7 +67,7 @@ class GroupService
                 'stripe_price_id' => null,
                 'stripe_product_id' => $stripeData['product_id'],
                 'unit_amount' => $group->total_price,
-                'currency' => $group->subscription->currency,
+                'currency' => $group->currency,
             ]);
 
             $group->members()->create([
@@ -86,6 +92,7 @@ class GroupService
                 $member = $current->members()->where('user_id', $account->id)->first();
                 $this->access->authorizeSubscription($account, $current, $inviteToken, $member);
                 abort_if($member !== null, 409, 'Vous êtes déjà membre de ce groupe.');
+                BillingCurrencies::assertEnabled($current->currency);
                 $assertOwned();
 
                 $current->members()->create([
@@ -132,8 +139,9 @@ class GroupService
                     })->lockForUpdate()->get();
                 foreach ($members as $member) {
                     $member->update(['cancellation_requested_at' => $member->cancellation_requested_at ?? now()]);
-                    $confirmed = ! $member->stripe_subscription_id || $member->subscription_status === 'canceled';
-                    $this->memberships->revoke($member, $confirmed ? 'canceled' : 'cancellation_pending', true);
+                    $terminal = in_array($member->subscription_status, ['canceled', 'incomplete_expired'], true);
+                    $status = $terminal ? $member->subscription_status : ($member->stripe_subscription_id ? 'cancellation_pending' : 'canceled');
+                    $this->memberships->revoke($member, $status, true);
                 }
                 if ($delete) {
                     $current->delete(); // Keep financial history and retry identifiers.

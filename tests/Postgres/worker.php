@@ -8,6 +8,7 @@ use App\Features\Group\Services\GroupDraftService;
 use App\Features\Group\Services\PublishGroupDraft;
 use App\Features\Payment\Contracts\OwnerStripeGatewayInterface;
 use App\Features\Payment\Services\OwnerConnectWebhookService;
+use App\Features\Payment\Services\OwnerCountrySettings;
 use App\Features\Payment\Services\OwnerOnboardingException;
 use App\Features\Payment\Services\OwnerOnboardingService;
 use App\Models\GroupDraft;
@@ -25,6 +26,7 @@ try {
     $app = PostgresEnvironment::boot();
     [$script, $name, $action, $ownerId, $draftId, $json] = $argv;
     $options = json_decode($json, true, flags: JSON_THROW_ON_ERROR);
+    config(['payments.eurozone_connect_enabled' => $options['eurozone'] ?? false]);
     DB::select("SELECT set_config('application_name', ?, false)", ['equitab-qa-'.$name]);
     $gateway = new WorkerGateway($name, $options);
     $app->instance(GroupProductGateway::class, $gateway);
@@ -39,6 +41,12 @@ try {
         'publish' => ['group_id' => app(PublishGroupDraft::class)->publish($owner,
             GroupDraft::findOrFail($draftId), $options['version'] ?? 1, [])->id],
         'connect' => ['url' => app(OwnerOnboardingService::class)->start($owner)],
+        'country' => ['country' => app(OwnerCountrySettings::class)->select($owner, $options['country'])['country']],
+        'profile' => (function () use ($owner, $options): array {
+            app(OwnerCountrySettings::class)->updateProfile($owner, $options['data']);
+
+            return ['updated' => true];
+        })(),
         'webhook' => (function () use ($owner, $options): array {
             app(OwnerConnectWebhookService::class)->synchronize($options['event'], $owner->stripe_connect_account_id);
 

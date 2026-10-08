@@ -35,6 +35,7 @@ final class GroupInvitationPage
                 'ownerName' => $group->owner->display_name,
                 'ownerTrustScore' => $group->owner->calculateTrustScore(),
                 'pricePerMember' => $group->calculatePricePerMemberIfJoined(),
+                'currency' => $group->currency,
                 'spotsAvailable' => max(0, $group->max_members - $group->current_members),
                 'maxMembers' => $group->max_members,
             ],

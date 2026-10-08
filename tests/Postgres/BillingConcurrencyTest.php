@@ -74,16 +74,16 @@ class BillingConcurrencyTest extends PostgresTestCase
         return $process;
     }
 
-    private function group(int $capacity = 6): Group
+    private function group(int $capacity = 6, string $currency = 'CAD'): Group
     {
         $owner = $this->readyOwner();
         $group = Group::factory()->withCredentials()->create([
-            'owner_id' => $owner->id, 'current_members' => 1, 'max_members' => $capacity, 'total_price' => 2000,
+            'owner_id' => $owner->id, 'current_members' => 1, 'max_members' => $capacity, 'total_price' => 2000, 'currency' => $currency,
         ]);
         GroupMember::factory()->owner()->create(['group_id' => $group->id, 'user_id' => $owner->id, 'share_amount' => 2000]);
         StripePrice::create([
             'group_id' => $group->id, 'stripe_product_id' => 'prod_pg_billing_'.$group->id,
-            'stripe_price_id' => 'price_pg_initial_'.$group->id, 'unit_amount' => 2000, 'currency' => 'CAD',
+            'stripe_price_id' => 'price_pg_initial_'.$group->id, 'unit_amount' => 2000, 'currency' => $currency,
         ]);
 
         return $group;
@@ -148,48 +148,61 @@ class BillingConcurrencyTest extends PostgresTestCase
             ->update(['expiration' => time() - 1]));
     }
 
-    public function test_duplicate_checkout_from_independent_processes_reserves_and_creates_once(): void
+    public static function checkoutCurrencies(): array
     {
-        $group = $this->group();
+        return ['CAD' => ['CAD'], 'EUR' => ['EUR']];
+    }
+
+    #[DataProvider('checkoutCurrencies')]
+    public function test_duplicate_checkout_from_independent_processes_reserves_and_creates_once(string $currency): void
+    {
+        $group = $this->group(currency: $currency);
+        $options = ['eur_enabled' => $currency === 'EUR'];
         $payer = User::factory()->create();
-        $a = $this->billingWorker('checkout-a', 'checkout', $payer->id, $group->id, ['pause' => 'subscription']);
+        $a = $this->billingWorker('checkout-a', 'checkout', $payer->id, $group->id, [...$options, 'pause' => 'subscription']);
         $this->awaitSignal('subscription:checkout-a');
         $this->assertDatabaseCount('subscription_attempts', 1);
         $this->assertSame(2, $group->fresh()->current_members);
         $this->assertSame('pending_payment', $group->members()->where('user_id', $payer->id)->sole()->status);
-        $this->assertSame(503, $this->workerResult($this->billingWorker('checkout-b', 'checkout', $payer->id, $group->id))['status']);
+        $this->assertSame(503, $this->workerResult($this->billingWorker('checkout-b', 'checkout', $payer->id, $group->id, $options))['status']);
         DB::transaction(fn () => Group::whereKey($group->id)->lockForUpdate()->firstOrFail());
         $this->release('checkout-a');
         $first = $this->workerResult($a);
         $this->assertSame(200, $first['status']);
-        $this->assertSame($first, $this->workerResult($this->billingWorker('checkout-replay', 'checkout', $payer->id, $group->id)));
+        $this->assertSame($first, $this->workerResult($this->billingWorker('checkout-replay', 'checkout', $payer->id, $group->id, $options)));
         $this->assertRemoteCount('customer', 1);
         $this->assertRemoteCount('price', 1);
         $this->assertRemoteCount('subscription', 1);
         $this->assertCount(1, $this->calls('subscription'));
+        $this->assertSame(strtolower($currency), $this->calls('price')[0]['parameters']['currency']);
+        $subscription = DB::table('qa_billing_remote')->where('operation', 'subscription')->sole();
+        $this->assertSame(strtolower($currency), json_decode($subscription->state, true, flags: JSON_THROW_ON_ERROR)['currency']);
         $this->assertSame($first['result']['subscription_id'], DB::table('subscription_attempts')->sole()->subscription_id);
         $this->assertSame(2, $group->fresh()->current_members);
         $this->assertDatabaseCount('payments', 0);
     }
 
-    public function test_two_payers_cannot_both_take_the_last_seat(): void
+    #[DataProvider('checkoutCurrencies')]
+    public function test_two_payers_cannot_both_take_the_last_seat(string $currency): void
     {
-        $group = $this->group(2);
+        $group = $this->group(2, $currency);
+        $options = ['eur_enabled' => $currency === 'EUR'];
         $first = User::factory()->create();
         $second = User::factory()->create();
-        $a = $this->billingWorker('last-seat-a', 'checkout', $first->id, $group->id, ['pause' => 'subscription']);
+        $a = $this->billingWorker('last-seat-a', 'checkout', $first->id, $group->id, [...$options, 'pause' => 'subscription']);
         $this->awaitSignal('subscription:last-seat-a');
         $this->assertSame('full', $group->fresh()->status);
-        $this->assertSame(503, $this->workerResult($this->billingWorker('last-seat-b', 'checkout', $second->id, $group->id))['status']);
+        $this->assertSame(503, $this->workerResult($this->billingWorker('last-seat-b', 'checkout', $second->id, $group->id, $options))['status']);
         $this->release('last-seat-a');
         $this->assertSame(200, $this->workerResult($a)['status']);
-        $this->assertSame(409, $this->workerResult($this->billingWorker('last-seat-b-retry', 'checkout', $second->id, $group->id))['status']);
+        $this->assertSame(409, $this->workerResult($this->billingWorker('last-seat-b-retry', 'checkout', $second->id, $group->id, $options))['status']);
         $this->assertSame(2, $group->fresh()->current_members);
         $this->assertSame(2, $group->members()->count());
         $this->assertDatabaseMissing('group_members', ['user_id' => $second->id, 'group_id' => $group->id]);
         $this->assertDatabaseCount('subscription_attempts', 1);
         $this->assertRemoteCount('subscription', 1);
         $this->assertRemoteCount('customer', 1);
+        $this->assertSame(strtolower($currency), $this->calls('price')[0]['parameters']['currency']);
     }
 
     public function test_join_and_checkout_share_the_last_seat_lock_across_processes(): void

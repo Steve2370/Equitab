@@ -5,6 +5,7 @@ import { Shield, Users, Lock } from 'lucide-vue-next';
 import { getBrandGradient } from '@/config/brandGradients';
 import StripeCardForm from '@/Components/StripeCardForm.vue';
 import EquitabWordmark from '@/Components/Experience/EquitabWordmark.vue';
+import { formatMoney } from '@/utils/money';
 
 interface Group {
     id: number;
@@ -15,6 +16,7 @@ interface Group {
     ownerName: string;
     ownerTrustScore: number | null;
     pricePerMember: number;
+    currency: string;
     spotsAvailable: number;
     maxMembers: number;
 }
@@ -34,9 +36,7 @@ watch(() => props.accessState, () => { showForm.value = false; });
 const gradient = computed(() => getBrandGradient(props.group.subscriptionSlug));
 
 const formattedPrice = computed(() =>
-    new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' }).format(
-        props.group.pricePerMember / 100
-    )
+    formatMoney(props.group.pricePerMember, props.group.currency)
 );
 
 function onSuccess(): void {
@@ -134,6 +134,7 @@ function onSuccess(): void {
                 <StripeCardForm
                     :group-id="group.id"
                     :price-per-member="group.pricePerMember"
+                    :currency="group.currency"
                     :subscription-name="group.subscriptionName"
                     :invite-token="inviteToken"
                     @success="onSuccess"

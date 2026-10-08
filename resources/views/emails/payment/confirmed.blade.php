@@ -242,9 +242,9 @@ a:focus-visible { outline: 3px solid #187a57; outline-offset: 4px; }
               </tr>
 
               <tr>
-                <td align="left" style="font-size:0px;padding:0 0 16px;word-break:break-word;">
+                <td align="left" class="email-copy" style="overflow-wrap: anywhere; word-wrap: break-word; font-size: 0px; padding: 0 0 16px; word-break: break-word;">
 
-      <div style="font-family:Montserrat, Arial, sans-serif;font-size:34px;font-weight:600;line-height:1.2;text-align:left;color:#303b37;">{{ $amount }} <span style="font-size:16px;">$ CAD</span></div>
+      <div style="font-family:Montserrat, Arial, sans-serif;font-size:34px;font-weight:600;line-height:1.2;text-align:left;color:#303b37;">{{ $amountValue }}&nbsp;<span style="font-size:16px;">{{ $amountCurrencyLabel }}</span></div>
 
                 </td>
               </tr>

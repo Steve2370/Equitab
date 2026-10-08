@@ -2,11 +2,13 @@
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { getBrandGradient } from '@/config/brandGradients';
+import { formatMoney } from '@/utils/money';
 
 interface Props {
     name: string;
     slug: string;
     pricePerMember: number;
+    currency: string;
     discountPercent: number;
 }
 
@@ -19,9 +21,7 @@ const gradientStyle = computed(() => ({
 }));
 
 const formattedPrice = computed(() =>
-    new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' }).format(
-        props.pricePerMember,
-    ),
+    formatMoney(props.pricePerMember, props.currency),
 );
 </script>
 

@@ -4,7 +4,8 @@ import { Link } from "@inertiajs/vue3";
 import { ArrowUpRight, Check, Users } from "lucide-vue-next";
 import ServiceArtwork from "./ServiceArtwork.vue";
 import ServiceBrandMark from "./ServiceBrandMark.vue";
-import { formatCad, servicePresentation } from "@/config/servicePresentation";
+import { servicePresentation } from "@/config/servicePresentation";
+import { formatMoney } from "@/utils/money";
 const props = withDefaults(
     defineProps<{
         name: string;
@@ -12,6 +13,7 @@ const props = withDefaults(
         category?: string;
         eyebrow?: string;
         price?: number | null;
+        currency?: string;
         priceLabel?: string;
         members?: number;
         capacity?: number;
@@ -108,8 +110,8 @@ function reset() {
             <div class="collection-card-value">
                 <div v-if="validPrice">
                     <span>{{ priceLabel }}</span>
-                    <p>{{ formatCad(price!) }}</p>
-                    <small>CAD / mois</small>
+                    <p>{{ formatMoney(price!, currency ?? '') }}</p>
+                    <small>/ mois</small>
                 </div>
                 <div v-else>
                     <span>Votre prochaine découverte</span>
@@ -222,10 +224,16 @@ h3 {
 }
 .collection-card-value {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: end;
     gap: 10px;
     margin: 28px 0 23px;
+}
+.collection-card-value > div:first-child {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
 }
 .collection-card-value span,
 small {
@@ -245,6 +253,7 @@ small {
 .collection-members {
     text-align: right;
     flex: none;
+    margin-left: auto;
 }
 .collection-members > div {
     display: flex;

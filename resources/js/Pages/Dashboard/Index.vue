@@ -6,6 +6,7 @@ import MetricCard from "@/Components/Dashboard/MetricCard.vue";
 import TrustScoreGauge from "@/Components/Dashboard/TrustScoreGauge.vue";
 import SubscriptionCard from "@/Components/Dashboard/SubscriptionCard.vue";
 import BadgeChip from "@/Components/Dashboard/BadgeChip.vue";
+import { formatMoney } from "@/utils/money";
 import {
     TrendingDown,
     Wallet,
@@ -20,9 +21,10 @@ interface Payment {
     id: number;
     groupName: string;
     amount: number;
+    currency: string;
     status: string;
     paidAt: string | null;
-    dueDate: string;
+    dueDate: string | null;
 }
 
 interface Subscription {
@@ -41,8 +43,12 @@ interface Badge {
 
 interface Props {
     userName: string;
-    totalSavings: number;
-    monthlySpend: number;
+    monthlyTotalsByCurrency: {
+        currency: string;
+        totalSavings: number | null;
+        monthlySpend: number | null;
+        unavailableSavingsCount: number;
+    }[];
     upcomingPayments: Payment[];
     activeSubscriptionsCount: number;
     trustScore?: number;
@@ -58,27 +64,6 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const firstName = computed(() => props.userName.split(" ")[0]);
-
-const formattedSavings = computed(() =>
-    new Intl.NumberFormat("fr-CA", {
-        style: "currency",
-        currency: "CAD",
-    }).format(props.totalSavings),
-);
-
-const formattedSpend = computed(() =>
-    new Intl.NumberFormat("fr-CA", {
-        style: "currency",
-        currency: "CAD",
-    }).format(props.monthlySpend),
-);
-
-function formatAmount(cents: number): string {
-    return new Intl.NumberFormat("fr-CA", {
-        style: "currency",
-        currency: "CAD",
-    }).format(cents / 100);
-}
 
 function statusIcon(status: string) {
     return status === "completed"
@@ -138,21 +123,24 @@ function statusLabel(status: string): string {
         </div>
 
         <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <MetricCard
-                label="Économies mensuelles"
-                :value="formattedSavings"
-                :icon="TrendingDown"
-                variant="success"
-                sublabel="Voir mes abonnements"
-                subhref="/dashboard/subscriptions"
-            />
-            <MetricCard
-                label="Budget mensuel"
-                :value="formattedSpend"
-                :icon="Wallet"
-                sublabel="Voir mes paiements"
-                subhref="/dashboard/payments"
-            />
+            <template v-for="total in monthlyTotalsByCurrency" :key="total.currency">
+                <MetricCard
+                    :label="`Économies mensuelles · ${total.currency}`"
+                    :value="total.totalSavings === null ? 'Indisponibles' : formatMoney(total.totalSavings, total.currency)"
+                    :icon="TrendingDown"
+                    variant="success"
+                    :sublabel="total.unavailableSavingsCount ? 'Comparaison catalogue indisponible dans cette devise pour au moins un abonnement.' : 'Voir mes abonnements'"
+                    :subhref="total.unavailableSavingsCount ? undefined : '/dashboard/subscriptions'"
+                />
+                <MetricCard
+                    :label="`Budget mensuel · ${total.currency}`"
+                    :value="total.monthlySpend === null ? 'Montant indisponible' : formatMoney(total.monthlySpend, total.currency)"
+                    :icon="Wallet"
+                    sublabel="Voir mes paiements"
+                    subhref="/dashboard/payments"
+                />
+            </template>
+            <MetricCard v-if="!monthlyTotalsByCurrency.length" label="Budget mensuel" value="Aucun abonnement actif" :icon="Wallet" />
             <MetricCard
                 label="Échéances affichées"
                 :value="`${upcomingPayments.length}`"
@@ -321,7 +309,7 @@ function statusLabel(status: string): string {
 
                     <div class="shrink-0 text-right">
                         <p class="font-semibold text-equitab-navy">
-                            {{ formatAmount(payment.amount) }}
+                            {{ formatMoney(payment.amount, payment.currency) }}
                         </p>
                         <p
                             class="text-xs font-medium"

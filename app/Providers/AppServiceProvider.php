@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Features\Auth\Notifications\VerificationMail;
 use App\Features\Group\Contracts\GroupProductGateway;
 use App\Features\Group\Policies\GroupPolicy;
 use App\Features\Group\Repositories\Contracts\GroupRepositoryInterface;
@@ -15,6 +16,9 @@ use App\Features\Payment\Services\StripeBillingGateway;
 use App\Features\Payment\Services\StripeGateway;
 use App\Features\Payment\Services\StripeOwnerGateway;
 use App\Models\Group;
+use App\Models\User;
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Stripe\StripeClient;
@@ -41,6 +45,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::policy(Group::class, GroupPolicy::class);
+        VerifyEmail::toMailUsing(fn (User $user, string $url): MailMessage => app(VerificationMail::class)($user, $url));
         set_error_handler(function (int $errno, string $errstr, string $errfile): bool {
             if (str_contains($errfile, 'stripe-php') && str_contains($errstr, 'Accounts v2')) {
                 return true;

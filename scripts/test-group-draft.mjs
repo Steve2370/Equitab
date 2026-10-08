@@ -47,7 +47,7 @@ test("new draft is incomplete, private until publication and has no invented dat
 });
 
 test("service defaults use real cents, real tier and a capacity capped at ten", () => {
-    assert.deepEqual(serviceDefaults(service), { subscription_id: 3, name: "Groupe Service test", tier: "famille", max_members: 6, total_price: 1599 });
+    assert.deepEqual(serviceDefaults(service), { subscription_id: 3, name: "Groupe Service test", tier: "famille", max_members: 6, total_price: 1599, currency: "CAD" });
     assert.equal(memberLimit({ ...service, max_members: 25 }), 10);
     assert.equal(memberLimit({ ...service, max_members: 3 }), 3);
     assert.equal(memberLimit(undefined), 0);
@@ -57,7 +57,7 @@ test("service defaults use real cents, real tier and a capacity capped at ten", 
 test("currency input converts cents exactly and rejects excess precision or invalid inputs", () => {
     for (const [input, expected] of [["15,99", 1599], ["15.99", 1599], ["0.29", 29], ["1", 100], ["1,5", 150], [" 10.05 ", 1005], ["0", 0]]) assert.equal(centsFromInput(input), expected);
     for (const input of ["", "-1", "1.001", "Infinity", "1e3", "12abc", "9007199254740991"]) assert.equal(centsFromInput(input), null);
-    assert.match(formatGroupMoney(1599, "USD"), /15,99/);
+    assert.equal(formatGroupMoney(1599, "USD"), "Montant indisponible");
     assert.notEqual(formatGroupMoney(1599, "USD"), formatGroupMoney(1599, "CAD"));
 });
 

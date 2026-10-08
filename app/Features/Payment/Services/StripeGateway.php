@@ -6,6 +6,7 @@ use App\Features\Payment\Contracts\OwnerStripeGatewayInterface;
 use App\Features\Payment\Contracts\PaymentGatewayInterface;
 use App\Models\Group;
 use App\Models\User;
+use App\Support\Currency;
 use Stripe\StripeClient;
 
 class StripeGateway implements PaymentGatewayInterface
@@ -37,11 +38,11 @@ class StripeGateway implements PaymentGatewayInterface
     public function cancelSubscription(string $stripeSubscriptionId): void
     {
         $current = $this->stripe->subscriptions->retrieve($stripeSubscriptionId);
-        if ($current->status === 'canceled') {
+        if (in_array($current->status, ['canceled', 'incomplete_expired'], true)) {
             return;
         }
         $canceled = $this->stripe->subscriptions->cancel($stripeSubscriptionId);
-        if ($canceled->status !== 'canceled') {
+        if (! in_array($canceled->status, ['canceled', 'incomplete_expired'], true)) {
             throw new BillingUnavailable;
         }
     }
@@ -59,7 +60,7 @@ class StripeGateway implements PaymentGatewayInterface
     {
         $price = $this->stripe->prices->create([
             'unit_amount' => $amountInCents,
-            'currency' => 'cad',
+            'currency' => strtolower(Currency::normalize($group->currency)),
             'recurring' => ['interval' => 'month'],
             'product' => $group->stripePrice->stripe_product_id,
         ]);

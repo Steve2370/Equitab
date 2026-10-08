@@ -138,4 +138,22 @@ class GroupLeaveTest extends BillingTestCase
         $this->assertSame(1, $group->fresh()->current_members);
         $this->assertSame('active', $group->members()->firstOrFail()->status);
     }
+
+    public function test_leaving_an_expired_incomplete_subscription_preserves_its_terminal_status(): void
+    {
+        $group = Group::factory()->create(['current_members' => 2]);
+        $user = User::factory()->create();
+        $member = GroupMember::factory()->for($group)->for($user)
+            ->withStripeSubscription('sub_expired_departure')
+            ->create(['status' => 'pending_payment', 'subscription_status' => 'incomplete_expired']);
+        $this->mock(PaymentGatewayInterface::class, fn ($mock) => $mock->shouldNotReceive('cancelSubscription'));
+
+        app(GroupService::class)->leave($user, $group);
+        app(GroupService::class)->leave($user, $group);
+
+        $this->assertSame('left', $member->fresh()->status);
+        $this->assertSame('incomplete_expired', $member->fresh()->subscription_status);
+        $this->assertNotNull($member->fresh()->cancellation_requested_at);
+        $this->assertSame(1, $group->fresh()->current_members);
+    }
 }

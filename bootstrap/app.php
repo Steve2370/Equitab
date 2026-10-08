@@ -8,8 +8,10 @@ use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Exceptions\InvalidSignatureException;
 use Inertia\Inertia;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 use Symfony\Component\HttpFoundation\Response;
@@ -48,6 +50,20 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->render(function (InvalidSignatureException $exception, Request $request) {
+            if ($request->routeIs('verification.verify')
+                && ($request->header('X-Inertia') || ! $request->expectsJson())) {
+                return redirect()->route('verification.notice')->with('status', 'verification-link-invalid');
+            }
+        });
+        $exceptions->render(function (ThrottleRequestsException $exception, Request $request) {
+            if ($request->routeIs('verification.send')
+                && ($request->header('X-Inertia') || ! $request->expectsJson())) {
+                return redirect()->route('verification.notice')->withErrors([
+                    'verification' => 'Trop de demandes. Patientez un moment avant de demander un nouveau courriel.',
+                ]);
+            }
+        });
         // These endpoints are JSON even for a handcrafted HTML-form request.
         // Never flash an unvalidated draft payload (including nested secrets).
         $exceptions->shouldRenderJsonWhen(fn (Request $request, Throwable $e) => $request->is('group-drafts', 'group-drafts/*', 'api/group-drafts', 'api/group-drafts/*')

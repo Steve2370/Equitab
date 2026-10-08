@@ -4,6 +4,7 @@ namespace App\Mail;
 
 use App\Models\Payment;
 use App\Models\User;
+use App\Support\MoneyFormatter;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -43,8 +44,8 @@ class AutoRefundProcessed extends Mailable
                 'userName' => $this->user->name,
                 'groupName' => $this->payment->group->name,
                 'subscriptionName' => $this->payment->group->subscription->name,
-                'amount' => number_format($this->payment->amount / 100, 2),
-                'dashboardUrl' => config('app.url') . '/dashboard/payments',
+                'amount' => MoneyFormatter::format($this->payment->amount, $this->payment->currency),
+                'dashboardUrl' => config('app.url').'/dashboard/payments',
                 'supportUrl' => 'mailto:support@equitab.ca',
             ],
         );

@@ -107,7 +107,7 @@ class StripeOwnerOnboardingTest extends TestCase
 
     public function test_new_account_creation_preserves_policy_and_only_prefills_confirmed_email(): void
     {
-        $user = User::factory()->create(['name' => 'Do not split this name', 'email' => 'owner@example.test']);
+        $user = User::factory()->create(['country' => 'CA', 'name' => 'Do not split this name', 'email' => 'owner@example.test']);
         $this->gateway->shouldReceive('createAccount')->once()->withArgs(function (array $parameters, string $key): bool {
             $this->assertSame([
                 'type' => 'express', 'country' => 'CA', 'email' => 'owner@example.test',
@@ -130,7 +130,7 @@ class StripeOwnerOnboardingTest extends TestCase
 
     public function test_lost_response_retries_identical_durable_parameters_and_key(): void
     {
-        $user = User::factory()->create(['email' => 'before@example.test']);
+        $user = User::factory()->create(['country' => 'CA', 'email' => 'before@example.test']);
         $parameters = null;
         $key = null;
         $this->gateway->shouldReceive('createAccount')->once()->ordered()->withArgs(function ($params, $idempotency) use (&$parameters, &$key) {
@@ -156,6 +156,7 @@ class StripeOwnerOnboardingTest extends TestCase
     {
         $user = User::factory()->create([
             'name' => 'Never parse a legal name', 'address' => '123 rue Exemple',
+            'country' => 'CA',
             'city' => 'Montréal', 'province' => 'qc', 'postal_code' => 'H2X 1Y4',
         ]);
         $this->gateway->shouldReceive('createAccount')->once()->withArgs(function ($params): bool {
@@ -171,7 +172,7 @@ class StripeOwnerOnboardingTest extends TestCase
 
     public function test_incomplete_address_is_left_for_owner_to_complete_at_stripe(): void
     {
-        $user = User::factory()->create(['address' => '123 rue Exemple', 'province' => 'QC']);
+        $user = User::factory()->create(['country' => 'CA', 'address' => '123 rue Exemple', 'province' => 'QC']);
         $this->gateway->shouldReceive('createAccount')->once()->withArgs(function ($params): bool {
             $this->assertArrayNotHasKey('individual', $params);
 
@@ -195,7 +196,7 @@ class StripeOwnerOnboardingTest extends TestCase
 
     public function test_lost_lease_does_not_overwrite_an_account_created_by_another_worker(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['country' => 'CA']);
         $this->gateway->shouldReceive('createAccount')->once()->andReturnUsing(function () use ($user) {
             $this->assertSame(0, DB::transactionLevel());
             $user->update(['stripe_connect_account_id' => 'acct_other_worker']);

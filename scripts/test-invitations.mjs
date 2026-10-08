@@ -8,9 +8,15 @@ import { createSSRApp, defineComponent, h } from 'vue';
 import { renderToString } from '@vue/server-renderer';
 import ts from 'typescript';
 import * as drafts from '../resources/js/utils/groupDraft.ts';
+import * as money from '../resources/js/utils/money.ts';
 
 const require = createRequire(import.meta.url);
-function component(path) {
+function testRoute(name) {
+    const routes = { 'verification.send': '/email/verification-notification', logout: '/logout' };
+    assert.ok(Object.hasOwn(routes, name), `Unexpected route: ${name}`);
+    return routes[name];
+}
+function component(path, formState) {
     const { descriptor, errors } = parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
     assert.deepEqual(errors, []);
     const script = compileScript(descriptor, { id: path, inlineTemplate: true, templateOptions: { ssr: true } });
@@ -20,18 +26,22 @@ function component(path) {
     const module = { exports: {} };
     vm.runInNewContext(compiled, {
         exports: module.exports,
+        route: testRoute,
         require(name) {
             if (name === 'vue' || name === 'vue/server-renderer') return require(name);
             if (name === '@inertiajs/vue3') return {
                 Head: defineComponent({ setup: () => () => null }),
                 Link: defineComponent({ props: ['href'], setup: (props, { slots }) => () => h('a', { href: props.href }, slots.default?.()) }),
+                useForm: () => { assert.ok(formState); return formState; },
             };
             if (name === 'lucide-vue-next') return new Proxy({}, { get: () => defineComponent({ setup: () => () => h('svg') }) });
             if (name === '@/config/brandGradients') return { getBrandGradient: () => ({ from: '#187a57', to: '#187a57' }) };
             if (name === '@/utils/groupDraft') return drafts;
+            if (name === '@/utils/money') return money;
             if (name.endsWith('StripeCardForm.vue')) return { __esModule: true, default: defineComponent({ setup: () => () => h('div', { 'data-payment-form': true }) }) };
             if (name.endsWith('ServiceBrandMark.vue')) return { __esModule: true, default: defineComponent({ setup: () => () => h('span') }) };
             if (name.endsWith('EquitabWordmark.vue')) return { __esModule: true, default: defineComponent({ setup: () => () => h('img', { alt: 'EquitAb' }) }) };
+            if (name.endsWith('GuestLayout.vue')) return { __esModule: true, default: defineComponent({ setup: (_, { slots }) => () => h('main', slots.default?.()) }) };
             throw new Error(`Unexpected dependency: ${name}`);
         },
     });
@@ -42,10 +52,11 @@ const preparation = component('../resources/js/Components/Owner/OwnerPreparation
 const preview = component('../resources/js/Components/Owner/OwnerGroupPreview.vue');
 const group = {
     id: 15, name: 'Synthetic group', subscriptionName: 'Service test', subscriptionSlug: 'test',
-    ownerName: 'Synthetic owner', ownerTrustScore: null, pricePerMember: 500, spotsAvailable: 2, maxMembers: 4,
+    ownerName: 'Synthetic owner', ownerTrustScore: null, pricePerMember: 500, currency: 'CAD', spotsAvailable: 2, maxMembers: 4,
 };
 function render(component, props) {
     const app = createSSRApp(component, props);
+    app.config.globalProperties.route = testRoute;
     app.config.warnHandler = (message) => { throw new Error(message); };
     return renderToString(app);
 }
@@ -91,7 +102,7 @@ test('unknown trust score stays unknown and arbitrary descriptions are escaped',
     assert.ok(!html.includes('Remboursement garanti sous 48h'));
 });
 test('owner preparation renders exactly two visibility choices in the existing form', async () => {
-    const html = await render(preparation, { modelValue: drafts.emptyDraftData(), errors: {}, disabled: false });
+    const html = await render(preparation, { modelValue: drafts.emptyDraftData(), errors: {}, disabled: false, supportedCurrencies: ['CAD', 'EUR'], enabledCurrencies: ['CAD'] });
     assert.equal((html.match(/type="radio"/g) ?? []).length, 2);
     assert.ok(html.includes('value="public"'));
     assert.ok(html.includes('value="private"'));
@@ -109,4 +120,33 @@ test('legacy draft visibility is normalized without losing its fields or becomin
     assert.equal(drafts.draftFingerprint(data), drafts.draftFingerprint({ ...data, visibility: 'private' }));
     const html = await render(preview, { data: state.data });
     assert.ok(html.includes('Privé — sur invitation'));
+});
+
+function renderConfirmation(status, form = { errors: {}, processing: false }) {
+    return render(component('../resources/js/Pages/Auth/VerifyEmail.vue', form), { status });
+}
+test('confirmation screen explains the next step and provides resend and logout actions', async () => {
+    const html = await renderConfirmation();
+    assert.ok(html.includes('Confirmez votre courriel.'));
+    assert.ok(html.includes('Renvoyer le courriel'));
+    assert.ok(html.includes('href="/logout"'));
+    assert.ok(!html.includes('role="alert"'));
+});
+test('invalid links and rate limits are visible and never claim successful confirmation', async () => {
+    const html = await renderConfirmation('verification-link-invalid', { errors: { verification: 'Trop de demandes.' }, processing: false });
+    assert.equal((html.match(/role="alert"/g) ?? []).length, 2);
+    assert.ok(html.includes('Votre courriel n’a pas été confirmé.'));
+    assert.ok(html.includes('Trop de demandes.'));
+    assert.ok(!html.includes('a été envoyé'));
+});
+test('resend shows pending state and disables the submit button during the request', async () => {
+    const html = await renderConfirmation(undefined, { errors: {}, processing: true });
+    assert.ok(html.includes('Envoi en cours…'));
+    assert.ok(/<button[^>]*disabled[^>]*aria-busy="true"/.test(html));
+});
+test('resend success is announced through an accessible status', async () => {
+    const html = await renderConfirmation('verification-link-sent');
+    assert.ok(html.includes('role="status"'));
+    assert.ok(html.includes('Un nouveau lien de confirmation a été envoyé'));
+    assert.ok(!html.includes('role="alert"'));
 });

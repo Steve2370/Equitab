@@ -77,8 +77,8 @@ class EmailPresentationTest extends BillingTestCase
         $this->assertStringContainsString('Votre part a changé.', $increase);
         $this->assertStringContainsString('Un membre a quitté', $increase);
         foreach ([$increase, $decrease] as $html) {
-            $this->assertStringContainsString('6.00 $ CAD', $html);
-            $this->assertStringContainsString('9.00 $ CAD', $html);
+            $this->assertStringContainsString("6,00\u{00A0}$ CAD", $html);
+            $this->assertStringContainsString("9,00\u{00A0}$ CAD", $html);
         }
     }
 
@@ -97,6 +97,9 @@ class EmailPresentationTest extends BillingTestCase
         $message = (new VerifyEmail)->toMail($user);
         $html = (string) $message->render();
         $this->assertTheme($html);
+        $this->assertSame('Confirmez votre courriel pour commencer sur EquitAb', $message->subject);
+        $this->assertStringContainsString('Bonjour Camille,', $html);
+        $this->assertStringContainsString('60 minutes', $html);
         $this->assertStringContainsString('Confirmer mon courriel', $html);
         $this->assertStringNotContainsString('Hello!', $html);
         $this->assertStringContainsString('href="'.e($message->actionUrl).'"', $html);
@@ -104,6 +107,38 @@ class EmailPresentationTest extends BillingTestCase
         $this->assertFalse(URL::hasValidSignature(Request::create($message->actionUrl.'&tampered=1')));
         $this->assertStringContainsString('verify-email/123/', $message->actionUrl);
         $this->savePreview('verify-email', $html);
+    }
+
+    public function test_confirmation_name_cannot_inject_html_or_markdown_links_and_expiry_matches_the_signature(): void
+    {
+        $this->freezeTime();
+        config(['auth.verification.expire' => 30]);
+        $name = '<script>alert(1)</script> [Cliquez](https://outside.example.test) & Camille';
+        $user = new User(['name' => $name, 'email' => 'mail@example.test']);
+        $user->id = 124;
+        $message = (new VerifyEmail)->toMail($user);
+        $html = (string) $message->render();
+        $this->assertStringContainsString(e($name), $html);
+        $this->assertStringNotContainsString('<script>', $html);
+        $this->assertStringNotContainsString('href="https://outside.example.test"', $html);
+        $this->assertStringContainsString('30 minutes', $html);
+        parse_str(parse_url($message->actionUrl, PHP_URL_QUERY), $query);
+        $this->assertSame((string) now()->addMinutes(30)->timestamp, $query['expires']);
+        $this->assertTrue(URL::hasValidSignature(Request::create($message->actionUrl)));
+        $this->travel(31)->minutes();
+        $this->assertFalse(URL::hasValidSignature(Request::create($message->actionUrl)));
+    }
+
+    public function test_confirmation_plain_text_preserves_the_personalized_name_and_signed_link(): void
+    {
+        $user = new User(['name' => 'Camille', 'email' => 'mail@example.test']);
+        $user->id = 125;
+        $message = (new VerifyEmail)->toMail($user);
+        $text = (string) app(Markdown::class)->renderText($message->markdown, $message->data());
+        $this->assertStringContainsString('Bonjour Camille,', $text);
+        $this->assertStringContainsString('Confirmer mon courriel', $text);
+        $this->assertStringContainsString($message->actionUrl, $text);
+        $this->assertStringContainsString('60 minutes', $text);
     }
 
     public function test_password_notification_preserves_token_email_and_expiry_copy(): void
@@ -161,11 +196,11 @@ class EmailPresentationTest extends BillingTestCase
     {
         $user = new User(['name' => $person, 'email' => 'camille@example.test']);
         $service = new Subscription(['name' => 'Service Démo', 'currency' => 'CAD']);
-        $group = (new Group(['name' => 'Les découvertes du mois', 'max_members' => 4, 'current_members' => 3]))
+        $group = (new Group(['name' => 'Les découvertes du mois', 'max_members' => 4, 'current_members' => 3, 'currency' => 'CAD']))
             ->setRelation('owner', $user)->setRelation('subscription', $service);
         $member = (new GroupMember(['share_amount' => 600, 'next_payment_at' => now()->addDays(3)]))
             ->setRelation('user', $user)->setRelation('group', $group);
-        $payment = (new Payment(['amount' => 600]))->setRelation('group', $group);
+        $payment = (new Payment(['amount' => 600, 'currency' => 'CAD']))->setRelation('group', $group);
 
         return match ($name) {
             'welcome' => new WelcomeUser($user),

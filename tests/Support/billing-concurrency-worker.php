@@ -104,7 +104,7 @@ final class BillingConcurrencyGateway implements BillingReadGatewayInterface, Ch
     public function createPrice(array $parameters, string $key): string
     {
         if (! is_int($parameters['unit_amount'] ?? null) || $parameters['unit_amount'] < 0
-            || ($parameters['currency'] ?? null) !== 'cad' || ! str_starts_with($parameters['product'] ?? '', 'prod_')) {
+            || ! in_array($parameters['currency'] ?? null, ['cad', 'eur'], true) || ! str_starts_with($parameters['product'] ?? '', 'prod_')) {
             throw new LogicException('Unexpected synthetic price parameters.');
         }
 
@@ -117,10 +117,15 @@ final class BillingConcurrencyGateway implements BillingReadGatewayInterface, Ch
             || ! DB::table('qa_billing_remote')->where('remote_id', $parameters['items'][0]['price'])->exists()) {
             throw new LogicException('Subscription references an unknown customer or price.');
         }
+        $price = DB::table('qa_billing_remote')->where('remote_id', $parameters['items'][0]['price'])->sole();
+        $priceState = json_decode($price->state, true, flags: JSON_THROW_ON_ERROR);
+        if ($price->operation !== 'price' || ! in_array($priceState['currency'] ?? null, ['cad', 'eur'], true)) {
+            throw new LogicException('Subscription references an invalid synthetic price.');
+        }
 
         return $this->create('subscription', 'sub', $parameters, $key, [
             'object' => 'subscription', 'customer' => $parameters['customer'], 'status' => 'incomplete',
-            'currency' => 'cad', 'latest_invoice' => null,
+            'currency' => $priceState['currency'], 'latest_invoice' => null,
             'items' => ['data' => [['id' => 'si_pg_'.substr(hash('sha256', $key), 0, 20), 'current_period_end' => time() + 86400 * 30]]],
         ]);
     }
@@ -196,6 +201,7 @@ try {
     $app = PostgresEnvironment::boot();
     [$script, $name, $action, $userId, $targetId, $json] = $argv;
     $options = json_decode($json, true, flags: JSON_THROW_ON_ERROR);
+    config(['payments.eur_enabled' => ($options['eur_enabled'] ?? false) === true]);
     DB::select("SELECT set_config('application_name', ?, false)", ['equitab-billing-qa-'.$name]);
     Bus::fake();
     Mail::fake();

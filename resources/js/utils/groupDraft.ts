@@ -2,10 +2,11 @@ import type {
     DraftErrors, DraftInput, GroupDraft, GroupDraftTransport, OwnerActivation,
     OwnerReadiness, OwnerSubscription, PublishResult, ServiceCredentials,
 } from "../types/group-draft.ts";
+import { formatMoney, isSupportedCurrency, supportedCurrencies } from "./money.ts";
 
 const draftKeys = [
     "subscription_id", "name", "description", "tier", "max_members", "total_price",
-    "split_type", "visibility", "renewal_date", "auto_renew",
+    "currency", "split_type", "visibility", "renewal_date", "auto_renew",
 ] as const;
 
 export function safeDraftData(data: DraftInput): DraftInput {
@@ -52,11 +53,14 @@ export function memberLimit(subscription?: OwnerSubscription): number {
         ? Math.max(0, Math.min(10, subscription.max_members)) : 0;
 }
 
-export function serviceDefaults(subscription: OwnerSubscription): DraftInput {
+export function serviceDefaults(subscription: OwnerSubscription, currentCurrency?: string | null): DraftInput {
+    const currency = currentCurrency ?? (isSupportedCurrency(subscription.currency) ? subscription.currency : null);
     return {
         subscription_id: subscription.id, name: `Groupe ${subscription.name}`,
         tier: subscription.tier, max_members: memberLimit(subscription),
-        total_price: subscription.monthly_price,
+        currency,
+        total_price: currency === subscription.currency && isSupportedCurrency(currency)
+            ? subscription.monthly_price : null,
     };
 }
 
@@ -68,9 +72,7 @@ export function centsFromInput(value: string): number | null {
     return Number.isSafeInteger(cents) ? cents : null;
 }
 
-export function formatGroupMoney(cents: number, currency = "CAD"): string {
-    return new Intl.NumberFormat("fr-CA", { style: "currency", currency }).format(cents / 100);
-}
+export const formatGroupMoney = formatMoney;
 
 export function activationUrl(value: string, origin: string): string {
     if (typeof value !== "string" || !value.trim()) throw new DraftRequestError(503, "Le lien de vérification est indisponible. Réessayez dans un moment.");
@@ -89,14 +91,16 @@ export function fullGroupShare(data: DraftInput): number | null {
         ? Math.round(data.total_price / data.max_members) : null;
 }
 
-export function preparationErrors(data: DraftInput, subscription?: OwnerSubscription): DraftErrors {
+export function preparationErrors(data: DraftInput, subscription?: OwnerSubscription, enabledCurrencies: readonly string[] = supportedCurrencies): DraftErrors {
     const errors: DraftErrors = {};
+    if (!isSupportedCurrency(data.currency)) errors.currency = "Choisissez la devise du groupe.";
+    else if (!enabledCurrencies.includes(data.currency)) errors.currency = "La publication dans cette devise n’est pas disponible pour le moment.";
     if (!subscription || data.subscription_id !== subscription.id) errors.subscription_id = "Choisissez un service du catalogue.";
     if (!data.name?.trim()) errors.name = "Donnez un nom à votre groupe.";
     if (data.name && data.name.length > 255) errors.name = "Le nom doit contenir au plus 255 caractères.";
     if (data.description && data.description.length > 1000) errors.description = "La description doit contenir au plus 1 000 caractères.";
     if (typeof data.total_price !== "number" || !Number.isSafeInteger(data.total_price) || data.total_price < 100) {
-        errors.total_price = "Indiquez un prix mensuel d’au moins 1,00 $, avec deux décimales au maximum.";
+        errors.total_price = `Indiquez un prix mensuel d’au moins ${isSupportedCurrency(data.currency) ? formatMoney(100, data.currency) : "1,00 dans la devise choisie"}, avec deux décimales au maximum.`;
     }
     if (typeof data.max_members !== "number" || !Number.isInteger(data.max_members)
         || data.max_members < 2 || data.max_members > memberLimit(subscription)) {
@@ -127,21 +131,32 @@ export interface DraftState {
     operation: "idle" | "saving" | "publishing" | "reopening" | OwnerActivation;
     errors: DraftErrors;
     message: string;
+    priceNotice: string;
     conflict: boolean;
     leaving: boolean;
 }
 
 export function createDraftState(draft: GroupDraft | null): DraftState {
     return {
-        data: { ...emptyDraftData(), ...safeDraftData(draft?.data ?? {}) },
+        data: draftDataForEditing(draft),
         id: draft?.id ?? null, saved: draft ? safeDraftRecord(draft) : null,
-        operation: "idle", errors: {}, message: "", conflict: false, leaving: false,
+        operation: "idle", errors: {}, message: "", priceNotice: "", conflict: false, leaving: false,
     };
+}
+
+function draftDataForEditing(draft: GroupDraft | null): DraftInput {
+    const data = { ...emptyDraftData(), ...safeDraftData(draft?.data ?? {}) };
+    // Older persisted payloads lack currency. Only the server preview can supply it;
+    // keep the saved payload intact until an explicit edit is sent back to the server.
+    if (draft && draft.data.currency === undefined && isSupportedCurrency(draft.preview?.currency)) {
+        data.currency = draft.preview.currency;
+    }
+    return data;
 }
 
 export function isDraftSaved(state: DraftState): boolean {
     return !!state.saved && !state.conflict
-        && draftFingerprint(state.data) === draftFingerprint(state.saved.data);
+        && draftFingerprint(state.data) === draftFingerprint(draftDataForEditing(state.saved));
 }
 
 export function draftIsLocked(state: DraftState): boolean {
@@ -156,6 +171,15 @@ export function createDraftController(
     confirmed: (draft: GroupDraft) => void | Promise<void> = () => {},
 ) {
     let generation = 0;
+
+    function changeCurrency(currency: string, draftCurrencies: readonly string[]): void {
+        if (state.operation !== "idle" || draftIsLocked(state) || currency === state.data.currency
+            || !isSupportedCurrency(currency) || !draftCurrencies.includes(currency)) return;
+        state.data = { ...state.data, currency, total_price: null };
+        delete state.errors.currency;
+        delete state.errors.total_price;
+        state.priceNotice = `Devise changée en ${currency}. Saisissez à nouveau votre prix mensuel en ${currency} ; aucun montant n’a été converti.`;
+    }
 
     function restore(draft: GroupDraft | null): void {
         generation += 1;
@@ -193,7 +217,7 @@ export function createDraftController(
         // Never replace a user's input with a response to an earlier edit.
         // Accept normalization (e.g. trimmed text/null blanks) only for the submitted edit.
         if (draftFingerprint(state.data) === draftFingerprint(snapshot)) {
-            state.data = { ...emptyDraftData(), ...safeDraftData(draft.data) };
+            state.data = draftDataForEditing(draft);
         }
         await confirmed(draft);
         if (token !== generation) return null;
@@ -272,5 +296,5 @@ export function createDraftController(
         finally { if (token === generation) state.operation = "idle"; }
     }
 
-    return { save, activate, publish, reopen, restore, dispose: () => { generation += 1; } };
+    return { save, activate, publish, reopen, restore, changeCurrency, dispose: () => { generation += 1; } };
 }

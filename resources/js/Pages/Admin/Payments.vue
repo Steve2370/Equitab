@@ -5,6 +5,7 @@ import { type AdminPage } from "@/Components/Admin/adminPresentation";
 
 import { Head } from "@inertiajs/vue3";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
+import { formatMoney } from "@/utils/money";
 
 interface Payment {
     id: number;
@@ -13,22 +14,15 @@ interface Payment {
     groupName: string;
     subscriptionName: string;
     amount: number;
-    equitabFee: number;
+    equitabFee: number | null;
     currency: string;
-    paidAt: string;
+    paidAt: string | null;
 }
 
-const props = defineProps<{
+defineProps<{
     payments: AdminPage<Payment>;
-    totalEarnings: number;
+    paymentTotalsByCurrency: { currency: string; equitabEarnings: number }[];
 }>();
-
-function formatAmount(cents: number): string {
-    return new Intl.NumberFormat("fr-CA", {
-        style: "currency",
-        currency: "CAD",
-    }).format(cents / 100);
-}
 </script>
 
 <template>
@@ -39,15 +33,15 @@ function formatAmount(cents: number): string {
             description="Les transactions terminées et les commissions enregistrées, toutes périodes."
             section="LE SUIVI / PAIEMENTS"
             ><div class="eq-panel px-5 py-4">
-                <p class="text-xs text-eq-muted">Commissions EquitAb · CAD</p>
-                <p class="mt-2 text-2xl font-semibold text-eq-green">
-                    {{ formatAmount(totalEarnings) }}
+                <p class="text-xs text-eq-muted">Commissions EquitAb · par devise</p>
+                <p v-for="total in paymentTotalsByCurrency" :key="total.currency" class="mt-2 break-words text-2xl font-semibold text-eq-green">
+                    {{ formatMoney(total.equitabEarnings, total.currency) }}
                 </p>
+                <p v-if="!paymentTotalsByCurrency.length" class="mt-2 text-sm text-eq-muted">Aucune commission</p>
             </div></AdminPageHeader
         >
         <p class="mb-5 text-xs text-eq-muted">
-            {{ payments.total }} paiements terminés · montants en dollars
-            canadiens
+            {{ payments.total }} paiements terminés · montants dans leur devise d’origine
         </p>
         <div
             class="admin-table-region"
@@ -109,15 +103,15 @@ function formatAmount(cents: number): string {
                         </td>
                         <td
                             data-label="Montant"
-                            class="px-4 py-3 font-semibold text-equitab-navy"
+                            class="px-4 py-3 font-semibold text-equitab-navy max-[480px]:col-span-full"
                         >
-                            {{ formatAmount(payment.amount) }}
+                            {{ formatMoney(payment.amount, payment.currency) }}
                         </td>
                         <td
                             data-label="Commission Equitab"
-                            class="px-4 py-3 font-semibold text-equitab-emerald"
+                            class="px-4 py-3 font-semibold text-equitab-emerald max-[480px]:col-span-full"
                         >
-                            {{ formatAmount(payment.equitabFee) }}
+                            {{ payment.equitabFee === null ? 'Montant indisponible' : formatMoney(payment.equitabFee, payment.currency) }}
                         </td>
                         <td
                             data-label="Date"

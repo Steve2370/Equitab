@@ -6,6 +6,7 @@ import {
     type AdminPage,
 } from "@/Components/Admin/adminPresentation";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
+import { formatMoney } from "@/utils/money";
 
 import { ref } from "vue";
 import { Head } from "@inertiajs/vue3";
@@ -32,6 +33,7 @@ interface Group {
     membersCount: number;
     maxMembers: number;
     totalPrice: number;
+    currency: string;
     createdAt: string;
     members: Member[];
 }
@@ -46,13 +48,6 @@ const expandedGroupId = ref<number | null>(null);
 
 function toggleExpand(groupId: number): void {
     expandedGroupId.value = expandedGroupId.value === groupId ? null : groupId;
-}
-
-function formatPrice(cents: number): string {
-    return new Intl.NumberFormat("fr-CA", {
-        style: "currency",
-        currency: "CAD",
-    }).format(cents / 100);
 }
 
 function statusClass(status: string): string {
@@ -208,9 +203,9 @@ function initials(name: string): string {
                                 </td>
                                 <td
                                     data-label="Prix total"
-                                    class="px-6 py-4 font-medium text-equitab-navy"
+                                    class="px-6 py-4 font-medium text-equitab-navy max-[480px]:col-span-full"
                                 >
-                                    {{ formatPrice(group.totalPrice) }}
+                                    {{ formatMoney(group.totalPrice, group.currency) }}
                                 </td>
                                 <td
                                     data-label="Créé le"

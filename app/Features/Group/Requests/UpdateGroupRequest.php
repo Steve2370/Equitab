@@ -25,6 +25,8 @@ class UpdateGroupRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'currency' => ['prohibited'],
+            'subscription_id' => ['prohibited'],
             'name' => ['sometimes', 'string', 'max:255'],
             'description' => ['sometimes', 'nullable', 'string', 'max:1000'],
             'price_per_member' => ['sometimes', 'integer', 'min:100'],

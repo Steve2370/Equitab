@@ -56,6 +56,9 @@ const identities: Record<string, ServiceBrand> = {
         accent: "#00a8e0",
         deep: "#003f64",
         ink: "#002c46",
+        logoFile: "crave.jpg",
+        logoWide: true,
+        logoScale: 1.5,
     },
     crunchyroll: {
         name: "Crunchyroll",
@@ -158,6 +161,8 @@ const identities: Record<string, ServiceBrand> = {
         accent: "#0078d4",
         deep: "#102f60",
         ink: "#fff",
+        logo: "microsoft365",
+        logoWide: true,
     },
     "apple-one-family": {
         name: "Apple One",
@@ -178,6 +183,34 @@ const identities: Record<string, ServiceBrand> = {
         accent: "#ffcf00",
         deep: "#625012",
         ink: "#33270a",
+        logoFile: "readly.png",
+        logoWide: true,
+        logoScale: 1.25,
+    },
+    // Visual identities only: these entries do not publish catalogue offers.
+    "dropbox-family": {
+        name: "Dropbox Family",
+        accent: "#0061ff",
+        deep: "#002563",
+        ink: "#fff",
+        logoFile: "dropbox.svg",
+        logoWide: true,
+    },
+    "bitwarden-families": {
+        name: "Bitwarden Families",
+        accent: "#175ddc",
+        deep: "#102b61",
+        ink: "#fff",
+        logoFile: "bitwarden.svg",
+        logoWide: true,
+    },
+    "nordpass-family": {
+        name: "NordPass Family",
+        accent: "#007c83",
+        deep: "#063c40",
+        ink: "#fff",
+        logoFile: "nordpass.png",
+        logoWide: true,
     },
 };
 const aliases: Record<string, string> = {
@@ -191,12 +224,18 @@ const aliases: Record<string, string> = {
     "cyber-ghost": "cyberghost",
     "prime-video": "amazon-prime",
     "nord-vpn": "nordvpn",
+    dropbox: "dropbox-family",
+    bitwarden: "bitwarden-families",
+    nordpass: "nordpass-family",
 };
-export function serviceBrand(slug: string): ServiceBrand | null {
+function serviceIdentityKey(slug: string): string {
     const normalized = slug.trim().toLowerCase().replace(/\s+/g, "-");
-    const key = Object.prototype.hasOwnProperty.call(aliases, normalized)
+    return Object.prototype.hasOwnProperty.call(aliases, normalized)
         ? aliases[normalized]
         : normalized;
+}
+export function serviceBrand(slug: string): ServiceBrand | null {
+    const key = serviceIdentityKey(slug);
     return Object.prototype.hasOwnProperty.call(identities, key)
         ? identities[key]
         : null;
@@ -215,6 +254,19 @@ interface Presentation {
     palette?: string;
 }
 const brands: Record<string, Presentation> = {
+    "dropbox-family": {
+        scene: "cloud",
+        palette: "ice",
+        tagline: "Vos fichiers à portée de main.",
+    },
+    "bitwarden-families": {
+        scene: "shield",
+        tagline: "Un coffre personnel pour vos mots de passe.",
+    },
+    "nordpass-family": {
+        scene: "shield",
+        tagline: "Vos mots de passe, dans votre coffre.",
+    },
     netflix: { scene: "cinema", tagline: "Les bonnes histoires se partagent." },
     disney: { scene: "world", tagline: "Il reste tant à découvrir." },
     "disney-plus": { scene: "world", tagline: "Il reste tant à découvrir." },
@@ -272,7 +324,8 @@ export function servicePresentation(
     slug: string,
     category: string,
 ): Presentation {
-    if (Object.prototype.hasOwnProperty.call(brands, slug)) return brands[slug];
+    const key = serviceIdentityKey(slug);
+    if (Object.prototype.hasOwnProperty.call(brands, key)) return brands[key];
     const label = category
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")

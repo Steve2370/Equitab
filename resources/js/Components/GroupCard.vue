@@ -2,12 +2,14 @@
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { getBrandGradient } from '@/config/brandGradients';
+import { formatMoney } from '@/utils/money';
 
 interface Props {
     groupId: number;
     subscriptionName: string;
     subscriptionSlug: string;
     pricePerMember: number;
+    currency: string;
     currentMembers: number;
     maxMembers: number;
 }
@@ -21,9 +23,7 @@ const gradientStyle = computed(() => ({
 }));
 
 const formattedPrice = computed(() =>
-    new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' }).format(
-        props.pricePerMember,
-    ),
+    formatMoney(props.pricePerMember, props.currency),
 );
 
 const spotsLeft = computed(() => props.maxMembers - props.currentMembers);

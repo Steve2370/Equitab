@@ -7,6 +7,7 @@ import {
 } from "@/Components/Admin/adminPresentation";
 import ExperienceDialog from "@/Components/Experience/ExperienceDialog.vue";
 import AdminLayout from "@/Layouts/AdminLayout.vue";
+import { formatMoney } from "@/utils/money";
 
 import { Head, router } from "@inertiajs/vue3";
 import { ref } from "vue";
@@ -21,7 +22,8 @@ interface Dispute {
     reason: string;
     description: string;
     status: string;
-    amount: number;
+    amount: number | null;
+    currency: string | null;
     adminNotes: string | null;
     createdAt: string;
 }
@@ -70,13 +72,6 @@ function resolve(): void {
             },
         },
     );
-}
-
-function formatPrice(cents: number): string {
-    return new Intl.NumberFormat("fr-CA", {
-        style: "currency",
-        currency: "CAD",
-    }).format(cents / 100);
 }
 
 function statusClass(status: string): string {
@@ -182,9 +177,9 @@ function statusClass(status: string): string {
                             </td>
                             <td
                                 data-label="Montant"
-                                class="px-6 py-4 font-semibold text-equitab-navy"
+                                class="px-6 py-4 font-semibold text-equitab-navy max-[480px]:col-span-full"
                             >
-                                {{ formatPrice(dispute.amount) }}
+                                {{ dispute.amount === null || dispute.currency === null ? 'Montant indisponible' : formatMoney(dispute.amount, dispute.currency) }}
                             </td>
                             <td data-label="Statut" class="px-6 py-4">
                                 <span
@@ -233,7 +228,7 @@ function statusClass(status: string): string {
                 <p class="text-sm text-gray-500 mb-4">
                     {{ selectedDispute.userName }} —
                     {{ selectedDispute.groupName }} —
-                    {{ formatPrice(selectedDispute.amount) }}
+                    {{ selectedDispute.amount === null || selectedDispute.currency === null ? 'Montant indisponible' : formatMoney(selectedDispute.amount, selectedDispute.currency) }}
                 </p>
 
                 <div

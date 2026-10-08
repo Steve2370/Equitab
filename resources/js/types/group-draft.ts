@@ -19,6 +19,7 @@ export interface DraftData {
     tier: GroupTier;
     max_members: number;
     total_price: number;
+    currency: string;
     split_type: "equal";
     visibility: GroupVisibility;
     renewal_date: string;
@@ -45,12 +46,20 @@ export interface GroupDraft {
     preview?: DraftPreview | null;
 }
 
+export interface OwnerCountryState {
+    country: string | null;
+    locked: boolean;
+    canStart: boolean;
+    countries: Array<{ code: string; name: string; enabled: boolean }>;
+}
+
 export interface OwnerReadiness {
     identityVerified: boolean;
     connectActive: boolean;
     ready: boolean;
     identityStatus: string;
     connectStatus: string;
+    country: OwnerCountryState;
 }
 
 export interface ServiceCredentials {

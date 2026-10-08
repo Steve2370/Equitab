@@ -13,10 +13,12 @@ use App\Models\Dispute;
 use App\Models\Group;
 use App\Models\GroupMember;
 use App\Models\Payment;
+use App\Support\Currency;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
@@ -90,6 +92,7 @@ class PaymentController extends Controller
         return response()->json([
             'amount_today' => $prorata,
             'amount_recurring' => $pricePerMember,
+            'currency' => Currency::normalize($group->currency),
             'days_remaining' => $daysRemaining,
             'next_billing_date' => now()->addMonthNoOverflow()->startOfMonth()->format('d M Y'),
         ]);
@@ -126,8 +129,8 @@ class PaymentController extends Controller
                 inviteToken: $request->input('invite_token'),
             );
 
-            return response()->json($result);
-        } catch (HttpExceptionInterface $e) {
+            return response()->json([...$result, 'currency' => Currency::normalize($group->currency)]);
+        } catch (HttpExceptionInterface|ValidationException $e) {
             throw $e;
         } catch (Throwable) {
             Log::warning('Souscription à rapprocher.', ['group_id' => $group->id, 'user_id' => $request->user()->id]);
@@ -158,6 +161,7 @@ class PaymentController extends Controller
                 // au moment de la souscription). On retombe sur le calcul
                 // dynamique seulement si le membre n'existe pas encore.
                 'pricePerMember' => $member?->share_amount ?? $group->calculatePricePerMemberIfJoined(),
+                'currency' => Currency::normalize($group->currency),
                 'renewalDate' => $group->renewal_date?->format('d M Y'),
                 'memberStatus' => $member?->status ?? 'pending_payment',
             ],

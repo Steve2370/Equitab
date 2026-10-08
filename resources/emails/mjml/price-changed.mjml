@@ -12,8 +12,8 @@
         <mj-table css-class="details-table">
           <tr><td>Service</td><td>{{ $subscriptionName }}</td></tr>
           <tr><td>Groupe</td><td>{{ $groupName }}</td></tr>
-          <tr><td>Ancienne part</td><td>{{ $displayOldPrice }} $ CAD</td></tr>
-          <tr><td>Nouvelle part</td><td>{{ $displayNewPrice }} $ CAD</td></tr>
+          <tr><td>Ancienne part</td><td>{{ $displayOldPrice }}</td></tr>
+          <tr><td>Nouvelle part</td><td>{{ $displayNewPrice }}</td></tr>
         </mj-table>
       </mj-column></mj-section>
       <mj-section css-class="email-section"><mj-column>

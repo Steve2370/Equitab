@@ -7,9 +7,12 @@ use App\Models\Group;
 use App\Models\GroupMember;
 use App\Models\Payment;
 use App\Models\User;
+use App\Support\Currency;
 use Closure;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 
 final class PaymentSynchronizationService
 {
@@ -34,6 +37,37 @@ final class PaymentSynchronizationService
             : ($invoice['subscription'] ?? null));
     }
 
+    public static function assertCurrency(string $expected, mixed $actual): void
+    {
+        try {
+            if (is_string($actual) && Currency::normalize($actual) === Currency::normalize($expected)) {
+                return;
+            }
+        } catch (InvalidArgumentException) {
+            // Unknown currencies require reconciliation, never a CAD fallback.
+        }
+
+        throw new BillingUnavailable;
+    }
+
+    public static function assertSubscriptionCurrency(array $subscription, string $currency): void
+    {
+        // Sparse cancellation snapshots and existing gateway doubles need not
+        // carry prices. Every supplied monetary currency must still agree.
+        if (array_key_exists('currency', $subscription)) {
+            self::assertCurrency($currency, $subscription['currency']);
+        }
+        foreach ($subscription['items']['data'] ?? [] as $item) {
+            if (is_array($item['price'] ?? null) && array_key_exists('currency', $item['price'])) {
+                self::assertCurrency($currency, $item['price']['currency']);
+            }
+        }
+        $invoice = $subscription['latest_invoice'] ?? null;
+        if (is_array($invoice) && array_key_exists('currency', $invoice)) {
+            self::assertCurrency($currency, $invoice['currency']);
+        }
+    }
+
     public function synchronize(string $subscriptionId, ?string $invoiceId = null): ?Payment
     {
         $member = GroupMember::where('stripe_subscription_id', $subscriptionId)->first();
@@ -41,6 +75,13 @@ final class PaymentSynchronizationService
             return null;
         }
         [$payment, $created] = $this->lock->run('group:'.$member->group_id, function (Closure $assertOwned) use ($member, $subscriptionId, $invoiceId): array {
+            $group = Group::withTrashed()->findOrFail($member->group_id);
+            $currency = Currency::normalize($group->currency);
+            $attempt = DB::table('subscription_attempts')->where('group_id', $member->group_id)->where('user_id', $member->user_id)->first();
+            if ($attempt) {
+                $parameters = json_decode(Crypt::decryptString($attempt->parameters), true, flags: JSON_THROW_ON_ERROR);
+                self::assertCurrency($currency, $parameters['price']['currency'] ?? null);
+            }
             $sub = $this->gateway->retrieveSubscription($subscriptionId);
             $customer = $member->stripe_customer_id ?? User::withTrashed()->find($member->user_id)?->stripe_customer_id;
             if (($sub['id'] ?? null) !== $subscriptionId || ! $customer || self::objectId($sub['customer'] ?? null) !== $customer) {
@@ -53,6 +94,7 @@ final class PaymentSynchronizationService
             $latestId = self::objectId($sub['latest_invoice'] ?? null);
             $requestedId = $invoiceId ?? $latestId;
             if ($status !== 'active' || ! $requestedId) {
+                self::assertSubscriptionCurrency($sub, $currency);
                 DB::transaction(function () use ($member, $status, $assertOwned): void {
                     $current = GroupMember::lockForUpdate()->findOrFail($member->id);
                     $assertOwned();
@@ -65,9 +107,11 @@ final class PaymentSynchronizationService
                 return [null, false];
             }
             $invoice = $this->gateway->retrieveInvoice($requestedId);
+            self::assertSubscriptionCurrency($sub, $currency);
+            self::assertCurrency($currency, $sub['currency'] ?? null);
+            self::assertCurrency($currency, $invoice['currency'] ?? null);
             if (($invoice['id'] ?? null) !== $requestedId || self::invoiceSubscription($invoice) !== $subscriptionId
-                || self::objectId($invoice['customer'] ?? null) !== $customer
-                || ($invoice['currency'] ?? null) !== ($sub['currency'] ?? null)) {
+                || self::objectId($invoice['customer'] ?? null) !== $customer) {
                 throw new BillingUnavailable;
             }
             $isLatest = $requestedId === $latestId;
@@ -98,8 +142,14 @@ final class PaymentSynchronizationService
                 $current = GroupMember::lockForUpdate()->findOrFail($member->id);
                 $user = User::withTrashed()->findOrFail($member->user_id);
                 $assertOwned();
-                $payment = Payment::where('stripe_invoice_id', $invoice['id'])->first();
-                $payment ??= $intentId ? Payment::where('stripe_payment_intent_id', $intentId)->first() : null;
+                self::assertCurrency($group->currency, $invoice['currency']);
+                $payments = Payment::where('stripe_invoice_id', $invoice['id'])
+                    ->when($intentId, fn ($query) => $query->orWhere('stripe_payment_intent_id', $intentId))
+                    ->lockForUpdate()->get();
+                if ($payments->count() > 1) {
+                    throw new BillingUnavailable;
+                }
+                $payment = $payments->first();
                 if ($payment && ($payment->group_id !== $member->group_id || $payment->user_id !== $member->user_id)) {
                     throw new BillingUnavailable;
                 }
@@ -108,11 +158,18 @@ final class PaymentSynchronizationService
                     // single-payment ledger; never silently overwrite one.
                     throw new BillingUnavailable;
                 }
+                if ($payment) {
+                    self::assertCurrency($group->currency, $payment->currency);
+                    if ($payment->amount !== $amount
+                        || ($payment->stripe_payment_intent_id && $payment->stripe_payment_intent_id !== $intentId)) {
+                        throw new BillingUnavailable;
+                    }
+                }
                 $created = ! $payment;
                 if (! $payment) {
                     $payment = Payment::create([
                         'group_id' => $member->group_id, 'user_id' => $member->user_id, 'amount' => $amount,
-                        'currency' => strtoupper($invoice['currency']), 'status' => $refunded ? 'refunded' : 'completed',
+                        'currency' => Currency::normalize($group->currency), 'status' => $refunded ? 'refunded' : 'completed',
                         'paid_at' => Carbon::createFromTimestamp($invoice['status_transitions']['paid_at'] ?? $invoiceEnd),
                         'due_date' => Carbon::createFromTimestamp($invoiceEnd),
                         'period_start' => Carbon::createFromTimestamp($periodStart), 'period_end' => Carbon::createFromTimestamp($invoiceEnd),
@@ -189,9 +246,10 @@ final class PaymentSynchronizationService
             $intentId = $ids[0];
         }
         $intent = $this->gateway->retrievePaymentIntent($intentId);
+        self::assertCurrency($invoice['currency'], $intent['currency'] ?? null);
         if (($intent['id'] ?? null) !== $intentId || ($intent['status'] ?? null) !== 'succeeded'
             || self::objectId($intent['customer'] ?? null) !== $customer
-            || ($intent['currency'] ?? null) !== $invoice['currency'] || ($intent['amount_received'] ?? -1) < $amount) {
+            || ($intent['amount_received'] ?? -1) < $amount) {
             throw new BillingUnavailable;
         }
         $charge = $intent['latest_charge'] ?? null;

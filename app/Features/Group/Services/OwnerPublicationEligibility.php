@@ -2,12 +2,15 @@
 
 namespace App\Features\Group\Services;
 
+use App\Features\Payment\Services\OwnerCountrySettings;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Validation\ValidationException;
 
 class OwnerPublicationEligibility
 {
+    public function __construct(private readonly OwnerCountrySettings $countries) {}
+
     public function assertCanPrepare(User $user): void
     {
         if ($user->isSuspended() || $user->status === 'banned' || ! $user->hasVerifiedEmail()) {
@@ -15,7 +18,7 @@ class OwnerPublicationEligibility
         }
     }
 
-    /** @return array{identityVerified: bool, connectActive: bool, ready: bool, identityStatus: string, connectStatus: string} */
+    /** Existing owners keep their readiness without guessing a legacy country. */
     public function state(User $user): array
     {
         $identityVerified = $user->identity_status === 'verified';
@@ -27,6 +30,7 @@ class OwnerPublicationEligibility
             'ready' => $identityVerified && $connectActive && ! $user->isSuspended() && $user->status !== 'banned' && $user->hasVerifiedEmail(),
             'identityStatus' => $user->identity_status ?? 'unverified',
             'connectStatus' => $user->stripe_connect_status ?? 'not_started',
+            'country' => $this->countries->state($user),
         ];
     }
 

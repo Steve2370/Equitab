@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import { CheckCircle, Eye, EyeOff, Copy, MessageSquare, LayoutDashboard, Key } from 'lucide-vue-next';
 import { getBrandGradient } from '@/config/brandGradients';
+import { formatMoney } from '@/utils/money';
 
 interface Credentials {
     email: string | null;
@@ -17,6 +18,7 @@ interface Group {
     subscriptionSlug: string;
     ownerName: string;
     pricePerMember: number;
+    currency: string;
     renewalDate: string;
     memberStatus?: string;
 }
@@ -35,9 +37,7 @@ const copiedPassword = ref(false);
 const gradient = computed(() => getBrandGradient(props.group.subscriptionSlug));
 
 const formattedPrice = computed(() =>
-    new Intl.NumberFormat('fr-CA', { style: 'currency', currency: 'CAD' }).format(
-        props.group.pricePerMember / 100
-    )
+    formatMoney(props.group.pricePerMember, props.group.currency)
 );
 
 async function copyToClipboard(text: string, type: 'email' | 'password'): Promise<void> {

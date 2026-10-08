@@ -8,11 +8,11 @@ import OwnerGroupPreview from "@/Components/Owner/OwnerGroupPreview.vue";
 import OwnerActivation from "@/Components/Owner/OwnerActivation.vue";
 import OwnerCredentials from "@/Components/Owner/OwnerCredentials.vue";
 import { useGroupDraft } from "@/composables/useGroupDraft";
-import { draftFingerprint, preparationErrors, safeDraftRecord, serviceDefaults } from "@/utils/groupDraft";
+import { preparationErrors, safeDraftRecord, serviceDefaults } from "@/utils/groupDraft";
 import type { GroupDraft, OwnerActivation as ActivationKind, OwnerReadiness, OwnerSubscription, ServiceCredentials } from "@/types/group-draft";
 import "@/Components/Owner/owner.css";
 
-const props = defineProps<{ subscriptions: OwnerSubscription[]; draft: GroupDraft | null; ownerReadiness: OwnerReadiness }>();
+const props = defineProps<{ subscriptions: OwnerSubscription[]; draft: GroupDraft | null; ownerReadiness: OwnerReadiness; supportedCurrencies: string[]; enabledCurrencies: string[] }>();
 type Step = 1 | 2 | 3;
 const step = ref<Step>(props.draft ? (props.draft.status !== "draft" ? 3 : props.draft.data.subscription_id ? 2 : 1) : 1);
 const steps = ["Service", "Préparation", "Publication"] as const;
@@ -36,12 +36,12 @@ function rememberConfirmedDraft(draft: GroupDraft): Promise<void> {
         onFinish: () => resolve(),
     }));
 }
-const { state, saved, busy, locked, save, activate, publish, reopen } = useGroupDraft(() => props.draft, rememberConfirmedDraft);
+const { state, saved, busy, locked, save, activate, publish, reopen, changeCurrency } = useGroupDraft(() => props.draft, rememberConfirmedDraft);
 const selected = computed(() => props.subscriptions.find((service) => service.id === state.data.subscription_id));
 const isReady = computed(() => props.ownerReadiness.ready && props.ownerReadiness.identityVerified && props.ownerReadiness.connectActive);
 const canAttemptPublication = computed(() => !state.conflict && !state.leaving && state.saved?.status !== "published");
 const edited = computed(() => state.saved
-    ? draftFingerprint(state.data) !== draftFingerprint(state.saved.data)
+    ? !saved.value
     : state.data.subscription_id !== null || !!state.data.name || !!state.data.description);
 const saveStatus = computed(() => {
     if (state.operation === "saving") return "Enregistrement en cours…";
@@ -56,7 +56,7 @@ const errors = computed(() => Object.entries(state.errors));
 async function goToStep(next: Step): Promise<void> {
     if (busy.value || (next > 1 && !selected.value)) return;
     if (next === 3 && !locked.value) {
-        state.errors = preparationErrors(state.data, selected.value);
+        state.errors = preparationErrors(state.data, selected.value, props.enabledCurrencies);
         if (priceInvalid.value) state.errors.total_price = "Corrigez le format du prix avant de continuer.";
         if (Object.keys(state.errors).length) {
             step.value = 2;
@@ -72,7 +72,7 @@ async function goToStep(next: Step): Promise<void> {
 function selectService(subscription: OwnerSubscription): void {
     if (busy.value || locked.value) return;
     if (state.data.subscription_id !== subscription.id) {
-        Object.assign(state.data, serviceDefaults(subscription));
+        Object.assign(state.data, serviceDefaults(subscription, state.data.currency));
         clearCredentials();
         state.errors = {};
     }
@@ -104,7 +104,7 @@ async function refreshReadiness(): Promise<void> {
 }
 async function publishGroup(): Promise<void> {
     if (busy.value || !canAttemptPublication.value) return;
-    state.errors = preparationErrors(state.data, selected.value);
+    state.errors = preparationErrors(state.data, selected.value, props.enabledCurrencies);
     if (Object.keys(state.errors).length || priceInvalid.value) { await goToStep(3); return; }
     const result = await publish(props.ownerReadiness, certify.value, credentials.value);
     if (result) {
@@ -133,7 +133,7 @@ function reloadDraft(): void {
 function fieldTarget(key: string): string | null {
     if (key === "subscription_id") return "owner-service-search";
     if (key === "visibility") return "owner-preparation-title";
-    if (["name", "tier", "max_members", "total_price", "renewal_date", "description", "auto_renew", "credential_email", "credential_password", "credential_notes", "certify"].includes(key)) return `owner-field-${key}`;
+    if (["name", "tier", "currency", "max_members", "total_price", "renewal_date", "description", "auto_renew", "credential_email", "credential_password", "credential_notes", "certify"].includes(key)) return `owner-field-${key}`;
     return null;
 }
 async function focusField(key: string): Promise<void> {
@@ -207,7 +207,7 @@ onBeforeUnmount(() => {
             <div class="owner-content" :class="{ 'with-preview': step > 1 }" :aria-busy="busy">
                 <div class="min-w-0">
                     <OwnerServicePicker v-show="step === 1" :subscriptions="subscriptions" :selected="state.data.subscription_id ?? null" :disabled="busy || locked" :error="state.errors.subscription_id" @select="selectService" />
-                    <OwnerPreparation v-show="step === 2" v-model="state.data" :subscription="selected" :errors="state.errors" :disabled="busy || locked" @invalid-price="priceInvalid = $event" />
+                    <OwnerPreparation v-show="step === 2" v-model="state.data" :subscription="selected" :errors="state.errors" :disabled="busy || locked" :supported-currencies="supportedCurrencies" :enabled-currencies="enabledCurrencies" :price-notice="state.priceNotice" @currency-change="changeCurrency($event, supportedCurrencies)" @invalid-price="priceInvalid = $event" />
                     <section v-show="step === 3" aria-labelledby="owner-publication-title">
                         <p class="owner-eyebrow">03 · À vous de publier</p>
                         <h2 id="owner-publication-title" tabindex="-1" class="owner-step-title">Tout est prêt pour partager ?</h2>

@@ -18,6 +18,7 @@ interface Subscription {
     name: string;
     slug: string;
     monthly_price: number | null;
+    currency: string;
     max_members: number | null;
 }
 interface Category {
@@ -184,7 +185,7 @@ function resetFilters() {
                             search ? " pour « " + search + " »" : " à découvrir"
                         }}
                     </p>
-                    <span>Parts indicatives · CAD / mois</span>
+                    <span>Parts indicatives par mois · devise de chaque offre</span>
                 </div>
                 <div v-if="filteredServices.length" class="services-grid">
                     <CatalogServiceCard
@@ -194,6 +195,7 @@ function resetFilters() {
                         :slug="service.slug"
                         :category="service.category"
                         :monthly-price="service.monthly_price"
+                        :currency="service.currency"
                         :max-members="service.max_members"
                         :motion="motion"
                     />

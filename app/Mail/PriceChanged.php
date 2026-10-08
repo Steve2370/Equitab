@@ -3,6 +3,7 @@
 namespace App\Mail;
 
 use App\Models\GroupMember;
+use App\Support\MoneyFormatter;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Attachment;
@@ -48,8 +49,8 @@ class PriceChanged extends Mailable
                 'subscriptionName' => $this->member->group->subscription->name,
                 // Public mailable properties are injected after view data.
                 // Keep display values distinct from the integer cent amounts.
-                'displayOldPrice' => number_format($this->oldPrice / 100, 2),
-                'displayNewPrice' => number_format($this->newPrice / 100, 2),
+                'displayOldPrice' => MoneyFormatter::format($this->oldPrice, $this->member->group->currency),
+                'displayNewPrice' => MoneyFormatter::format($this->newPrice, $this->member->group->currency),
                 'isDecrease' => $this->newPrice < $this->oldPrice,
                 'dashboardUrl' => config('app.url').'/dashboard/subscriptions',
             ],

@@ -104,6 +104,7 @@ final class PaymentRefundService
         if (($intent['id'] ?? null) !== $intentId) {
             throw new BillingUnavailable;
         }
+        PaymentSynchronizationService::assertCurrency($payment->currency, $intent['currency'] ?? null);
         $charge = $intent['latest_charge'] ?? null;
         if (! is_array($charge) || ! is_int($charge['amount_refunded'] ?? null) || ! is_bool($charge['refunded'] ?? null)) {
             throw new BillingUnavailable;

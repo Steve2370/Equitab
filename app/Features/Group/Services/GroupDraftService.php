@@ -9,7 +9,10 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class GroupDraftService
 {
-    public function __construct(private readonly OwnerPublicationEligibility $eligibility) {}
+    public function __construct(
+        private readonly OwnerPublicationEligibility $eligibility,
+        private readonly GroupDraftData $data,
+    ) {}
 
     public function owned(User $user, GroupDraft $draft): GroupDraft
     {
@@ -48,7 +51,7 @@ class GroupDraftService
             $locked = GroupDraft::whereKey($draft->id)->lockForUpdate()->firstOrFail();
             $this->owned($user, $locked);
             $this->assertEditable($locked, $version);
-            $locked->forceFill(['data' => GroupVisibility::normalizeData($data), 'version' => $version + 1])->save();
+            $locked->forceFill(['data' => $this->data->forSave($data, $locked->data), 'version' => $version + 1])->save();
 
             return $locked;
         });

@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { Head, Link, router, usePage } from "@inertiajs/vue3";
 import DashboardLayout from "@/Layouts/DashboardLayout.vue";
+import OwnerCountrySelector from "@/Components/Owner/OwnerCountrySelector.vue";
+import type { OwnerCountryState } from "@/types/group-draft";
 import {
     ShieldCheck,
     ShieldAlert,
@@ -19,6 +21,7 @@ import {
 
 interface Props {
     resumeDraftUrl?: string | null;
+    ownerCountry: OwnerCountryState;
     user: {
         name: string;
         email: string;
@@ -41,15 +44,41 @@ const isEditing = ref(false);
 const isSaving = ref(false);
 const isLoadingIdentity = ref(false);
 const isLoadingConnect = ref(false);
-
-const form = ref({
-    name: props.user.name,
-    phone: props.user.phone ?? "",
+const country = ref(props.ownerCountry);
+const countrySaving = ref(false);
+const countryPending = ref(false);
+const connectError = ref("");
+const profileErrors = ref<Record<string, string>>({});
+const isCanadian = computed(() => country.value.country === "CA");
+const regionLabel = computed(() => isCanadian.value ? "Province ou territoire" : "Région (facultative)");
+const addressSnapshot = ref({
+    expected_country: props.ownerCountry.country,
     address: props.user.address ?? "",
     city: props.user.city ?? "",
     province: props.user.province ?? "",
     postal_code: props.user.postal_code ?? "",
 });
+
+const form = ref({
+    name: props.user.name,
+    phone: props.user.phone ?? "",
+    ...addressSnapshot.value,
+});
+
+watch(() => props.ownerCountry, (value) => { country.value = value; });
+watch(() => props.user, (user) => {
+    addressSnapshot.value = { expected_country: props.ownerCountry.country, address: user.address ?? "", city: user.city ?? "", province: user.province ?? "", postal_code: user.postal_code ?? "" };
+});
+
+function countrySaved(state: OwnerCountryState): void {
+    if (state.country !== country.value.country) {
+        addressSnapshot.value = { expected_country: state.country, address: "", city: "", province: "", postal_code: "" };
+        Object.assign(form.value, addressSnapshot.value);
+    }
+    country.value = state;
+    profileErrors.value = {};
+    connectError.value = "";
+}
 
 const successMessage = computed(() => (page.props as any).flash?.success);
 
@@ -107,23 +136,25 @@ const connectStatusConfig = computed(() => {
 });
 
 function cancelEdit(): void {
+    if (isSaving.value || countrySaving.value) return;
     form.value = {
         name: props.user.name,
         phone: props.user.phone ?? "",
-        address: props.user.address ?? "",
-        city: props.user.city ?? "",
-        province: props.user.province ?? "",
-        postal_code: props.user.postal_code ?? "",
+        ...addressSnapshot.value,
     };
+    profileErrors.value = {};
     isEditing.value = false;
 }
 
 function saveProfile(): void {
+    if (isSaving.value || countrySaving.value || countryPending.value) return;
     isSaving.value = true;
+    profileErrors.value = {};
     router.patch("/dashboard/profile", form.value, {
         onSuccess: () => {
             isEditing.value = false;
         },
+        onError: (errors) => { profileErrors.value = errors; },
         onFinish: () => {
             isSaving.value = false;
         },
@@ -157,7 +188,9 @@ async function startIdentityVerification(): Promise<void> {
 }
 
 async function startOnboarding(): Promise<void> {
+    if (isLoadingConnect.value || countrySaving.value || countryPending.value || !country.value.canStart) return;
     isLoadingConnect.value = true;
+    connectError.value = "";
     try {
         const response = await fetch("/api/stripe/onboarding", {
             method: "POST",
@@ -169,9 +202,15 @@ async function startOnboarding(): Promise<void> {
 
         const data = await response.json();
 
-        if (data.url) window.location.href = data.url;
-    } catch (e) {
-        console.error("Erreur:", e);
+        if (!response.ok) {
+            connectError.value = data.errors?.country?.[0] ?? data.message ?? "L’activation des paiements est indisponible. Veuillez réessayer.";
+        } else if (typeof data.url === "string" && data.url) {
+            window.location.href = data.url;
+        } else {
+            connectError.value = "Le lien Stripe est indisponible. Veuillez réessayer.";
+        }
+    } catch {
+        connectError.value = "Impossible d’ouvrir Stripe. Vérifiez votre connexion et réessayez.";
     } finally {
         isLoadingConnect.value = false;
     }
@@ -250,6 +289,7 @@ const canadianProvinces = [
                         <div v-else class="flex gap-2">
                             <button
                                 @click="cancelEdit"
+                                :disabled="isSaving || countrySaving"
                                 class="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50"
                             >
                                 <X class="h-3.5 w-3.5" />
@@ -257,7 +297,7 @@ const canadianProvinces = [
                             </button>
                             <button
                                 @click="saveProfile"
-                                :disabled="isSaving"
+                                :disabled="isSaving || countrySaving || countryPending"
                                 class="flex items-center gap-1.5 rounded-lg bg-equitab-emerald px-3 py-1.5 text-sm font-medium text-white hover:bg-equitab-emerald-dark disabled:opacity-60"
                             >
                                 <Save class="h-3.5 w-3.5" />
@@ -266,6 +306,13 @@ const canadianProvinces = [
                         </div>
                     </div>
 
+                    <OwnerCountrySelector :state="country" :disabled="isSaving || isLoadingConnect" @saved="countrySaved" @busy="countrySaving = $event" @pending="countryPending = $event" />
+                    <div v-if="Object.keys(profileErrors).length" role="alert" class="mb-4 text-sm text-red-700">
+                        <p>Vérifiez les informations suivantes :</p>
+                        <ul class="mt-2 list-inside list-disc">
+                            <li v-for="(error, field) in profileErrors" :key="field">{{ error }}</li>
+                        </ul>
+                    </div>
                     <div v-if="!isEditing" class="space-y-4">
                         <div class="grid gap-4 sm:grid-cols-2">
                             <div>
@@ -320,7 +367,7 @@ const canadianProvinces = [
                                     <p
                                         class="mt-1 font-medium text-equitab-navy"
                                     >
-                                        {{ user.address ?? "—" }}
+                                        {{ addressSnapshot.address || "—" }}
                                     </p>
                                 </div>
                                 <div>
@@ -330,17 +377,17 @@ const canadianProvinces = [
                                     <p
                                         class="mt-1 font-medium text-equitab-navy"
                                     >
-                                        {{ user.city ?? "—" }}
+                                        {{ addressSnapshot.city || "—" }}
                                     </p>
                                 </div>
                                 <div>
                                     <label class="text-xs text-gray-400"
-                                        >Province</label
+                                        >{{ regionLabel }}</label
                                     >
                                     <p
                                         class="mt-1 font-medium text-equitab-navy"
                                     >
-                                        {{ user.province ?? "—" }}
+                                        {{ addressSnapshot.province || "—" }}
                                     </p>
                                 </div>
                                 <div>
@@ -350,7 +397,7 @@ const canadianProvinces = [
                                     <p
                                         class="mt-1 font-medium text-equitab-navy"
                                     >
-                                        {{ user.postal_code ?? "—" }}
+                                        {{ addressSnapshot.postal_code || "—" }}
                                     </p>
                                 </div>
                             </div>
@@ -390,7 +437,8 @@ const canadianProvinces = [
                                     v-model="form.phone"
                                     aria-label="Téléphone"
                                     type="tel"
-                                    placeholder="+1 514 000 0000"
+                                    placeholder="Indicatif du pays et numéro"
+                                    autocomplete="tel"
                                     class="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-equitab-emerald focus:outline-none"
                                 />
                             </div>
@@ -409,7 +457,8 @@ const canadianProvinces = [
                                         v-model="form.address"
                                         aria-label="Adresse"
                                         type="text"
-                                        placeholder="123 Rue Principale"
+                                        autocomplete="address-line1"
+                                        maxlength="255"
                                         class="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-equitab-emerald focus:outline-none"
                                     />
                                 </div>
@@ -422,17 +471,22 @@ const canadianProvinces = [
                                             v-model="form.city"
                                             aria-label="Ville"
                                             type="text"
-                                            placeholder="Montréal"
+                                            autocomplete="address-level2"
+                                            maxlength="100"
                                             class="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-equitab-emerald focus:outline-none"
                                         />
                                     </div>
                                     <div>
-                                        <label class="text-xs text-gray-500"
-                                            >Province</label
+                                        <label for="profile-region" class="text-xs text-gray-500"
+                                            >{{ regionLabel }}</label
                                         >
                                         <select
+                                            v-if="isCanadian"
+                                            id="profile-region"
                                             v-model="form.province"
-                                            aria-label="Province"
+                                            aria-label="Province ou territoire"
+                                            autocomplete="address-level1"
+                                            :aria-invalid="!!profileErrors.province"
                                             class="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-equitab-emerald focus:outline-none"
                                         >
                                             <option value="">—</option>
@@ -444,6 +498,16 @@ const canadianProvinces = [
                                                 {{ p.name }}
                                             </option>
                                         </select>
+                                        <input
+                                            v-else
+                                            id="profile-region"
+                                            v-model="form.province"
+                                            type="text"
+                                            autocomplete="address-level1"
+                                            maxlength="100"
+                                            :aria-invalid="!!profileErrors.province"
+                                            class="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-equitab-emerald focus:outline-none"
+                                        />
                                     </div>
                                     <div>
                                         <label class="text-xs text-gray-500"
@@ -453,7 +517,10 @@ const canadianProvinces = [
                                             v-model="form.postal_code"
                                             aria-label="Code postal"
                                             type="text"
-                                            placeholder="H2X 1Y6"
+                                            autocomplete="postal-code"
+                                            maxlength="20"
+                                            :placeholder="isCanadian ? 'H2X 1Y6' : undefined"
+                                            :aria-invalid="!!profileErrors.postal_code"
                                             class="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-equitab-emerald focus:outline-none"
                                         />
                                     </div>
@@ -505,7 +572,7 @@ const canadianProvinces = [
                     <button
                         v-else
                         @click="startIdentityVerification"
-                        :disabled="isLoadingIdentity"
+                        :disabled="isLoadingIdentity || countrySaving"
                         class="flex items-center gap-2 rounded-md bg-equitab-navy px-4 py-2.5 text-sm font-medium text-white hover:bg-equitab-navy-light disabled:opacity-60"
                     >
                         <ShieldCheck class="h-4 w-4" />
@@ -555,7 +622,7 @@ const canadianProvinces = [
                     <button
                         v-else
                         @click="startOnboarding"
-                        :disabled="isLoadingConnect"
+                        :disabled="isLoadingConnect || countrySaving || countryPending || !country.canStart"
                         class="flex items-center gap-2 rounded-md bg-equitab-navy px-4 py-2.5 text-sm font-medium text-white hover:bg-equitab-navy-light disabled:opacity-60"
                     >
                         <CreditCard class="h-4 w-4" />
@@ -566,6 +633,7 @@ const canadianProvinces = [
                         }}
                         <ChevronRight class="h-4 w-4" />
                     </button>
+                    <p v-if="connectError" role="alert" class="mt-3 text-sm text-red-700">{{ connectError }}</p>
                 </div>
             </div>
 

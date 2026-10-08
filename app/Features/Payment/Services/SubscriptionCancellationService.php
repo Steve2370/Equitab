@@ -24,12 +24,13 @@ final class SubscriptionCancellationService
                 $current = GroupMember::lockForUpdate()->findOrFail($member->id);
                 $assertOwned();
                 $current->update(['cancellation_requested_at' => $current->cancellation_requested_at ?? now()]);
-                $confirmed = ! $current->stripe_subscription_id || $current->subscription_status === 'canceled';
-                $this->memberships->revoke($current, $confirmed ? 'canceled' : 'cancellation_pending', true);
+                $terminal = in_array($current->subscription_status, ['canceled', 'incomplete_expired'], true);
+                $status = $terminal ? $current->subscription_status : ($current->stripe_subscription_id ? 'cancellation_pending' : 'canceled');
+                $this->memberships->revoke($current, $status, true);
 
                 return $current;
             });
-            if ($current->subscription_status === 'canceled') {
+            if (in_array($current->subscription_status, ['canceled', 'incomplete_expired'], true)) {
                 return true;
             }
             try {

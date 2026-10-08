@@ -10,15 +10,18 @@ import {
     ArrowUpRight,
     ShieldCheck,
 } from "lucide-vue-next";
-import { formatCad } from "@/config/servicePresentation";
+import { formatMoney } from "@/utils/money";
 defineProps<{
     stats: {
         totalUsers: number;
         totalGroups: number;
         activeGroups: number;
         totalPayments: number;
-        totalRevenue: number;
-        equitabEarnings: number;
+        paymentTotalsByCurrency: {
+            currency: string;
+            totalRevenue: number;
+            equitabEarnings: number;
+        }[];
         openDisputes: number;
         verifiedUsers: number;
     };
@@ -76,10 +79,11 @@ defineProps<{
             <div class="finance-volume">
                 <p class="eq-eyebrow">LES CHIFFRES, AU CLAIR</p>
                 <h2 id="finance-title">Volume total des paiements</h2>
-                <p class="finance-number">
-                    {{ formatCad(stats.totalRevenue) }}
+                <p v-for="total in stats.paymentTotalsByCurrency" :key="total.currency" class="finance-number">
+                    {{ formatMoney(total.totalRevenue, total.currency) }}
                 </p>
-                <span>CAD · paiements terminés, toutes périodes</span>
+                <p v-if="!stats.paymentTotalsByCurrency.length" class="finance-number">Aucun paiement</p>
+                <span>Par devise · paiements terminés, toutes périodes</span>
                 <Link href="/admin/payments"
                     >Consulter les transactions <ArrowUpRight :size="18"
                 /></Link>
@@ -87,9 +91,10 @@ defineProps<{
             <div class="finance-earnings">
                 <span class="finance-icon"><CreditCard :size="23" /></span>
                 <h3>Commissions EquitAb</h3>
-                <p>{{ formatCad(stats.equitabEarnings) }}</p>
+                <p v-for="total in stats.paymentTotalsByCurrency" :key="total.currency">{{ formatMoney(total.equitabEarnings, total.currency) }}</p>
+                <p v-if="!stats.paymentTotalsByCurrency.length">Aucune commission</p>
                 <span
-                    >CAD · montants enregistrés sur les paiements
+                    >Par devise · montants enregistrés sur les paiements
                     terminés.</span
                 >
                 <div class="finance-note">

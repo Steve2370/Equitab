@@ -9,6 +9,8 @@ use App\Features\Payment\Contracts\PaymentGatewayInterface;
 use App\Models\Group;
 use App\Models\GroupMember;
 use App\Models\User;
+use App\Support\BillingCurrencies;
+use App\Support\Currency;
 use Closure;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Crypt;
@@ -40,26 +42,38 @@ final class SubscriptionCheckoutService
             abort_unless($group && $payer && $group->owner, 404);
             $member = $group->members()->where('user_id', $payer->id)->first();
             $this->access->authorizeSubscription($payer, $group, $inviteToken, $member);
+            $currency = Currency::normalize($group->currency);
+            $attempt = DB::table('subscription_attempts')->where('group_id', $group->id)->where('user_id', $payer->id)->first();
+            if ($attempt) {
+                $parameters = json_decode(Crypt::decryptString($attempt->parameters), true, flags: JSON_THROW_ON_ERROR);
+                PaymentSynchronizationService::assertCurrency($currency, $parameters['price']['currency'] ?? null);
+            }
             if ($member?->stripe_subscription_id) {
-                return $this->reader->retrieveSubscription($member->stripe_subscription_id);
+                $raw = $this->reader->retrieveSubscription($member->stripe_subscription_id);
+                PaymentSynchronizationService::assertSubscriptionCurrency($raw, $currency);
+
+                return $raw;
+            }
+            if (! $attempt) {
+                BillingCurrencies::assertEnabled($currency);
             }
             abort_if($group->owner->isSuspended() || $group->owner->status === 'banned', 403, 'Ce groupe est indisponible.');
             if (! $this->accounts->isAccountActive($group->owner)) {
                 throw new BillingUnavailable;
             }
-            $attempt = DB::table('subscription_attempts')->where('group_id', $group->id)->where('user_id', $payer->id)->first();
             if (! $attempt) {
                 abort_unless($group->stripePrice?->stripe_product_id, 409, 'Le paiement de ce groupe n’est pas encore configuré.');
                 $amount = (int) round($group->total_price / ($group->members()->where('status', 'active')->count() + 1));
                 $parameters = [
                     'method' => $methodId, 'destination' => $group->owner->stripe_connect_account_id,
                     'anchor' => now()->addMonthNoOverflow()->startOfMonth()->timestamp,
-                    'price' => ['unit_amount' => $amount, 'currency' => strtolower($group->subscription->currency),
+                    'price' => ['unit_amount' => $amount, 'currency' => strtolower($currency),
                         'recurring' => ['interval' => 'month'], 'product' => $group->stripePrice->stripe_product_id],
                 ];
                 DB::transaction(function () use ($payer, $group, $member, $parameters, $assertOwned): void {
                     $locked = Group::lockForUpdate()->findOrFail($group->id);
                     $assertOwned();
+                    PaymentSynchronizationService::assertCurrency($locked->currency, $parameters['price']['currency']);
                     if (! $member) {
                         $locked->members()->create([
                             'user_id' => $payer->id, 'role' => 'member', 'status' => 'pending_payment',
@@ -81,6 +95,7 @@ final class SubscriptionCheckoutService
                 throw new BillingUnavailable;
             }
             $parameters = json_decode(Crypt::decryptString($attempt->parameters), true, flags: JSON_THROW_ON_ERROR);
+            PaymentSynchronizationService::assertCurrency($currency, $parameters['price']['currency'] ?? null);
             $customerId = $this->customers->customer($payer);
             $this->writer->attachPaymentMethod($parameters['method'], $customerId);
             $priceId = $attempt->price_id;
@@ -93,6 +108,7 @@ final class SubscriptionCheckoutService
             $currentGroup = $group->fresh(['owner']);
             $currentPayer = $payer->fresh();
             abort_unless($currentGroup && $currentPayer && $currentGroup->owner, 403);
+            PaymentSynchronizationService::assertCurrency($currentGroup->currency, $parameters['price']['currency']);
             $this->access->authorizeSubscription($currentPayer, $currentGroup, $inviteToken,
                 $currentGroup->members()->where('user_id', $payer->id)->first());
             abort_unless($currentGroup->owner->canAccessAccount(), 403, 'Ce groupe est indisponible.');
@@ -110,6 +126,7 @@ final class SubscriptionCheckoutService
             if (! str_starts_with($raw['id'] ?? '', 'sub_') || ($raw['customer'] ?? null) !== $customerId) {
                 throw new BillingUnavailable;
             }
+            PaymentSynchronizationService::assertSubscriptionCurrency($raw, $currency);
             DB::transaction(function () use ($group, $payer, $raw, $customerId, $attempt, $parameters, $assertOwned): void {
                 $member = GroupMember::where('group_id', $group->id)->where('user_id', $payer->id)->lockForUpdate()->firstOrFail();
                 $assertOwned();

@@ -10,14 +10,16 @@ import {
     ArrowUpRight,
 } from "lucide-vue-next";
 import ExperienceDialog from "@/Components/Experience/ExperienceDialog.vue";
+import { formatMoney } from "@/utils/money";
 
 interface Payment {
     id: number;
     groupName: string;
     amount: number;
+    currency: string;
     status: string;
     paidAt: string | null;
-    dueDate: string;
+    dueDate: string | null;
 }
 
 interface PaginatedPayments {
@@ -29,6 +31,7 @@ interface PaginatedPayments {
 
 interface Props {
     payments: PaginatedPayments;
+    paidTotalsByCurrency: { currency: string; amount: number }[];
 }
 
 const props = defineProps<Props>();
@@ -47,19 +50,6 @@ const filteredPayments = computed(() => {
     if (activeFilter.value === "all") return props.payments.data;
     return props.payments.data.filter((p) => p.status === activeFilter.value);
 });
-
-const totalPaid = computed(() =>
-    props.payments.data
-        .filter((p) => p.status === "completed")
-        .reduce((sum, p) => sum + p.amount, 0),
-);
-
-function formatAmount(cents: number): string {
-    return new Intl.NumberFormat("fr-CA", {
-        style: "currency",
-        currency: "CAD",
-    }).format(cents / 100);
-}
 
 function statusIcon(status: string) {
     if (status === "completed") return CheckCircle;
@@ -167,8 +157,9 @@ const filters: {
         <div class="payment-summary">
             <div>
                 <p>Montant payé · page actuelle</p>
-                <strong>{{ formatAmount(totalPaid) }}</strong
-                ><span>CAD · paiements confirmés affichés ci-dessous</span>
+                <strong v-for="total in paidTotalsByCurrency" :key="total.currency">{{ formatMoney(total.amount, total.currency) }}</strong>
+                <strong v-if="!paidTotalsByCurrency.length">Aucun paiement confirmé</strong>
+                <span>Par devise · paiements confirmés de cette page, tous filtres</span>
             </div>
             <div>
                 <p>Votre historique</p>
@@ -243,7 +234,7 @@ const filters: {
 
                     <div class="shrink-0 text-right">
                         <p class="font-semibold text-equitab-navy">
-                            {{ formatAmount(payment.amount) }}
+                            {{ formatMoney(payment.amount, payment.currency) }}
                         </p>
                         <span
                             class="rounded-full px-2 py-0.5 text-xs font-medium"
@@ -418,6 +409,7 @@ const filters: {
 }
 .payment-summary strong {
     display: block;
+    overflow-wrap: anywhere;
     font-size: 42px;
     letter-spacing: -0.055em;
     font-weight: 500;

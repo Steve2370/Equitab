@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick, onUnmounted } from 'vue';
 import { CreditCard, Lock } from 'lucide-vue-next';
+import { formatMoney } from '@/utils/money';
+import { isPaymentQuote } from '@/utils/paymentQuote';
 
 interface Props {
     groupId: number;
     pricePerMember: number;
+    currency: string;
     subscriptionName: string;
     amountToday?: number;
     nextBillingDate?: string;
@@ -23,15 +26,13 @@ const isLoading = ref(false);
 const errorMessage = ref('');
 const amountToday = ref(props.amountToday);
 const pricePerMember = ref(props.pricePerMember);
-const prorationReady = ref(props.amountToday !== undefined);
+const currency = ref(props.currency);
+const prorationReady = ref(isPaymentQuote({ amount_today: props.amountToday, amount_recurring: props.pricePerMember, currency: props.currency }));
 let stripe: any = null;
 let cardElement: any = null;
 
 function formatCurrency(amountInCents: number): string {
-    return new Intl.NumberFormat('fr-CA', {
-        style: 'currency',
-        currency: 'CAD',
-    }).format(amountInCents / 100);
+    return prorationReady.value ? formatMoney(amountInCents, currency.value) : 'Montant à confirmer';
 }
 
 onMounted(async() => {
@@ -76,15 +77,12 @@ async function loadProration(): Promise<void> {
     });
     if (!response.ok) throw new Error('Proration unavailable');
     const data: unknown = await response.json();
-    if (typeof data !== 'object' || data === null
-        || !('amount_today' in data) || typeof data.amount_today !== 'number'
-        || !Number.isSafeInteger(data.amount_today) || data.amount_today < 0
-        || !('amount_recurring' in data) || typeof data.amount_recurring !== 'number'
-        || !Number.isSafeInteger(data.amount_recurring) || data.amount_recurring < 0) {
+    if (!isPaymentQuote(data)) {
         throw new Error('Invalid proration');
     }
     amountToday.value = data.amount_today;
     pricePerMember.value = data.amount_recurring;
+    currency.value = data.currency;
     prorationReady.value = true;
 }
 
@@ -217,7 +215,7 @@ function getCsrfToken(): string {
             class="rounded-lg border border-gray-200 px-4 py-3 focus-within:border-equitab-emerald"
         ></div>
 
-        <p v-if="errorMessage" class="mt-2 text-sm text-red-500">
+        <p v-if="errorMessage" role="alert" class="mt-2 text-sm text-red-500">
             {{ errorMessage }}
         </p>
 
@@ -249,7 +247,7 @@ function getCsrfToken(): string {
         <div class="flex justify-between">
             <span class="text-gray-600">Aujourd'hui (pro-rata)</span>
             <span class="font-semibold text-equitab-navy">
-                {{ formatCurrency(amountToday ?? pricePerMember) }}
+                {{ amountToday === undefined ? 'Montant à confirmer' : formatCurrency(amountToday) }}
             </span>
         </div>
         <div class="mt-1 flex justify-between text-gray-500">

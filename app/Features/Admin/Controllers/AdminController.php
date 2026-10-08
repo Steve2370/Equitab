@@ -4,6 +4,7 @@ namespace App\Features\Admin\Controllers;
 
 use App\Features\Payment\Services\BillingReconciliationService;
 use App\Features\Payment\Services\SubscriptionCancellationService;
+use App\Features\Reports\Services\CurrencyReportService;
 use App\Http\Controllers\Controller;
 use App\Mail\AdminMessage;
 use App\Models\Dispute;
@@ -22,7 +23,7 @@ use Inertia\Response;
 
 class AdminController extends Controller
 {
-    public function index(): Response
+    public function index(CurrencyReportService $reports): Response
     {
         return Inertia::render('Admin/Index', [
             'stats' => [
@@ -30,8 +31,7 @@ class AdminController extends Controller
                 'totalGroups' => Group::count(),
                 'activeGroups' => Group::where('status', 'open')->count(),
                 'totalPayments' => Payment::where('status', 'completed')->count(),
-                'totalRevenue' => Payment::where('status', 'completed')->sum('amount'),
-                'equitabEarnings' => Payment::where('status', 'completed')->sum('platform_fee_amount'),
+                'paymentTotalsByCurrency' => $reports->completedPayments(Payment::query()),
                 'openDisputes' => Dispute::where('status', 'open')->count(),
                 'verifiedUsers' => User::where('identity_status', 'verified')->count(),
             ],
@@ -114,6 +114,7 @@ class AdminController extends Controller
                 'membersCount' => $g->members_count,
                 'maxMembers' => $g->max_members,
                 'totalPrice' => $g->total_price,
+                'currency' => $g->currency,
                 'createdAt' => $g->created_at->format('d M Y'),
                 // La composition du groupe (qui est dans quel groupe) —
                 // manquait ici alors que la page Admin/Groups.vue l'attend
@@ -132,7 +133,7 @@ class AdminController extends Controller
         return Inertia::render('Admin/Groups', ['groups' => $groups]);
     }
 
-    public function payments(): Response
+    public function payments(CurrencyReportService $reports): Response
     {
         $payments = Payment::with(['group.subscription', 'user'])
             ->where('status', 'completed')
@@ -150,11 +151,9 @@ class AdminController extends Controller
                 'paidAt' => $p->paid_at?->format('d M Y H:i'),
             ]);
 
-        $totalEarnings = Payment::where('status', 'completed')->sum('platform_fee_amount');
-
         return Inertia::render('Admin/Payments', [
             'payments' => $payments,
-            'totalEarnings' => $totalEarnings,
+            'paymentTotalsByCurrency' => $reports->completedPayments(Payment::query()),
         ]);
     }
 
@@ -170,7 +169,8 @@ class AdminController extends Controller
                 'userName' => $d->user?->name ?? 'Utilisateur supprimé',
                 'userEmail' => $d->user?->email ?? '—',
                 'groupName' => $d->group?->name ?? 'Groupe supprimé',
-                'amount' => $d->payment?->amount ?? 0,
+                'amount' => $d->payment?->amount,
+                'currency' => $d->payment?->currency,
                 'subscriptionName' => $d->group?->subscription?->name ?? 'Service indisponible',
                 'reason' => $d->reason,
                 'description' => $d->description,

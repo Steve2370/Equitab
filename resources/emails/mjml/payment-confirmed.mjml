@@ -10,7 +10,7 @@
       </mj-column></mj-section>
       <mj-section padding-bottom="24px" css-class="email-section"><mj-column mj-class="details">
 <mj-text mj-class="note" padding="0 0 4px">Montant débité</mj-text>
-<mj-text font-size="34px" line-height="1.2" font-weight="600" padding="0 0 16px">{{ $amount }} <span style="font-size:16px;">$ CAD</span></mj-text>        <mj-table css-class="details-table">
+<mj-text font-size="34px" line-height="1.2" font-weight="600" padding="0 0 16px" css-class="email-copy">{{ $amountValue }}&nbsp;<span style="font-size:16px;">{{ $amountCurrencyLabel }}</span></mj-text>        <mj-table css-class="details-table">
           <tr><td>Service</td><td>{{ $subscriptionName }}</td></tr>
           <tr><td>Groupe</td><td>{{ $groupName }}</td></tr>
           <tr><td>Prochain renouvellement</td><td>{{ $nextBillingDate ?: 'Consultez votre espace' }}</td></tr>
