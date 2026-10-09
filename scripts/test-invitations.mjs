@@ -39,7 +39,6 @@ function component(path, formState) {
             if (name === '@/utils/groupDraft') return drafts;
             if (name === '@/utils/money') return money;
             if (name.endsWith('StripeCardForm.vue')) return { __esModule: true, default: defineComponent({ setup: () => () => h('div', { 'data-payment-form': true }) }) };
-            if (name.endsWith('ServiceBrandMark.vue')) return { __esModule: true, default: defineComponent({ setup: () => () => h('span') }) };
             if (name.endsWith('EquitabWordmark.vue')) return { __esModule: true, default: defineComponent({ setup: () => () => h('img', { alt: 'EquitAb' }) }) };
             if (name.endsWith('GuestLayout.vue')) return { __esModule: true, default: defineComponent({ setup: (_, { slots }) => () => h('main', slots.default?.()) }) };
             throw new Error(`Unexpected dependency: ${name}`);

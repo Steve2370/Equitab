@@ -41,14 +41,14 @@ class InvitationServiceCatalogueTest extends GroupDraftTestCase
         $this->assertDatabaseCount('subscriptions', 2);
         $this->assertDatabaseCount('subscription_categories', 2);
         foreach ([
-            ['Dropbox Family', 'dropbox-family', 'Productivité', 'dropbox.svg', 'monthly', 2649],
-            ['NordPass Family', 'nordpass-family', 'Sécurité', 'nordpass.png', 'yearly', 749],
-        ] as [$name, $slug, $category, $logo, $cycle, $price]) {
+            ['Dropbox Family', 'dropbox-family', 'Productivité', 'monthly', 2649],
+            ['NordPass Family', 'nordpass-family', 'Sécurité', 'yearly', 749],
+        ] as [$name, $slug, $category, $cycle, $price]) {
             $offer = Subscription::where('slug', $slug)->sole();
             $this->assertSame($name, $offer->name);
             $this->assertSame($category, $offer->category->name);
-            $this->assertSame('/Images/services/'.$logo, $offer->logo);
-            $this->assertFileExists(public_path($offer->logo));
+            // No third-party logo is stored or shown: only the service name.
+            $this->assertNull($offer->logo);
             $this->assertSame('CAD', $offer->currency);
             $this->assertSame(6, $offer->max_members);
             $this->assertSame(5, $offer->max_members - 1);

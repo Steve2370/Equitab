@@ -26,7 +26,7 @@
 .owner-service-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 20px; }
 .owner-service-card { display: flex; flex-direction: column; min-width: 0; padding: 20px; text-align: left; border: 1px solid #dbe3de; border-radius: 18px; background: #fff; box-shadow: 0 5px 16px #1d402006; transition: border-color 120ms, box-shadow 120ms; }
 .owner-service-card:hover, .owner-service-card.is-selected { border-color: var(--owner-green); box-shadow: 0 0 0 1px var(--owner-green); }
-.owner-service-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 54px; margin-bottom: 20px; }
+.owner-service-top { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-bottom: 6px; }
 .owner-selection { color: var(--owner-green); font-size: 1.2rem; }
 .owner-service-name { font-size: 1.1rem; font-weight: 700; letter-spacing: -.025em; }
 .owner-service-price { font-size: 1.25rem; font-weight: 650; margin-top: 20px; }

@@ -6,10 +6,7 @@ import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
-import {
-    serviceBrand,
-    serviceLogoSource,
-} from "../resources/js/config/servicePresentation.ts";
+import { serviceBrand } from "../resources/js/config/servicePresentation.ts";
 const require = createRequire(import.meta.url);
 const { createCanvas, loadImage } = require(
     process.env.EQUITAB_RENDER_MODULES
@@ -38,30 +35,17 @@ const root = fileURLToPath(new URL("../", import.meta.url));
 const originalLogo = await loadOriginalAsset(
     resolve(root, "public/Images/EquitabLogo.svg"),
 );
-// Same original assets and framing as ServiceBrandMark on the home page.
-// Keep supplied raster assets as-is when no SVG was provided (Disney+).
-const serviceMarks = Object.fromEntries(
-    await Promise.all(
-        Object.entries({
-            music: "spotify",
-            cinema: "netflix",
-            world: "disney",
-        }).map(async ([kind, slug]) => {
-            const brand = serviceBrand(slug);
-            const source = serviceLogoSource(brand);
-            if (!brand || !source)
-                throw new Error(`Missing story service asset: ${slug}`);
-            return [
-                kind,
-                {
-                    brand,
-                    image: await loadOriginalAsset(
-                        resolve(root, "public" + decodeURIComponent(source)),
-                    ),
-                },
-            ];
-        }),
-    ),
+// Like the site's cards: service names only, never a third-party logo.
+const serviceNames = Object.fromEntries(
+    Object.entries({
+        music: "spotify",
+        cinema: "netflix",
+        world: "disney",
+    }).map(([kind, slug]) => {
+        const brand = serviceBrand(slug);
+        if (!brand) throw new Error(`Missing story service identity: ${slug}`);
+        return [kind, brand.name];
+    }),
 );
 const out = resolve(root, "public/media");
 await mkdir(out, { recursive: true });
@@ -98,30 +82,6 @@ function circle(x, y, r, fill, stroke) {
         c.lineWidth = 1.5;
         c.stroke();
     }
-}
-function containedImage(image, x, y, width, height, scale = 1) {
-    const fit = Math.min(width / image.width, height / image.height) * scale;
-    const w = image.width * fit,
-        h = image.height * fit;
-    c.save();
-    c.beginPath();
-    c.rect(x, y, width, height);
-    c.clip();
-    c.drawImage(image, x + (width - w) / 2, y + (height - h) / 2, w, h);
-    c.restore();
-}
-function serviceMark(kind, right, top, scale = 0.8) {
-    const { brand, image } = serviceMarks[kind];
-    const frameWidth = brand.logoWide ? 80 : 28;
-    const frameHeight = brand.logoWide ? 34 : 28;
-    const width = frameWidth + 22,
-        height = frameHeight + 16;
-    c.save();
-    c.translate(right - width * scale, top);
-    c.scale(scale, scale);
-    round(0, 0, width, height, 12, "#fff", "#10101010");
-    containedImage(image, 11, 8, frameWidth, frameHeight, brand.logoScale ?? 1);
-    c.restore();
 }
 function text(
     value,
@@ -215,8 +175,10 @@ function art(kind, x, y, s = 1) {
         shadow(false);
         for (let r = 36; r < 83; r += 4)
             circle(38, 9, r, null, r % 8 ? "#334039" : "#24322a");
+        // Neutral record label, like the site's "33" vinyl (no service logo).
         circle(38, 9, 31, "#fff");
-        containedImage(serviceMarks.music.image, 16, -13, 44, 44);
+        text("33", 38, 4, 17, "#18251e", 700, "center");
+        circle(38, 20, 4, "#18251e");
     } else if (kind === "cinema") {
         for (const [x, y, s] of [
             [-32, -27, 0.85],
@@ -293,16 +255,8 @@ function card(kind, x, y, rotation, scale = 1, alpha = 1) {
               ? "#ae0710"
               : "#006c70";
     round(-131, -167, 262, 232, 17, color);
-    text(
-        serviceMarks[kind].brand.name.toUpperCase(),
-        -111,
-        -140,
-        10,
-        "#fff",
-        600,
-    );
+    text(serviceNames[kind].toUpperCase(), -111, -140, 10, "#fff", 600);
     art(kind, 0, -35, 0.94);
-    serviceMark(kind, 114, -155);
     text(
         kind === "music"
             ? "Votre prochaine écoute."

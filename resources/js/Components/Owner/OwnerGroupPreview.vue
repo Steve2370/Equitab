@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import ServiceBrandMark from "@/Components/Experience/ServiceBrandMark.vue";
 import type { DraftInput, DraftPreview, OwnerSubscription } from "@/types/group-draft";
 import { formatGroupMoney, fullGroupShare } from "@/utils/groupDraft";
 
@@ -17,7 +16,6 @@ const visibility = computed(() => props.data.visibility === "public" ? "Public" 
 <template>
     <aside class="owner-preview" aria-label="Prévisualisation du groupe">
         <p class="owner-eyebrow">Aperçu du groupe</p>
-        <ServiceBrandMark v-if="subscription" :slug="subscription.slug" :name="subscription.name" />
         <h3>{{ data.name || 'Votre futur groupe' }}</h3>
         <p class="owner-hint">{{ subscription?.name ?? 'Service à choisir' }} · {{ data.tier || 'Offre à préciser' }}</p>
         <div class="owner-preview-amount">

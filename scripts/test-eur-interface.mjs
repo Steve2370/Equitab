@@ -122,21 +122,22 @@ test('catalogue prices retain the catalogue currency', async () => {
     assert.ok(picker.includes('15,99 CAD'));
 });
 
-test('selected invitation catalogue cards render supplied icons without a made-up zero price', async () => {
+test('selected invitation catalogue cards show service names, no logo and no made-up zero price', async () => {
     const subscriptions = [
         { ...service, id: 10, name: 'Dropbox Family', slug: 'dropbox-family', monthly_price: null },
         { ...service, id: 11, name: 'NordPass Family', slug: 'nordpass-family', monthly_price: null },
     ];
     const html = await render('Pages/Services.vue', { categories: [{ id: 1, name: 'Test', subscriptions }] });
-    assert.ok(html.includes('/Images/services/dropbox.svg'));
-    assert.ok(html.includes('/Images/services/nordpass.png'));
-    assert.doesNotMatch(html, /Bitwarden|0,00|NaN/);
+    assert.ok(html.includes('Dropbox Family'));
+    assert.ok(html.includes('NordPass Family'));
+    assert.doesNotMatch(html, /Bitwarden|0,00|NaN|Images\/services|<img\b/);
 });
 
 test('NordPass card calculates the member share from its CAD monthly reference like other cards', async () => {
     const subscription = { ...service, id: 11, name: 'NordPass Family', slug: 'nordpass-family', monthly_price: 749, max_members: 6, currency: 'CAD' };
     const html = await render('Pages/Services.vue', { categories: [{ id: 1, name: 'Sécurité', subscriptions: [subscription] }] });
-    assert.ok(html.includes('/Images/services/nordpass.png'));
+    assert.ok(html.includes('NordPass Family'));
+    assert.doesNotMatch(html, /Images\/services|<img\b/);
     assert.ok(html.includes('1,25 CAD'));
     assert.ok(html.includes('Part indicative · groupe complet'));
     assert.ok(html.includes('/ mois · hors frais éventuels'));
@@ -147,7 +148,8 @@ test('NordPass card calculates the member share from its CAD monthly reference l
 test('Dropbox card calculates the member share from its CAD monthly reference like other cards', async () => {
     const subscription = { ...service, id: 10, name: 'Dropbox Family', slug: 'dropbox-family', monthly_price: 2649, max_members: 6, currency: 'CAD' };
     const html = await render('Pages/Services.vue', { categories: [{ id: 1, name: 'Productivité', subscriptions: [subscription] }] });
-    assert.ok(html.includes('/Images/services/dropbox.svg'));
+    assert.ok(html.includes('Dropbox Family'));
+    assert.doesNotMatch(html, /Images\/services|<img\b/);
     assert.ok(html.includes('4,42 CAD'));
     assert.ok(html.includes('Part indicative · groupe complet'));
     assert.ok(html.includes('/ mois · hors frais éventuels'));

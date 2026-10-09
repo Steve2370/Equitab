@@ -492,13 +492,13 @@ déjà persistés restent récupérables et les accès des membres existants con
 
 | Offre préparée | Catégorie / icône locale | Données nouvelles |
 | --- | --- | --- |
-| Dropbox Family (`dropbox-family`) | Productivité / `dropbox.svg` | CAD, 6 personnes propriétaire inclus, référence 2649 cents/mois, fournisseur mensuel |
-| NordPass Family (`nordpass-family`) | Sécurité / `nordpass.png` | CAD, 6 personnes propriétaire inclus, référence 749 cents/mois, fournisseur annuel |
+| Dropbox Family (`dropbox-family`) | Productivité | CAD, 6 personnes propriétaire inclus, référence 2649 cents/mois, fournisseur mensuel |
+| NordPass Family (`nordpass-family`) | Sécurité | CAD, 6 personnes propriétaire inclus, référence 749 cents/mois, fournisseur annuel |
 
 Les deux nouvelles offres sont `is_active=true`, `is_verified=false`,
 `access_mode=invitation`, `tier=famille`. Elles sont proposées au public et dans
 le sélecteur propriétaire ; aucun faux groupe ni sixième place invitée n'est
-créé. Les icônes fournies restent dans `public/Images/services/`.
+créé. Aucun logo n'est stocké (`logo = null`) : seul le nom du service est affiché.
 Aucune variante EUR n'est créée ; aucune conversion d'un tarif USD n'est utilisée.
 
 La migration additive `2026_10_08_000400_set_invitation_reference_prices` renseigne
@@ -795,11 +795,12 @@ sélectionnables et d’une explication textuelle. Elle ne démarre pas automati
 sur mobile ni avec la préférence système de réduction des mouvements, et se met
 en pause hors écran ou lorsque la page est masquée. Le fichier préexistant
 `public/Images/Equitab.mp4` n’a pas été modifié.
-L’étiquette superposée « Le plaisir de partager / 001 » a été retirée. Le rendu
-de l’animation charge les mêmes logos et réglages de cadrage que l’accueil depuis
-`servicePresentation.ts` : SVG Netflix et Spotify, image Disney+ fournie.
-Après un changement de ces fichiers, régénérer la vidéo et son affiche avec
-`scripts/render-equitab-story.mjs` (Node compatible TypeScript, canvas, sharp et ffmpeg).
+L’étiquette superposée « Le plaisir de partager / 001 » a été retirée. Comme les
+cartes du site, l’animation n’affiche aucun logo de service : seulement le nom
+(lu dans `servicePresentation.ts`) et les couleurs. Après un changement de
+présentation, régénérer la vidéo et son affiche avec
+`scripts/render-equitab-story.mjs` (Node compatible TypeScript, canvas, sharp et ffmpeg),
+puis changer le paramètre `?v=` dans `EquitabStory.vue`.
 
 Le catalogue utilise les catégories du serveur et conserve les liens vers les
 groupes. Les parts restent indicatives, calculées en cents pour un groupe complet.
@@ -870,24 +871,13 @@ blanche cohérente via `:autofill` et `:-webkit-autofill`. Le rendu exact de
 l’autoremplissage natif reste à vérifier dans le navigateur utilisé en production.
 
 Les 22 services du catalogue initial ont une palette identifiée dans
-`resources/js/config/servicePresentation.ts`. Les marques disponibles sont servies
-localement depuis `public/Images/services/`, avec un nom lisible en repli en cas
-d’absence ou d’échec de chargement. Les pictogrammes monochromes proviennent de
-[Simple Icons 15.18.0](https://github.com/simple-icons/simple-icons/tree/15.18.0/icons)
-(Netflix, Spotify, YouTube, Apple Music, Tidal, Crunchyroll, Paramount+, NordVPN,
-Envato, Google, Apple, Duolingo), et de
-[Simple Icons 13.0.0](https://github.com/simple-icons/simple-icons/tree/13.0.0/icons)
-(Nintendo et Amazon Prime). Google One et Apple One emploient la marque mère.
-La licence CC0 du jeu est conservée dans `public/Images/services/LICENSE.txt` ;
-elle n’accorde pas de droit sur les marques ni ne démontre un partenariat.
-Les noms remplacent les logos non sourcés, sans symbole inventé.
-Les cinq images fournies pour Disney+, CANAL+, Deezer, CyberGhost et Xbox Game Pass
-sont prioritaires dans ce même dossier. Leurs noms et fichiers originaux sont
-conservés ; leur cadrage est ajusté uniquement à l’affichage. La licence du jeu
-Simple Icons ne couvre pas ces fichiers fournis séparément.
-Les repères de marque ont été consultés chez
-[Netflix](https://brand.netflix.com/en/assets/logos) et
-[Spotify](https://developer.spotify.com/documentation/design).
+`resources/js/config/servicePresentation.ts` : nom et couleurs seulement.
+Depuis le 9 octobre 2026, aucun logo de service tiers n’est affiché ni hébergé
+(le dossier `public/Images/services/` a été supprimé) : les cartes, le sélecteur
+propriétaire, les tableaux de bord et l’animation de connexion montrent uniquement
+le nom du service. Un logo est une marque de commerce ; l’afficher pour promouvoir
+EquitAb peut laisser croire à un partenariat. `scripts/test-service-presentation.mjs`
+échoue si un logo ou une référence à ce dossier réapparaît.
 
 Les six écrans Admin partagent maintenant la même navigation et une présentation
 responsive : vue d’ensemble, utilisateurs, groupes, paiements, litiges, messagerie.

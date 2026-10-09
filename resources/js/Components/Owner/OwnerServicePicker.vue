@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import ServiceBrandMark from "@/Components/Experience/ServiceBrandMark.vue";
 import type { OwnerSubscription } from "@/types/group-draft";
 import { formatGroupMoney, hasCataloguePrice, memberLimit } from "@/utils/groupDraft";
 
@@ -27,7 +26,7 @@ const filtered = computed(() => {
             <button v-for="service in filtered" :key="service.id" type="button" class="owner-service-card"
                 :class="{ 'is-selected': selected === service.id }" :aria-pressed="selected === service.id"
                 :disabled="disabled || memberLimit(service) < 2" @click="$emit('select', service)">
-                <span class="owner-service-top"><ServiceBrandMark :slug="service.slug" :name="service.name" /><span class="owner-selection" aria-hidden="true">{{ selected === service.id ? '✓' : '+' }}</span></span>
+                <span class="owner-service-top"><span class="owner-selection" aria-hidden="true">{{ selected === service.id ? '✓' : '+' }}</span></span>
                 <span class="owner-service-name">{{ service.name }}</span>
                 <span class="owner-hint">{{ service.category }} · {{ service.tier }}</span>
                 <span v-if="hasCataloguePrice(service)" class="owner-service-price">{{ formatGroupMoney(service.monthly_price, service.currency) }} <span>/ mois</span></span>

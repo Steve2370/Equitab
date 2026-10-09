@@ -12,10 +12,10 @@ import * as money from '../resources/js/utils/money.ts';
 import * as presentation from '../resources/js/config/servicePresentation.ts';
 
 const services = [
-    ['Dropbox Family', 'dropbox-family', 'Productivité', 'dropbox.svg'],
-    ['NordPass Family', 'nordpass-family', 'Sécurité', 'nordpass.png'],
-].map(([name, slug, category, logo], index) => ({
-    id: index + 1, name, slug, category, logo, monthly_price: null,
+    ['Dropbox Family', 'dropbox-family', 'Productivité'],
+    ['NordPass Family', 'nordpass-family', 'Sécurité'],
+].map(([name, slug, category], index) => ({
+    id: index + 1, name, slug, category, logo: null, monthly_price: null,
     currency: 'CAD', tier: 'famille', max_members: 6, access_mode: 'invitation',
 }));
 
@@ -80,12 +80,12 @@ async function render(path, props) {
     return renderToString(app);
 }
 
-test('service picker renders the two selected logos with no Bitwarden, invented price or monthly provider claim', async () => {
+test('service picker shows the two selected names, no logo, no Bitwarden, invented price or monthly provider claim', async () => {
     const html = await render('Components/Owner/OwnerServicePicker.vue', { subscriptions: services, selected: 2, disabled: false });
     for (const service of services) {
-        assert.ok(html.includes(`src="/Images/services/${service.logo}"`));
-        assert.ok(html.includes(`aria-label="${service.name}"`));
+        assert.ok(html.includes(`<span class="owner-service-name">${service.name}</span>`));
     }
+    assert.doesNotMatch(html, /<img\b|Images\/services/);
     assert.equal((html.match(/Coût à renseigner/g) ?? []).length, 2);
     assert.equal((html.match(/vous compris/g) ?? []).length, 2);
     assert.doesNotMatch(html, /bitwarden/i);

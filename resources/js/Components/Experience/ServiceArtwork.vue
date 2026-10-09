@@ -2,7 +2,6 @@
 import type { ArtworkScene } from "@/config/servicePresentation";
 import { serviceBrand } from "@/config/servicePresentation";
 import { computed } from "vue";
-import ServiceBrandMark from "./ServiceBrandMark.vue";
 import XboxControllerArtwork from "./XboxControllerArtwork.vue";
 const props = withDefaults(
     defineProps<{
@@ -41,8 +40,7 @@ const brandStyle = computed(() =>
         <div class="card-scene">
             <div class="scene-topline">
                 <span>{{ category }}</span
-                ><ServiceBrandMark v-if="brand" :slug="slug" />
-                <span v-else class="edition-label"
+                ><span v-if="!brand" class="edition-label"
                     >COLLECTION / {{ index }}</span
                 >
             </div>
@@ -208,10 +206,6 @@ const brandStyle = computed(() =>
         var(--service-deep) 85%
     );
     color: #fff;
-}
-.artwork-host.service-branded .scene-topline {
-    justify-content: space-between;
-    top: 14px;
 }
 .artwork-host.service-branded .scene-topline > span:first-child {
     color: var(--service-ink);

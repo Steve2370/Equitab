@@ -3,7 +3,6 @@ import { computed, ref } from "vue";
 import { Link } from "@inertiajs/vue3";
 import { ArrowUpRight, Check, Users } from "lucide-vue-next";
 import ServiceArtwork from "./ServiceArtwork.vue";
-import ServiceBrandMark from "./ServiceBrandMark.vue";
 import { servicePresentation } from "@/config/servicePresentation";
 import { formatMoney } from "@/utils/money";
 const props = withDefaults(
@@ -86,7 +85,6 @@ function reset() {
             :index="index ? String(index).padStart(2, '0') : ''"
         />
         <div v-else class="workspace-card-identity">
-            <ServiceBrandMark :slug="slug" :name="name" />
             <span>{{ category }}</span>
         </div>
         <div class="collection-card-content">

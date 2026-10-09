@@ -24,7 +24,7 @@ function component(name) {
         require(dependency) {
             if (dependency === 'vue' || dependency === 'vue/server-renderer') return require(dependency);
             if (dependency === '@/config/servicePresentation') return presentation;
-            if (/^\.\/(XboxControllerArtwork|ServiceBrandMark)\.vue$/.test(dependency)) {
+            if (/^\.\/XboxControllerArtwork\.vue$/.test(dependency)) {
                 return { __esModule: true, default: component(dependency.slice(2, -4)) };
             }
             throw new Error(`Unexpected artwork dependency: ${dependency}`);
@@ -67,9 +67,10 @@ for (const slug of ['xbox-game-pass', 'nintendo', 'jeu-inconnu']) {
         assert.ok(html.includes('Jeux vidéo') && html.includes('À plusieurs.'));
         const brand = presentation.serviceBrand(slug);
         if (brand) {
-            assert.ok(html.includes(`aria-label="${brand.name}"`));
+            // Brand colors stay; no logo badge or image is rendered on the card.
             assert.ok(html.includes(`--service-accent:${brand.accent}`));
         }
+        assert.doesNotMatch(html, /<img\b|service-brand-mark|Images\/services/);
     });
 }
 

@@ -12,180 +12,141 @@ export interface ServiceBrand {
     accent: string;
     deep: string;
     ink: string;
-    logo?: string;
-    /** User-provided file, kept under its original filename. */
-    logoFile?: string;
-    logoWide?: boolean;
-    logoScale?: number;
 }
-// Local, versioned marks. A service without a sourced asset uses its name,
-// never a made-up logo. These colors identify services, not EquitAb actions.
+// Service identities: name and colors only. No third-party logo is shown;
+// cards display the service name. These colors identify services, not EquitAb actions.
 const identities: Record<string, ServiceBrand> = {
     netflix: {
         name: "Netflix",
         accent: "#e50914",
         deep: "#360208",
         ink: "#fff",
-        logo: "netflix",
     },
     spotify: {
         name: "Spotify",
         accent: "#1ed760",
         deep: "#063820",
         ink: "#092718",
-        logo: "spotify",
     },
     disney: {
         name: "Disney+",
         accent: "#02d6c4",
         deep: "#004c52",
         ink: "#003b40",
-        logoFile: "Disney+.png",
-        logoWide: true,
-        logoScale: 1.5,
     },
     "youtube-premium": {
         name: "YouTube Premium",
         accent: "#ff0033",
         deep: "#51000c",
         ink: "#fff",
-        logo: "youtube",
     },
     crave: {
         name: "Crave",
         accent: "#00a8e0",
         deep: "#003f64",
         ink: "#002c46",
-        logoFile: "crave.jpg",
-        logoWide: true,
-        logoScale: 1.5,
     },
     crunchyroll: {
         name: "Crunchyroll",
         accent: "#f47521",
         deep: "#6f2905",
         ink: "#351607",
-        logo: "crunchyroll",
     },
     paramount: {
         name: "Paramount+",
         accent: "#0064ff",
         deep: "#002264",
         ink: "#fff",
-        logo: "paramountplus",
     },
     canal: {
         name: "CANAL+",
         accent: "#383838",
         deep: "#080808",
         ink: "#fff",
-        logoFile: "canal.png",
-        logoWide: true,
-        logoScale: 2.5,
     },
     "amazon-prime": {
         name: "Amazon Prime",
         accent: "#00a8e1",
         deep: "#052743",
         ink: "#002d47",
-        logo: "amazonprime",
     },
     "apple-music": {
         name: "Apple Music",
         accent: "#fa2c56",
         deep: "#68142e",
         ink: "#fff",
-        logo: "applemusic",
     },
     deezer: {
         name: "Deezer",
         accent: "#a238ff",
         deep: "#300e62",
         ink: "#fff",
-        logoFile: "deezer-logo.png",
-        logoWide: true,
-        logoScale: 1.65,
     },
     tidal: {
         name: "TIDAL",
         accent: "#414141",
         deep: "#090909",
         ink: "#fff",
-        logo: "tidal",
     },
     "xbox-game-pass": {
         name: "Xbox Game Pass",
         accent: "#107c10",
         deep: "#063206",
         ink: "#fff",
-        logoFile: "Xbox_Game_Pass_2020_logo_-_colored_version.svg.webp",
-        logoWide: true,
     },
     nintendo: {
         name: "Nintendo",
         accent: "#e60012",
         deep: "#69030c",
         ink: "#fff",
-        logo: "nintendo",
     },
     nordvpn: {
         name: "NordVPN",
         accent: "#4687ff",
         deep: "#132a67",
         ink: "#fff",
-        logo: "nordvpn",
     },
     cyberghost: {
         name: "CyberGhost",
         accent: "#ffcc00",
         deep: "#574807",
         ink: "#28210a",
-        logoFile: "cyberghost.png",
     },
     envato: {
         name: "Envato",
         accent: "#81b441",
         deep: "#254318",
         ink: "#1c3014",
-        logo: "envato",
     },
     "google-one": {
         name: "Google One",
         accent: "#4285f4",
         deep: "#173264",
         ink: "#fff",
-        logo: "google",
     },
     "microsoft-365": {
         name: "Microsoft 365",
         accent: "#0078d4",
         deep: "#102f60",
         ink: "#fff",
-        logo: "microsoft365",
-        logoWide: true,
     },
     "apple-one-family": {
         name: "Apple One",
         accent: "#686874",
         deep: "#242429",
         ink: "#fff",
-        logo: "apple",
     },
     duolingo: {
         name: "Duolingo",
         accent: "#58cc02",
         deep: "#1f5003",
         ink: "#203b0b",
-        logo: "duolingo",
     },
     readly: {
         name: "Readly",
         accent: "#ffcf00",
         deep: "#625012",
         ink: "#33270a",
-        logoFile: "readly.png",
-        logoWide: true,
-        logoScale: 1.25,
     },
     // Visual identities only: these entries do not publish catalogue offers.
     "dropbox-family": {
@@ -193,24 +154,18 @@ const identities: Record<string, ServiceBrand> = {
         accent: "#0061ff",
         deep: "#002563",
         ink: "#fff",
-        logoFile: "dropbox.svg",
-        logoWide: true,
     },
     "bitwarden-families": {
         name: "Bitwarden Families",
         accent: "#175ddc",
         deep: "#102b61",
         ink: "#fff",
-        logoFile: "bitwarden.svg",
-        logoWide: true,
     },
     "nordpass-family": {
         name: "NordPass Family",
         accent: "#007c83",
         deep: "#063c40",
         ink: "#fff",
-        logoFile: "nordpass.png",
-        logoWide: true,
     },
 };
 const aliases: Record<string, string> = {
@@ -238,14 +193,6 @@ export function serviceBrand(slug: string): ServiceBrand | null {
     const key = serviceIdentityKey(slug);
     return Object.prototype.hasOwnProperty.call(identities, key)
         ? identities[key]
-        : null;
-}
-export function serviceLogoSource(brand: ServiceBrand | null): string | null {
-    const file = brand?.logoFile ?? (brand?.logo ? brand.logo + ".svg" : null);
-    // A plus is literal in a URL path, unlike a query string. Keep it intact
-    // for static servers that preserve encoded reserved characters.
-    return file
-        ? "/Images/services/" + encodeURIComponent(file).replace(/%2B/g, "+")
         : null;
 }
 interface Presentation {

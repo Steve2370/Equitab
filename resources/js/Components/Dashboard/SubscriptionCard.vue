@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import ServiceBrandMark from "@/Components/Experience/ServiceBrandMark.vue";
 
 interface Props {
     serviceName: string;
@@ -32,7 +31,6 @@ const progressPercent = computed(() =>
 <template>
     <div class="rounded-xl border border-gray-100 bg-white p-4">
         <div class="flex items-center gap-3">
-            <ServiceBrandMark :slug="serviceName" :name="serviceName" />
             <div class="min-w-0">
                 <p class="truncate text-sm font-medium text-equitab-navy">
                     {{ serviceName }}

@@ -12,11 +12,12 @@ final class InvitationServiceCatalogue
 {
     private const OFFERS = [
         ['name' => 'Dropbox Family', 'slug' => 'dropbox-family', 'category' => 'Productivité',
-            'logo' => '/Images/services/dropbox.svg', 'website' => 'https://www.dropbox.com/family',
+            // No third-party logo: the service name is the only identity shown.
+            'logo' => null, 'website' => 'https://www.dropbox.com/family',
             // Canadian App Store monthly reference; web checkout prices may differ.
             'monthly_price' => 2649, 'billing_cycle' => 'monthly'],
         ['name' => 'NordPass Family', 'slug' => 'nordpass-family', 'category' => 'Sécurité',
-            'logo' => '/Images/services/nordpass.png', 'website' => 'https://nordpass.com/family-password-manager/',
+            'logo' => null, 'website' => 'https://nordpass.com/family-password-manager/',
             // CAD renewal: 8,988 cents/year / 12. See README for the dated official source.
             'monthly_price' => 749, 'billing_cycle' => 'yearly'],
     ];

@@ -4,9 +4,10 @@ import { Pause, Play, ArrowUpRight } from "lucide-vue-next";
 import { Link } from "@inertiajs/vue3";
 import { useExperienceMotion } from "@/composables/useExperienceMotion";
 const { motion, reducedMotion } = useExperienceMotion();
-// Refresh both media files together after the service-logo update.
-const storyVideoUrl = "/media/equitab-story.mp4?v=20261005-logos";
-const storyPosterUrl = "/media/equitab-story-poster.png?v=20261005-logos";
+// Refresh both media files together whenever the story is re-rendered.
+// 2026-10-09: service logos removed, only service names remain.
+const storyVideoUrl = "/media/equitab-story.mp4?v=20261009-noms";
+const storyPosterUrl = "/media/equitab-story-poster.png?v=20261009-noms";
 const video = ref<HTMLVideoElement | null>(null);
 const frame = ref<HTMLElement | null>(null);
 const playing = ref(false);

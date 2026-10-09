@@ -42,7 +42,7 @@ function component(relative) {
                 router: { patch() { throw new Error('Mutations forbidden in render tests'); } },
             };
             if (name.includes('/Layouts/')) return { __esModule: true, default: layout };
-            if (/ExperienceDialog|CredentialsModal|ServiceArtwork|ServiceBrandMark/.test(name)) return { __esModule: true, default: empty };
+            if (/ExperienceDialog|CredentialsModal|ServiceArtwork/.test(name)) return { __esModule: true, default: empty };
             if (name.endsWith('.vue')) return { __esModule: true, default: component(name.startsWith('@/') ? 'resources/js/' + name.slice(2) : resolve(dirname(path), name)) };
             if (name.endsWith('/adminPresentation')) {
                 const source = readFileSync(resolve(root, 'resources/js/Components/Admin/adminPresentation.ts'), 'utf8');
