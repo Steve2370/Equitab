@@ -62,6 +62,7 @@ class GroupInvitationTest extends BillingTestCase
         $this->group();
         $this->get('/invite/synthetic-invitation/continue?auth=register')->assertRedirect(route('register'));
         $this->post('/register', [
+            'country' => 'CA',
             'name' => 'Synthetic invitee', 'email' => 'invited@example.test',
             'password' => 'SyntheticPassword123!', 'password_confirmation' => 'SyntheticPassword123!',
         ])->assertRedirect('/invite/synthetic-invitation/continue');

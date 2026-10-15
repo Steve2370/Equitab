@@ -59,6 +59,7 @@ class EmailVerificationJourneyTest extends AccountSecurityTestCase
     public function test_registration_sends_one_confirmation_and_reaches_the_confirmation_screen_with_inertia(): void
     {
         $this->withHeaders($this->inertia())->post('/register', [
+            'country' => 'CA',
             'name' => 'Camille Démo', 'email' => 'journey@example.test',
             'password' => 'SyntheticPassword123!', 'password_confirmation' => 'SyntheticPassword123!',
         ])->assertRedirect('/dashboard');
@@ -79,6 +80,7 @@ class EmailVerificationJourneyTest extends AccountSecurityTestCase
         Mail::swap(new MailManager($this->app));
         Notification::swap(new ChannelManager($this->app));
         $this->post('/register', [
+            'country' => 'CA',
             'name' => 'Camille Démo', 'email' => 'delivery@example.test',
             'password' => 'SyntheticPassword123!', 'password_confirmation' => 'SyntheticPassword123!',
         ])->assertRedirect('/dashboard');

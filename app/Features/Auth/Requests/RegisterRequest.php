@@ -2,6 +2,7 @@
 
 namespace App\Features\Auth\Requests;
 
+use App\Support\Countries;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -29,6 +30,7 @@ class RegisterRequest extends FormRequest
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'timezone' => ['sometimes', 'string', 'timezone'],
             'phone' => ['sometimes', 'string', 'max:20'],
+            'country' => ['required', 'string', Rule::in(Countries::codes())],
         ];
     }
 

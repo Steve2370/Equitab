@@ -1,18 +1,22 @@
 <script setup lang="ts">
-import { Head, Link, useForm } from "@inertiajs/vue3";
+import { Head, Link, useForm, usePage } from "@inertiajs/vue3";
 import { Eye, EyeOff, Mail, Lock, User } from "lucide-vue-next";
 import { ref } from "vue";
 import AuthExperienceLayout from "@/Layouts/AuthExperienceLayout.vue";
+import CountryField from "@/Components/Experience/CountryField.vue";
+import type { MarketState } from "@/types/market";
 declare function route(name: string, params?: any): string;
 
 const showPassword = ref(false);
 const showConfirm = ref(false);
+const page = usePage<{ market?: MarketState }>();
 
 const form = useForm({
     name: "",
     email: "",
     password: "",
     password_confirmation: "",
+    country: page.props.market?.country ?? "",
 });
 
 function submit(): void {
@@ -38,8 +42,13 @@ function submit(): void {
             </Link>
         </p>
 
+        <div class="mt-6">
+            <CountryField v-model="form.country" label="Votre pays de résidence" :countries="page.props.market?.countries ?? []" :error="form.errors.country" :disabled="form.processing" form="registration-form" required />
+            <p class="mt-2 text-xs leading-5 text-gray-500">Choisissez votre résidence réelle. Vous pourrez ensuite modifier le pays de découverte depuis votre espace.</p>
+        </div>
+
         <a
-            :href="route('auth.social.redirect', { provider: 'google' })"
+            :href="route('auth.social.redirect', { provider: 'google', ...(form.country ? { country: form.country } : {}) })"
             class="mt-6 flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
         >
             <svg class="h-4 w-4" viewBox="0 0 24 24">
@@ -69,7 +78,7 @@ function submit(): void {
             <div class="h-px flex-1 bg-gray-200" />
         </div>
 
-        <form @submit.prevent="submit" class="mt-6 space-y-4">
+        <form id="registration-form" @submit.prevent="submit" class="mt-6 space-y-4">
             <div>
                 <label
                     for="register-name"

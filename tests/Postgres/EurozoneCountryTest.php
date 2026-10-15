@@ -12,6 +12,41 @@ use RuntimeException;
 
 class EurozoneCountryTest extends PostgresTestCase
 {
+    public function test_market_preference_migration_preserves_residence_and_financial_history(): void
+    {
+        $owner = User::factory()->create(['country' => 'CA', 'stripe_connect_account_id' => 'acct_market_migration_qa']);
+        $group = Group::factory()->create(['owner_id' => $owner->id, 'currency' => 'CAD']);
+        Payment::factory()->for($group)->create(['currency' => 'CAD']);
+        $tables = ['users', 'groups', 'payments'];
+        $before = [];
+        foreach ($tables as $table) {
+            $before[$table] = DB::table($table)->orderBy('id')->get()->toArray();
+        }
+        $migration = require database_path('migrations/2026_10_14_120000_add_market_country_to_users.php');
+        $migration->down();
+        $this->assertFalse(Schema::hasColumn('users', 'market_country'));
+        $migration->up();
+        foreach ($tables as $table) {
+            $this->assertEquals($before[$table], DB::table($table)->orderBy('id')->get()->toArray());
+        }
+        $owner->update(['market_country' => 'BE']);
+        $this->assertSame('CA', $owner->fresh()->country);
+        $this->assertSame('acct_market_migration_qa', $owner->fresh()->stripe_connect_account_id);
+        $this->assertSame('CAD', $group->fresh()->currency);
+        // The explicit preference update legitimately changed updated_at. Rollback
+        // removes only the preference, preserving that timestamp and all other data.
+        $before['users'] = DB::table('users')->orderBy('id')->get()->map(function ($user) {
+            $user->market_country = null;
+
+            return $user;
+        })->toArray();
+        $migration->down();
+        $migration->up();
+        foreach ($tables as $table) {
+            $this->assertEquals($before[$table], DB::table($table)->orderBy('id')->get()->toArray());
+        }
+    }
+
     public function test_country_change_cannot_race_an_in_flight_connect_account(): void
     {
         $owner = User::factory()->create(['country' => 'BE']);

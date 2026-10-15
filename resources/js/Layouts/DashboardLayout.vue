@@ -2,6 +2,7 @@
 import { ref, computed, watch } from "vue";
 import { Link, usePage } from "@inertiajs/vue3";
 import EquitabWordmark from "@/Components/Experience/EquitabWordmark.vue";
+import MarketSelector from "@/Components/Experience/MarketSelector.vue";
 import {
     LayoutDashboard,
     CreditCard,
@@ -107,6 +108,7 @@ function closeMenu() {
                 >Explorer <ArrowUpRight :size="17" aria-hidden="true"
             /></Link>
         </header>
+        <div class="flex justify-end border-b border-eq-line bg-white px-4 py-4 sm:px-8 lg:ml-64"><MarketSelector /></div>
         <aside
             id="dashboard-navigation"
             class="workspace-sidebar border-b border-eq-line lg:fixed lg:inset-y-0 lg:left-0 lg:z-40 lg:flex lg:w-64 lg:flex-col lg:overflow-y-auto lg:border-r lg:border-b-0 [&>*]:shrink-0"

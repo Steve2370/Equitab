@@ -4,6 +4,7 @@ namespace App\Features\Auth\Services;
 
 use App\Mail\WelcomeUser;
 use App\Models\User;
+use App\Support\Countries;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -17,12 +18,13 @@ class SocialAuthService
 {
     public function __construct(private readonly AccountAccessRevoker $revoker) {}
 
-    public function findOrCreateUser(string $provider, SocialiteUser $identity): User
+    public function findOrCreateUser(string $provider, SocialiteUser $identity, ?string $country = null): User
     {
         $this->validateIdentity($provider, $identity);
+        $country = $country === null ? null : Countries::normalize($country);
         $email = mb_strtolower(trim($identity->getEmail()));
 
-        return DB::transaction(function () use ($provider, $identity, $email): User {
+        return DB::transaction(function () use ($provider, $identity, $email, $country): User {
             $user = User::query()->whereHas('oauthProviders', function ($query) use ($provider, $identity) {
                 $query->where('provider', $provider)->where('provider_id', $identity->getId());
             })->lockForUpdate()->first();
@@ -35,6 +37,8 @@ class SocialAuthService
                 'password' => null,
                 'status' => 'active',
                 'avatar' => $identity->getAvatar(),
+                'country' => $country,
+                'market_country' => $country,
             ]);
 
             if (! $user->canAccessAccount()) {

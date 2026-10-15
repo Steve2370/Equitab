@@ -8,16 +8,21 @@ use App\Features\Group\Controllers\GroupController;
 use App\Features\Group\Controllers\GroupDraftController;
 use App\Features\Group\Controllers\GroupInvitationController;
 use App\Features\Group\Controllers\ServiceAccessController;
+use App\Features\Market\Controllers\MarketPreferenceController;
+use App\Features\Market\Services\MarketPreference;
 use App\Features\Payment\Controllers\PaymentController;
 use App\Features\Payment\Controllers\StripeWebhookController;
 use App\Features\Subscription\Controllers\SubscriptionController;
 use App\Models\Group;
 use App\Models\Subscription;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::pattern('group', '[0-9]+');
+
+Route::post('/market', MarketPreferenceController::class)->middleware('throttle:30,1')->name('market.update');
 
 Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->group(function () {
     Route::get('/', [AdminController::class, 'index'])->name('admin.index');
@@ -76,7 +81,7 @@ Route::get('/services', [SubscriptionController::class, 'index'])->name('service
 
 require __DIR__.'/auth.php';
 
-Route::get('/', function () {
+Route::get('/', function (Request $request, MarketPreference $market) {
     $catalogServices = Subscription::where('is_active', true)
         ->get()
         ->map(fn ($sub) => [
@@ -88,6 +93,7 @@ Route::get('/', function () {
         ]);
 
     $openGroups = Group::with(['subscription', 'owner'])
+        ->when($market->currency($request), fn ($query, $currency) => $query->where('currency', $currency))
         ->where('status', 'open')
         ->where('visibility', 'public')
         ->whereHas('subscription', fn ($query) => $query->where('is_active', true))

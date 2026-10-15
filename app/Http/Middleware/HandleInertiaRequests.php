@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Features\Market\Services\MarketPreference;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -33,6 +34,7 @@ class HandleInertiaRequests extends Middleware
 
         return [
             ...parent::share($request),
+            'market' => fn () => app(MarketPreference::class)->state($request),
             // Partager le modèle User brut exposait, sur CHAQUE page (pas
             // seulement les pages de profil), des champs qui n'ont rien à
             // faire dans le navigateur : identifiants Stripe internes

@@ -2,10 +2,12 @@
 
 namespace App\Features\Group\Services;
 
+use App\Features\Market\Services\MarketPreference;
 use App\Models\GroupDraft;
 use App\Models\Subscription;
 use App\Models\User;
 use App\Support\BillingCurrencies;
+use App\Support\Countries;
 use App\Support\Currency;
 
 class OwnerGroupPage
@@ -13,6 +15,7 @@ class OwnerGroupPage
     public function __construct(
         private readonly OwnerPublicationEligibility $eligibility,
         private readonly GroupDraftData $data,
+        private readonly MarketPreference $market,
     ) {}
 
     public function props(User $user, ?GroupDraft $draft = null): array
@@ -22,6 +25,7 @@ class OwnerGroupPage
         return [
             'supportedCurrencies' => Currency::SUPPORTED,
             'enabledCurrencies' => BillingCurrencies::enabled(),
+            'suggestedCurrency' => ($country = $this->market->forUser($user)) ? Countries::currency($country) : null,
             'subscriptions' => Subscription::where('is_active', true)->with('category')->orderBy('name')->get()->map(fn ($s) => [
                 'id' => $s->id, 'name' => $s->name, 'slug' => $s->slug,
                 'max_members' => $s->max_members, 'monthly_price' => $s->monthly_price,

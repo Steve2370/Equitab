@@ -12,7 +12,7 @@ import { preparationErrors, safeDraftRecord, serviceDefaults } from "@/utils/gro
 import type { GroupDraft, OwnerActivation as ActivationKind, OwnerReadiness, OwnerSubscription, ServiceCredentials } from "@/types/group-draft";
 import "@/Components/Owner/owner.css";
 
-const props = defineProps<{ subscriptions: OwnerSubscription[]; draft: GroupDraft | null; ownerReadiness: OwnerReadiness; supportedCurrencies: string[]; enabledCurrencies: string[] }>();
+const props = defineProps<{ subscriptions: OwnerSubscription[]; draft: GroupDraft | null; ownerReadiness: OwnerReadiness; supportedCurrencies: string[]; enabledCurrencies: string[]; suggestedCurrency?: string | null }>();
 type Step = 1 | 2 | 3;
 const step = ref<Step>(props.draft ? (props.draft.status !== "draft" ? 3 : props.draft.data.subscription_id ? 2 : 1) : 1);
 const steps = ["Service", "Préparation", "Publication"] as const;
@@ -73,7 +73,7 @@ async function goToStep(next: Step): Promise<void> {
 function selectService(subscription: OwnerSubscription): void {
     if (busy.value || locked.value) return;
     if (state.data.subscription_id !== subscription.id) {
-        Object.assign(state.data, serviceDefaults(subscription, state.data.currency));
+        Object.assign(state.data, serviceDefaults(subscription, state.data.currency ?? (props.draft ? null : props.suggestedCurrency)));
         clearCredentials();
         state.errors = {};
     }
@@ -182,6 +182,7 @@ onBeforeUnmount(() => {
                 <p class="owner-eyebrow">Le partage commence ici</p>
                 <h1>Votre abonnement.<br />Votre futur groupe.</h1>
                 <p class="owner-intro">Préparez votre groupe à votre rythme. Enregistrez-le maintenant, publiez-le quand vous serez prêt.</p>
+                <p v-if="suggestedCurrency" class="owner-hint">Votre pays de découverte propose {{ suggestedCurrency === 'EUR' ? 'l’euro (EUR)' : 'le dollar canadien (CAD)' }} pour un nouveau groupe. Vérifiez la devise et le coût réel de votre abonnement. Un brouillon repris conserve ses montants.</p>
                 <Link href="/dashboard/subscriptions" class="owner-text-button">Mes abonnements et brouillons</Link>
             </header>
             <nav aria-label="Étapes de création">

@@ -64,6 +64,7 @@ class AccountSecurityTest extends AccountSecurityTestCase
     {
         $response = $this->postJson('/api/register', [
             'name' => 'Pre-registered Account', 'email' => 'victim-security@example.test',
+            'country' => 'CA',
             'password' => 'Pre-registrant-password', 'password_confirmation' => 'Pre-registrant-password',
         ])->assertCreated();
         $user = User::where('email', 'victim-security@example.test')->firstOrFail();
@@ -260,6 +261,7 @@ class AccountSecurityTest extends AccountSecurityTestCase
     {
         $this->postJson('/api/register', [
             'name' => 'Synthetic Registration', 'email' => 'briceyouatchui@gmail.com',
+            'country' => 'CA',
             'password' => 'Synthetic-password', 'password_confirmation' => 'Synthetic-password',
             'is_admin' => true, 'email_verified_at' => now()->toISOString(), 'auth_version' => 99,
         ])->assertCreated()->assertJsonMissingPath('user.is_admin')->assertJsonMissingPath('user.auth_version');
@@ -303,6 +305,7 @@ class AccountSecurityTest extends AccountSecurityTestCase
         $old->delete();
         $this->postJson('/api/register', [
             'name' => 'Different Registrant', 'email' => $old->email,
+            'country' => 'CA',
             'password' => 'Synthetic-password', 'password_confirmation' => 'Synthetic-password',
         ])->assertCreated();
         $new = User::where('email', $old->email)->firstOrFail();
@@ -365,6 +368,7 @@ class AccountSecurityTest extends AccountSecurityTestCase
         $this->assertFalse(User::withTrashed()->findOrFail($old->id)->is_admin);
         $this->postJson('/api/register', [
             'name' => 'Duplicate Active Account', 'email' => $old->email,
+            'country' => 'CA',
             'password' => 'Synthetic-password', 'password_confirmation' => 'Synthetic-password',
         ])->assertUnprocessable()->assertJsonValidationErrors('email');
         $this->assertSame(2, User::withTrashed()->count());
@@ -440,6 +444,7 @@ class AccountSecurityTest extends AccountSecurityTestCase
     {
         $this->postJson('/api/register', [
             'name' => 'API Registration', 'email' => 'api-verification@example.test',
+            'country' => 'CA',
             'password' => 'Synthetic-password', 'password_confirmation' => 'Synthetic-password',
         ])->assertCreated();
         $apiUser = User::where('email', 'api-verification@example.test')->firstOrFail();
@@ -448,6 +453,7 @@ class AccountSecurityTest extends AccountSecurityTestCase
 
         $this->post('/register', [
             'name' => 'Web Registration', 'email' => 'web-verification@example.test',
+            'country' => 'CA',
             'password' => 'Synthetic-password', 'password_confirmation' => 'Synthetic-password',
             'is_admin' => true,
         ])->assertRedirect('/dashboard');

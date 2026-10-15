@@ -4,6 +4,7 @@ namespace App\Features\Auth\Controllers;
 
 use App\Features\Auth\Requests\LoginRequest;
 use App\Features\Auth\Services\AccountSession;
+use App\Features\Market\Services\MarketPreference;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -34,6 +35,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
         app(AccountSession::class)->remember($request->session(), $request->user());
+        app(MarketPreference::class)->inheritGuestSelection($request, $request->user());
 
         return redirect()->intended(route('dashboard', absolute: false))
             ->with('success', 'Connexion réussie. Bienvenue !');

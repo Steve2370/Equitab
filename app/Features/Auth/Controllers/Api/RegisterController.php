@@ -17,7 +17,7 @@ class RegisterController extends Controller
     public function __invoke(RegisterRequest $request): JsonResponse
     {
         [$user, $token] = DB::transaction(function () use ($request): array {
-            $user = User::create($request->validated());
+            $user = User::create([...$request->validated(), 'market_country' => $request->validated('country')]);
 
             return [$user, $user->createToken('equitab')->plainTextToken];
         });

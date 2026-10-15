@@ -8,6 +8,7 @@ use App\Features\Group\Requests\UpdateGroupRequest;
 use App\Features\Group\Services\GroupAccess;
 use App\Features\Group\Services\GroupService;
 use App\Features\Group\Services\OwnerGroupPage;
+use App\Features\Market\Services\MarketPreference;
 use App\Features\Payment\Services\BillingUnavailable;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\GroupResource;
@@ -129,11 +130,12 @@ class GroupController extends Controller
         ]);
     }
 
-    public function byService(string $slug): Response
+    public function byService(string $slug, Request $request, MarketPreference $market): Response
     {
         $subscription = Subscription::where('slug', $slug)->where('is_active', true)->firstOrFail();
 
         $groups = Group::with(['owner', 'subscription'])
+            ->when($market->currency($request), fn ($query, $currency) => $query->where('currency', $currency))
             ->where('subscription_id', $subscription->id)
             ->where('status', 'open')
             ->where('visibility', 'public')

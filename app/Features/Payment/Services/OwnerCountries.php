@@ -2,29 +2,18 @@
 
 namespace App\Features\Payment\Services;
 
+use App\Support\Countries;
 use Illuminate\Validation\ValidationException;
 
 /** Country eligibility is separate from the currency of a group. */
 final class OwnerCountries
 {
-    // EU euro-area members, including Bulgaria since 1 January 2026.
-    private const NAMES = [
-        'CA' => 'Canada', 'DE' => 'Allemagne', 'AT' => 'Autriche',
-        'BE' => 'Belgique', 'BG' => 'Bulgarie', 'CY' => 'Chypre',
-        'HR' => 'Croatie', 'ES' => 'Espagne', 'EE' => 'Estonie',
-        'FI' => 'Finlande', 'FR' => 'France', 'GR' => 'Grèce',
-        'IE' => 'Irlande', 'IT' => 'Italie', 'LV' => 'Lettonie',
-        'LT' => 'Lituanie', 'LU' => 'Luxembourg', 'MT' => 'Malte',
-        'NL' => 'Pays-Bas', 'PT' => 'Portugal', 'SK' => 'Slovaquie',
-        'SI' => 'Slovénie',
-    ];
-
     /** @return list<array{code: string, name: string, enabled: bool}> */
     public function options(): array
     {
         $options = [];
-        foreach (self::NAMES as $code => $name) {
-            $options[] = ['code' => $code, 'name' => $name, 'enabled' => $this->enabled($code)];
+        foreach (Countries::options() as $option) {
+            $options[] = ['code' => $option['code'], 'name' => $option['name'], 'enabled' => $this->enabled($option['code'])];
         }
 
         return $options;
@@ -32,19 +21,12 @@ final class OwnerCountries
 
     public function normalize(?string $country): string
     {
-        $code = strtoupper(trim((string) $country));
-        if (! isset(self::NAMES[$code])) {
-            throw ValidationException::withMessages([
-                'country' => 'Choisissez votre pays : le Canada ou un pays de la zone euro proposé.',
-            ]);
-        }
-
-        return $code;
+        return Countries::normalize($country);
     }
 
     public function enabled(?string $country): bool
     {
-        return isset(self::NAMES[$country ?? ''])
+        return Countries::contains($country)
             && ($country === 'CA' || config('payments.eurozone_connect_enabled') === true);
     }
 

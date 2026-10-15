@@ -42,6 +42,7 @@ class WalletRetirementTest extends AccountSecurityTestCase
     public function test_api_registration_and_login_do_not_create_or_serialize_wallets(): void
     {
         $data = [
+            'country' => 'CA',
             'name' => 'No Wallet', 'email' => 'no-wallet@example.test',
             'password' => 'Synthetic-password', 'password_confirmation' => 'Synthetic-password',
         ];
@@ -68,6 +69,7 @@ class WalletRetirementTest extends AccountSecurityTestCase
     public function test_web_and_google_registration_do_not_create_wallets(): void
     {
         $this->post('/register', [
+            'country' => 'CA',
             'name' => 'No Wallet Web', 'email' => 'no-wallet-web@example.test',
             'password' => 'Synthetic-password', 'password_confirmation' => 'Synthetic-password',
         ])->assertRedirect('/dashboard');

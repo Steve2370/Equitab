@@ -3,6 +3,7 @@ import { computed, ref, watch } from "vue";
 import { Link, usePage } from "@inertiajs/vue3";
 import { ArrowUpRight, Menu, X } from "lucide-vue-next";
 import EquitabWordmark from "./EquitabWordmark.vue";
+import MarketSelector from "./MarketSelector.vue";
 const props = withDefaults(
     defineProps<{
         canLogin?: boolean;
@@ -78,6 +79,7 @@ function close() {
                 </button>
             </div>
         </div>
+        <div class="market-bar"><MarketSelector /></div>
         <nav
             v-if="menu"
             id="collection-mobile-menu"
@@ -105,6 +107,9 @@ function close() {
     backdrop-filter: blur(16px);
     color: #303b37;
 }
+.market-bar { width: min(1180px, calc(100% - 32px)); margin: auto; padding: 12px 0 16px; display: flex; justify-content: flex-end; }
+.market-bar:has(form) { border-bottom: 1px solid #dce5df; }
+.market-bar:not(:has(form)) { display: none; }
 .collection-nav {
     width: min(1180px, calc(100% - 80px));
     margin: auto;

@@ -124,6 +124,7 @@ export function mount(relative, initialProps, options = {}) {
                 if (name === '@inertiajs/vue3') return {
                     Head: defineComponent({ props: ['title'], setup: props => () => h('head-state', { title: props.title }) }),
                     Link: defineComponent({ props: ['href'], setup: (props, { slots }) => () => h('a', { href: props.href }, slots.default?.()) }),
+                    ...options.inertia,
                 };
                 if (name.startsWith('@/') || name.startsWith('.')) {
                     const target = name.startsWith('@/') ? resolve(root, name.slice(2)) : resolve(dirname(path), name);
