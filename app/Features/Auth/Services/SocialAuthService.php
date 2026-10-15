@@ -3,9 +3,11 @@
 namespace App\Features\Auth\Services;
 
 use App\Mail\WelcomeUser;
+use App\Models\OauthProvider;
 use App\Models\User;
 use App\Support\Countries;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -24,10 +26,41 @@ class SocialAuthService
         $country = $country === null ? null : Countries::normalize($country);
         $email = mb_strtolower(trim($identity->getEmail()));
 
+        // A missing identity/email row cannot be locked on PostgreSQL. If two
+        // first logins race, roll back and resolve the committed winner afresh.
+        for ($attempt = 1; ; $attempt++) {
+            try {
+                return $this->resolveAccount($provider, $identity, $email, $country);
+            } catch (UniqueConstraintViolationException $e) {
+                if (! $this->isIdentityConflict($e)) {
+                    throw $e;
+                }
+                if ($attempt >= 3) {
+                    throw ValidationException::withMessages([
+                        'email' => 'Une connexion est déjà en cours. Veuillez réessayer.',
+                    ]);
+                }
+            }
+        }
+    }
+
+    private function resolveAccount(string $provider, SocialiteUser $identity, string $email, ?string $country): User
+    {
         return DB::transaction(function () use ($provider, $identity, $email, $country): User {
-            $user = User::query()->whereHas('oauthProviders', function ($query) use ($provider, $identity) {
-                $query->where('provider', $provider)->where('provider_id', $identity->getId());
-            })->lockForUpdate()->first();
+            // Look up the globally unique identity independently of User's
+            // SoftDeletes scope. Lock it before deciding whether it can move.
+            $identityLink = OauthProvider::where('provider', $provider)
+                ->where('provider_id', $identity->getId())->lockForUpdate()->first();
+            $previousUser = $identityLink
+                ? User::withTrashed()->lockForUpdate()->findOrFail($identityLink->user_id)
+                : null;
+
+            if ($previousUser?->trashed() && $previousUser->status !== 'active') {
+                // Deleting a restricted account must not erase its restriction.
+                throw ValidationException::withMessages(['email' => 'Ce compte est suspendu ou désactivé.']);
+            }
+
+            $user = $previousUser && ! $previousUser->trashed() ? $previousUser : null;
 
             $user ??= User::query()->whereRaw('LOWER(email) = ?', [$email])->lockForUpdate()->first();
             $isNew = $user === null;
@@ -58,10 +91,19 @@ class SocialAuthService
                 throw ValidationException::withMessages(['email' => 'Ce compte est déjà lié à une autre identité Google.']);
             }
 
-            $user->oauthProviders()->updateOrCreate(['provider' => $provider], [
-                'provider_id' => $identity->getId(),
-                'avatar' => $identity->getAvatar(),
-            ]);
+            if ($previousUser?->trashed()) {
+                // Only the proven login identity moves. Never restore/copy the
+                // old user, roles, tokens, Stripe accounts or financial history.
+                $identityLink->update(['user_id' => $user->id, 'avatar' => $identity->getAvatar()]);
+                DB::afterCommit(fn () => Log::info('Social identity reassigned after account deletion.', [
+                    'provider' => $provider, 'previous_user_id' => $previousUser->id, 'user_id' => $user->id,
+                ]));
+            } else {
+                $user->oauthProviders()->updateOrCreate(['provider' => $provider], [
+                    'provider_id' => $identity->getId(),
+                    'avatar' => $identity->getAvatar(),
+                ]);
+            }
 
             if (! $user->hasVerifiedEmail()) {
                 $user->markEmailAsVerified();
@@ -79,7 +121,24 @@ class SocialAuthService
             }
 
             return $user;
-        });
+        }, attempts: 3);
+    }
+
+    private function isIdentityConflict(UniqueConstraintViolationException $exception): bool
+    {
+        // Only retry the identity invariants, not unrelated database failures.
+        foreach ([
+            'users_email_unique', 'oauth_providers_provider_provider_id_unique', 'oauth_providers_user_id_provider_unique',
+            'UNIQUE constraint failed: users.email',
+            'UNIQUE constraint failed: oauth_providers.provider, oauth_providers.provider_id',
+            'UNIQUE constraint failed: oauth_providers.user_id, oauth_providers.provider',
+        ] as $constraint) {
+            if (str_contains($exception->getPrevious()?->getMessage() ?? '', $constraint)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function validateIdentity(string $provider, SocialiteUser $identity): void

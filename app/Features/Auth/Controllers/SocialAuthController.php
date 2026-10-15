@@ -56,7 +56,11 @@ class SocialAuthController extends Controller
         try {
             $user = $this->socialAuthService->findOrCreateUser($provider, $socialiteUser, request()->session()->pull('registration_country'));
         } catch (ValidationException $e) {
-            return redirect()->route('login')->withErrors($e->errors());
+            // OAuth returns through a full-page navigation, not useForm.post().
+            // Keep field errors and show the existing login status message too.
+            return redirect()->route('login')->withErrors($e->errors())->with(
+                'status', $e->errors()['email'][0] ?? 'La connexion Google a échoué. Veuillez réessayer.',
+            );
         }
 
         Auth::login($user, remember: true);
