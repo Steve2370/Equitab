@@ -148,7 +148,7 @@ class GroupController extends Controller
                 'subscriptionName' => $group->subscription->name,
                 // Description libre, optionnelle, que le propriétaire peut
                 // renseigner à la création pour préciser l'offre partagée
-                // (ex: "Crunchyroll Megafan", "Netflix Famille 4K") — visible
+                // (ex: "Crunchyroll Megafan", "Netflix Famille 4K") - visible
                 // par les utilisateurs qui envisagent de rejoindre.
                 'description' => $group->description,
                 'ownerName' => $group->owner->display_name,

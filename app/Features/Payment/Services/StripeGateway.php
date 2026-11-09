@@ -50,7 +50,7 @@ class StripeGateway implements PaymentGatewayInterface
     public function createProduct(Group $group): array
     {
         $product = $this->stripe->products->create([
-            'name' => $group->name.' — Equitab',
+            'name' => $group->name.' - Equitab',
         ]);
 
         return ['product_id' => $product->id];

@@ -13,7 +13,7 @@ use Illuminate\Queue\SerializesModels;
 
 // ShouldBroadcast était importé mais jamais implémenté : broadcast() ne
 // pousse réellement l'événement vers le driver de diffusion (Reverb) QUE si
-// l'événement implémente cette interface — sans elle, l'appel se comportait
+// l'événement implémente cette interface - sans elle, l'appel se comportait
 // comme un simple événement en mémoire, sans effet réseau. Concrètement, le
 // chat "temps réel" ne l'était pas : un message n'apparaissait chez le
 // destinataire qu'au prochain rechargement de la page, jamais en direct.

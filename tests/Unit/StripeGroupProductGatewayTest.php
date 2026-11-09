@@ -63,7 +63,7 @@ class StripeGroupProductGatewayTest extends TestCase
         $request = $this->http->requests[1];
         self::assertSame('post', $request['method']);
         self::assertSame($this->product(2)['id'], $request['params']['id']);
-        self::assertSame('Mon groupe — EquitAb', $request['params']['name']);
+        self::assertSame('Mon groupe - EquitAb', $request['params']['name']);
         self::assertSame($this->product(2)['metadata'], $request['params']['metadata']);
         self::assertContains('Idempotency-Key: group-draft-product:'.$this->draft.':2', $request['headers']);
     }

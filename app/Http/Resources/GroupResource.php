@@ -7,7 +7,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * Sortie PUBLIQUE d'un groupe (API mobile non authentifiée : GET /api/groups,
- * GET /api/groups/{id}). Liste blanche stricte — c'est justement l'absence
+ * GET /api/groups/{id}). Liste blanche stricte - c'est justement l'absence
  * d'une telle liste blanche qui laissait auparavant credential_email,
  * credential_password, credential_notes et invite_token fuiter en clair via
  * la sérialisation JSON par défaut du modèle Group (cast "encrypted", donc

@@ -718,7 +718,7 @@ class BillingRecoveryTest extends TestCase
                 ->where('disputes.total', 1)->has('disputes.data', 1)
                 ->where('disputes.data.0.id', $dispute->id)
                 ->where('disputes.data.0.userName', $deleteUser ? 'Utilisateur supprimé' : $payer->name)
-                ->where('disputes.data.0.userEmail', $deleteUser ? '—' : $payer->email)
+                ->where('disputes.data.0.userEmail', $deleteUser ? '-' : $payer->email)
                 ->where('disputes.data.0.groupName', $group->name)
                 ->where('disputes.data.0.subscriptionName', $serviceName)
                 ->where('disputes.data.0.amount', $payment->amount)

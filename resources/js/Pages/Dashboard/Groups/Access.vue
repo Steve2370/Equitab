@@ -189,7 +189,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <Head title="Gérer les accès — EquitAb" />
+    <Head title="Gérer les accès - EquitAb" />
     <DashboardLayout>
         <div class="owner-flow service-access">
             <header>

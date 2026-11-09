@@ -90,7 +90,7 @@ class ChatController extends Controller
     }
 
     /**
-     * Liste des membres actifs qu'un propriétaire peut contacter — sert au
+     * Liste des membres actifs qu'un propriétaire peut contacter - sert au
      * sélecteur "nouvelle conversation" côté frontend.
      */
     public function members(Request $request, Group $group): JsonResponse
@@ -126,7 +126,7 @@ class ChatController extends Controller
 
         $otherId = (int) $request->query('other_id');
 
-        // Le membre ne parle qu'au propriétaire — on ignore other_id venant
+        // Le membre ne parle qu'au propriétaire - on ignore other_id venant
         // du frontend et on force la bonne valeur pour éviter toute usurpation.
         if (! $isOwner) {
             $otherId = $group->owner_id;

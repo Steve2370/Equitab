@@ -5,7 +5,7 @@ import Footer from '@/Components/Footer.vue';
 </script>
 
 <template>
-    <Head title="Conditions d'utilisation — Equitab" />
+    <Head title="Conditions d'utilisation - Equitab" />
     <div class="eq-experience eq-workspace min-h-screen">
         <NavbarWithSearch />
 
@@ -13,7 +13,7 @@ import Footer from '@/Components/Footer.vue';
             <h1 class="text-3xl font-bold text-equitab-navy mb-2">Conditions d'utilisation</h1>
             <p class="text-gray-400 text-sm mb-2">Dernière mise à jour : 1er juillet 2026</p>
             <p class="text-gray-500 text-sm mb-10 leading-relaxed">
-                Bienvenue sur Equitab. Avant d'utiliser notre plateforme, nous vous invitons à lire attentivement ces conditions. Elles ont été rédigées pour être claires et transparentes — parce que vous méritez de savoir exactement comment fonctionne Equitab.
+                Bienvenue sur Equitab. Avant d'utiliser notre plateforme, nous vous invitons à lire attentivement ces conditions. Elles ont été rédigées pour être claires et transparentes - parce que vous méritez de savoir exactement comment fonctionne Equitab.
             </p>
 
             <div class="space-y-10">
@@ -81,7 +81,7 @@ import Footer from '@/Components/Footer.vue';
                         Tous les paiements sur Equitab sont traités exclusivement par <strong>Stripe</strong>, l'un des leaders mondiaux des paiements en ligne. Vos informations bancaires ne transitent jamais par les serveurs d'Equitab et ne sont jamais stockées par nous.
                     </p>
                     <p class="text-gray-600 leading-relaxed mt-3">
-                        Equitab perçoit une commission sur chaque transaction facilitée via la plateforme. Cette commission est déduite automatiquement au moment du paiement et est clairement indiquée avant toute transaction. Les fonds sont transférés directement au propriétaire du groupe — Equitab ne détient jamais les fonds des utilisateurs.
+                        Equitab perçoit une commission sur chaque transaction facilitée via la plateforme. Cette commission est déduite automatiquement au moment du paiement et est clairement indiquée avant toute transaction. Les fonds sont transférés directement au propriétaire du groupe - Equitab ne détient jamais les fonds des utilisateurs.
                     </p>
                 </section>
 

@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 # pdo_sqlite est nécessaire pour exécuter la suite de tests : phpunit.xml
 # force DB_CONNECTION=sqlite / DB_DATABASE=:memory: pendant les tests
-# (base isolée, jamais la vraie base Postgres) — sans ce driver,
+# (base isolée, jamais la vraie base Postgres) - sans ce driver,
 # "php artisan test" échoue avec "could not find driver".
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer

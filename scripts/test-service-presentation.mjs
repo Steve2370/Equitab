@@ -79,6 +79,7 @@ test("each seeded service has a palette and only a name as identity, never a log
         "disney",
         "youtube-premium",
         "crave",
+        "illico",
         "crunchyroll",
         "paramount",
         "canal",
@@ -155,6 +156,7 @@ test("legacy aliases share the canonical scene without changing category fallbac
         ["canal-plus", "canal"], ["canal+", "canal"],
         ["apple-one", "apple-one-family"], ["cyber-ghost", "cyberghost"],
         ["prime-video", "amazon-prime"], ["nord-vpn", "nordvpn"],
+        ["illico+", "illico"], ["illico-plus", "illico"], ["illicoplus", "illico"],
     ]) {
         assert.strictEqual(serviceBrand(alias), serviceBrand(canonical));
         assert.deepEqual(servicePresentation(alias, "Streaming"), servicePresentation(canonical, "Streaming"));

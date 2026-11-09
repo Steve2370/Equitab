@@ -101,7 +101,7 @@ function confirmCloseGroup(): void {
 </script>
 
 <template>
-    <Head title="Ma collection — Equitab" />
+    <Head title="Ma collection - Equitab" />
     <DashboardLayout>
         <div class="eq-page-heading">
             <div>

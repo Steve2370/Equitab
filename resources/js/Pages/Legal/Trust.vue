@@ -6,7 +6,7 @@ import Footer from '@/Components/Footer.vue';
 </script>
 
 <template>
-    <Head title="Charte de confiance — Equitab" />
+    <Head title="Charte de confiance - Equitab" />
     <div class="eq-experience eq-workspace min-h-screen">
         <NavbarWithSearch />
 

@@ -5,7 +5,7 @@ import Footer from '@/Components/Footer.vue';
 </script>
 
 <template>
-    <Head title="Politique de confidentialité — Equitab" />
+    <Head title="Politique de confidentialité - Equitab" />
     <div class="eq-experience eq-workspace min-h-screen">
         <NavbarWithSearch />
 
@@ -39,7 +39,7 @@ import Footer from '@/Components/Footer.vue';
                             <li class="flex items-start gap-2"><span class="text-equitab-emerald font-bold mt-0.5">✓</span> Codes CVV</li>
                             <li class="flex items-start gap-2"><span class="text-equitab-emerald font-bold mt-0.5">✓</span> Coordonnées bancaires</li>
                         </ul>
-                        <p class="text-sm text-gray-500 mt-3">Toutes les informations de paiement sont gérées exclusivement par <strong>Stripe</strong>, certifié PCI DSS niveau 1 — le standard de sécurité le plus élevé dans l'industrie des paiements.</p>
+                        <p class="text-sm text-gray-500 mt-3">Toutes les informations de paiement sont gérées exclusivement par <strong>Stripe</strong>, certifié PCI DSS niveau 1 - le standard de sécurité le plus élevé dans l'industrie des paiements.</p>
                     </div>
                 </section>
 

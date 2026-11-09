@@ -19,7 +19,7 @@ class Payment extends Model
         // Même bug que GroupMember : ces colonnes existent depuis
         // add_stripe_fields_to_payments_table / add_refund_fields_to_payments_table
         // mais n'avaient jamais été ajoutées ici, donc Eloquent les
-        // ignorait silencieusement — platform_fee_amount (les gains
+        // ignorait silencieusement - platform_fee_amount (les gains
         // Equitab affichés dans l'admin) et stripe_payment_intent_id
         // (utilisé pour la déduplication et les remboursements) ne
         // s'enregistraient jamais.

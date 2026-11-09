@@ -5,13 +5,13 @@ import Toast from '@/Components/Toast.vue';
 import { useToast } from '@/composables/useToast';
 
 // Monté une seule fois, au niveau racine de l'app (voir app.ts), pour être
-// présent sur TOUTES les pages — y compris celles sans AdminLayout ni
+// présent sur TOUTES les pages - y compris celles sans AdminLayout ni
 // DashboardLayout (Welcome, Login, pages légales...). Avant ce fichier,
 // rien ne reliait jamais les messages flash partagés par Laravel
 // (HandleInertiaRequests::share() -> 'flash') au composant Toast : celui-ci
 // existait, était bien monté dans les layouts, mais personne ne l'appelait
 // pour les messages venant du backend (connexion, déconnexion, actions
-// admin...) — d'où l'absence totale de toasts malgré un système en place.
+// admin...) - d'où l'absence totale de toasts malgré un système en place.
 const toastComponent = ref();
 const { setRef, success, error } = useToast();
 const page = usePage<{

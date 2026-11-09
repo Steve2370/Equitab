@@ -368,3 +368,50 @@
         background: #edf5f0;
     }
 }
+
+/* Dynamisme : apparition au défilement et petits retours au survol.
+   Uniquement si l'utilisateur n'a pas demandé de réduire les animations. */
+/* Une animation (et non une transition) pour ne jamais écraser les
+   transitions et effets de survol propres à chaque composant. */
+@keyframes eq-reveal-in {
+    from {
+        opacity: 0;
+        translate: 0 24px;
+    }
+}
+.eq-reveal-ready .eq-reveal:not(.is-visible) {
+    opacity: 0;
+}
+.eq-reveal-ready .eq-reveal.is-visible {
+    animation: eq-reveal-in 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) backwards;
+    animation-delay: calc(var(--reveal-index, 0) * 90ms);
+}
+@media (prefers-reduced-motion: no-preference) {
+    .eq-button svg,
+    .eq-link svg {
+        transition: translate 0.2s ease-out;
+    }
+    .eq-button:hover svg,
+    .eq-link:hover svg {
+        translate: 2px -2px;
+    }
+    .eq-button {
+        transition:
+            background-color 0.2s ease-out,
+            scale 0.15s ease-out,
+            box-shadow 0.2s ease-out;
+    }
+    .eq-button:hover {
+        box-shadow: 0 10px 22px -12px rgb(24 122 87 / 0.7);
+    }
+    .eq-button:active {
+        scale: 0.97;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .eq-reveal-ready .eq-reveal:not(.is-visible),
+    .eq-reveal-ready .eq-reveal.is-visible {
+        opacity: 1;
+        animation: none;
+    }
+}

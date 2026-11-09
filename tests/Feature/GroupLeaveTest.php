@@ -13,7 +13,7 @@ use Tests\Support\BillingTestCase;
 /**
  * Couvre le finding « élevé » de l'audit (« départ d'un membre ») :
  * GroupService::leave() ne résiliait jamais l'abonnement Stripe du membre
- * qui quittait — il continuait donc à être facturé pour un groupe qu'il
+ * qui quittait - il continuait donc à être facturé pour un groupe qu'il
  * avait déjà quitté.
  */
 class GroupLeaveTest extends BillingTestCase

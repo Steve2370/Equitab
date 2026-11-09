@@ -39,7 +39,7 @@ function submit() {
                 <Link
                     href="/"
                     class="mobile-wordmark"
-                    aria-label="Equitab — accueil"
+                    aria-label="Equitab - accueil"
                     ><EquitabWordmark /></Link
                 ><Link href="/" class="login-back"
                     ><ArrowLeft :size="15" aria-hidden="true" /> Retour à
@@ -212,7 +212,7 @@ function submit() {
         </main>
         <aside class="login-story-panel" aria-labelledby="login-story-title">
             <div class="login-story-nav">
-                <Link href="/" aria-label="Equitab — accueil"
+                <Link href="/" aria-label="Equitab - accueil"
                     ><EquitabWordmark /></Link
                 ><span>LES BONNES CHOSES SE PARTAGENT.</span>
             </div>

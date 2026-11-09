@@ -26,7 +26,7 @@ class ConnectAccountActivated extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Votre compte bancaire est actif — Equitab',
+            subject: 'Votre compte bancaire est actif - Equitab',
         );
     }
 

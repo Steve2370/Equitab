@@ -41,7 +41,7 @@ test('URL success, memberStatus active and legacy/ready props cannot disclose se
     const wait = deferred();
     const ui = page(t, { fetch: () => wait.promise }, { serviceAccess: ready() });
     await flush();
-    assert.equal(ui.title(), 'Vérification de votre abonnement — Equitab');
+    assert.equal(ui.title(), 'Vérification de votre abonnement - Equitab');
     assertNoSecrets(ui);
     assert.equal(ui.calls.length, 1);
     const { url, init } = ui.calls[0];
@@ -54,7 +54,7 @@ test('URL success, memberStatus active and legacy/ready props cannot disclose se
     assert.equal(init.body, undefined);
     wait.resolve(response(pending()));
     await flush();
-    assert.equal(ui.title(), 'Confirmation du paiement en cours — Equitab');
+    assert.equal(ui.title(), 'Confirmation du paiement en cours - Equitab');
     assertNoSecrets(ui);
 });
 
@@ -68,7 +68,7 @@ for (const currency of ['CAD', 'EUR']) {
         assert.equal(ui.calls.length, 1);
         await ui.time.advance(1);
         assert.equal(ui.calls.length, 2);
-        assert.equal(ui.title(), 'Paiement confirmé — Equitab');
+        assert.equal(ui.title(), 'Paiement confirmé - Equitab');
         assert.ok(ui.text().includes(secret.email));
         assert.ok(!ui.text().includes(secret.password));
         await click(button(ui, 'Afficher le mot de passe'));
@@ -183,11 +183,11 @@ test('the sanitized ready Inertia snapshot still requires fresh endpoint authori
     const wait = deferred();
     const ui = page(t, { fetch: () => wait.promise }, { serviceAccess: pending('ready', 'invitation'), credentials: null });
     await flush();
-    assert.equal(ui.title(), 'Vérification de votre abonnement — Equitab');
+    assert.equal(ui.title(), 'Vérification de votre abonnement - Equitab');
     assertNoSecrets(ui);
     wait.resolve(response(emailInvite(), 403));
     await flush();
-    assert.equal(ui.title(), 'Accès indisponible — Equitab');
+    assert.equal(ui.title(), 'Accès indisponible - Equitab');
     assertNoSecrets(ui);
 });
 
@@ -199,7 +199,7 @@ test('a fresh group replaces already-disclosed credentials immediately while its
     assert.ok(ui.text().includes(secret.password));
     await ui.update({ group: { ...group, id: 16 } });
     assertNoSecrets(ui);
-    assert.equal(ui.title(), 'Vérification de votre abonnement — Equitab');
+    assert.equal(ui.title(), 'Vérification de votre abonnement - Equitab');
     wait.resolve(response(pending('unavailable')));
     await flush();
     assertNoSecrets(ui);
@@ -373,7 +373,7 @@ for (const close of ['escape', 'button']) {
             await flush();
             const dialog = ui.find(node => node.type === 'dialog');
             assert.equal(dialog.open, true);
-            assert.equal(dialog.props['aria-label'], 'Accès — Service de test');
+            assert.equal(dialog.props['aria-label'], 'Accès - Service de test');
             assert.equal(ui.doc.body.style.overflow, 'hidden');
             assert.equal(ui.doc.activeElement.props['aria-label'], 'Fermer la fenêtre');
             assertNoSecrets(ui);

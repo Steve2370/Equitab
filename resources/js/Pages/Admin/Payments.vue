@@ -26,7 +26,7 @@ defineProps<{
 </script>
 
 <template>
-    <Head title="Paiements — Admin" />
+    <Head title="Paiements - Admin" />
     <AdminLayout>
         <AdminPageHeader
             title="Les paiements, au clair."

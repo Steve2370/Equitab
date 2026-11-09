@@ -49,8 +49,8 @@ defineProps<Props>();
                 ><ArrowLeft :size="16" aria-hidden="true" /> Tous les
                 services</Link
             >
-            <p class="eq-eyebrow text-eq-muted">Trouvez votre groupe</p>
-            <h1 class="eq-title mt-4 text-4xl sm:text-5xl">
+            <p class="eq-eyebrow text-eq-muted eq-reveal">Trouvez votre groupe</p>
+            <h1 class="eq-title mt-4 text-4xl sm:text-5xl eq-reveal" style="--reveal-index: 1">
                 {{ subscription.name }}, ensemble.
             </h1>
             <p class="mt-5 text-sm leading-6 text-eq-muted">
@@ -84,7 +84,7 @@ defineProps<Props>();
                 </div>
             </div>
 
-            <div v-else class="eq-collection-grid mt-10 items-start">
+            <div v-else class="mt-10 flex flex-col gap-4">
                 <OwnerGroupCard
                     v-for="(group, index) in groups"
                     :key="group.id"
@@ -104,6 +104,7 @@ defineProps<Props>();
                     :spots-available="group.spotsAvailable"
                     :max-members="group.maxMembers"
                     :created-at="group.createdAt"
+                    compact
                 />
             </div>
             <div

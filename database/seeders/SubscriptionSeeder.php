@@ -23,6 +23,7 @@ class SubscriptionSeeder extends Seeder
             [$streaming->id, 'Disney+', 1399, 4],
             [$streaming->id, 'YouTube Premium', 1799, 6],
             [$streaming->id, 'Crave', 2099, 4],
+            [$streaming->id, 'illico+', 1500, 2],
             [$streaming->id, 'Crunchyroll', 799, 4],
             [$streaming->id, 'Paramount+', 1099, 4],
             [$streaming->id, 'Canal+', 2299, 4],

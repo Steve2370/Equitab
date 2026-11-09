@@ -12,7 +12,7 @@ const year = new Date().getFullYear();
                 class="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr]"
             >
                 <div>
-                    <Link href="/" aria-label="Equitab — accueil"
+                    <Link href="/" aria-label="Equitab - accueil"
                         ><EquitabWordmark
                     /></Link>
                     <p class="mt-5 max-w-xs text-sm leading-6 text-white/75">

@@ -35,7 +35,7 @@ class DashboardController extends Controller
             ->map(fn ($p) => [
                 'id' => $p->id,
                 'groupName' => $p->group
-                    ? ($p->group->subscription?->name ?? 'Service indisponible').' — '.$p->group->name
+                    ? ($p->group->subscription?->name ?? 'Service indisponible').' - '.$p->group->name
                     : 'Groupe indisponible',
                 'amount' => $p->amount,
                 'currency' => $p->currency,

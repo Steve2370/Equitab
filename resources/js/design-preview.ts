@@ -5,6 +5,10 @@ import { createInertiaApp, router } from "@inertiajs/vue3";
 import { ZiggyVue, type Config } from "../../vendor/tightenco/ziggy";
 import DesignPreviewNotice from "./Components/DesignPreviewNotice.vue";
 import DirectionPreview from "./Components/Experience/DirectionPreview.vue";
+import { installReveal } from "./utils/reveal";
+
+// Same entrance animations as the application (see app.ts).
+installReveal();
 
 const previewRoutes: Config = {
     url: window.location.origin,
@@ -46,7 +50,7 @@ router.on("before", (event) => {
 });
 const pages = import.meta.glob("./Pages/**/*.vue");
 createInertiaApp({
-    title: (title) => title + " — aperçu Equitab",
+    title: (title) => title + " - aperçu Equitab",
     resolve: async (name) => {
         if (name === "DirectionPreview")
             return DirectionPreview as unknown as DefineComponent;

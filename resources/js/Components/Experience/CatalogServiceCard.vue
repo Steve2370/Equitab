@@ -54,6 +54,8 @@ function reset() {
         @pointerleave="reset"
     >
         <ServiceArtwork
+            :title="name"
+            band
             :slug="slug"
             :scene="presentation.scene"
             :palette="presentation.palette"
@@ -62,10 +64,10 @@ function reset() {
             :motion="motion"
         />
         <div class="catalog-card-body">
-            <div class="catalog-card-heading">
+            <div class="catalog-card-heading sr-only">
                 <div>
                     <p>À PARTAGER ENSEMBLE</p>
-                    <h3>{{ name }}</h3>
+                    <h3 class="sr-only">{{ name }}</h3>
                 </div>
             </div>
             <div class="catalog-value">
@@ -129,7 +131,7 @@ function reset() {
     gap: 14px;
 }
 .catalog-card-heading p {
-    font-size: 9px;
+    font-size: 12px;
     letter-spacing: 0.08em;
     color: #73767d;
     margin-bottom: 7px;
@@ -161,7 +163,7 @@ function reset() {
     justify-content: space-between;
     align-items: end;
     gap: 10px;
-    margin-block: 25px 24px;
+    margin-block: 6px 22px;
 }
 .catalog-value > div {
     min-width: 0;
@@ -170,7 +172,7 @@ function reset() {
 }
 .value-label {
     display: block;
-    font-size: 10px;
+    font-size: 12px;
     color: #6b6d77;
 }
 .catalog-value p {
@@ -182,7 +184,7 @@ function reset() {
 }
 .catalog-value small {
     display: block;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 400;
     letter-spacing: 0;
     color: #696d77;
@@ -201,7 +203,7 @@ function reset() {
     margin-left: auto;
     text-align: right;
     color: #636b64;
-    font-size: 10px;
+    font-size: 12px;
     line-height: 1.5;
 }
 .catalog-card-link {
@@ -264,6 +266,20 @@ function reset() {
     *::after {
         transition: none !important;
         animation: none !important;
+    }
+}
+@media (prefers-reduced-motion: no-preference) {
+    .catalog-card :deep(.scene-title) {
+        transition: translate 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+    .catalog-card:hover :deep(.scene-title) {
+        translate: 0 -5px;
+    }
+    .catalog-arrow {
+        transition: translate 0.2s ease-out;
+    }
+    .catalog-card:hover .catalog-arrow {
+        translate: 3px -3px;
     }
 }
 </style>

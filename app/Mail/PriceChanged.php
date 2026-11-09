@@ -32,7 +32,7 @@ class PriceChanged extends Mailable
         $direction = $this->newPrice < $this->oldPrice ? 'baissé' : 'augmenté';
 
         return new Envelope(
-            subject: "Votre prix a {$direction} — ".$this->member->group->subscription->name,
+            subject: "Votre prix a {$direction} - ".$this->member->group->subscription->name,
         );
     }
 

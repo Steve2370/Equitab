@@ -30,7 +30,7 @@ class StripeGroupProductGateway implements GroupProductGateway
                 try {
                     $product = $this->stripe->products->create([
                         'id' => $id,
-                        'name' => $name.' — EquitAb',
+                        'name' => $name.' - EquitAb',
                         'metadata' => ['draft_id' => $draftId, 'owner_id' => (string) $ownerId, 'draft_version' => (string) $version],
                     ], ['idempotency_key' => 'group-draft-product:'.$draftId.':'.$version]);
                 } catch (ApiErrorException $creationError) {

@@ -11,7 +11,7 @@ use Tests\TestCase;
  * Couvre le finding critique P0 de l'audit (« accès anonyme aux
  * identifiants ») : GET /api/groups et GET /api/groups/{group} sont
  * publiques (pas de middleware auth), et servaient auparavant le modèle
- * Group brut — donc credential_email/credential_password/credential_notes
+ * Group brut - donc credential_email/credential_password/credential_notes
  * (déchiffrés automatiquement par le cast 'encrypted') et les colonnes
  * Stripe (invite_token, stripe_*) étaient visibles par n'importe qui, sans
  * authentification. GroupController::index()/show() passent maintenant par

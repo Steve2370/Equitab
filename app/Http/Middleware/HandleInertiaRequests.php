@@ -42,7 +42,7 @@ class HandleInertiaRequests extends Middleware
             // stripe_identity_session_id), téléphone, adresse postale
             // complète, etc. Seuls name/email/identity_status/avatar sont
             // réellement utilisés par le frontend (layouts, barre de
-            // navigation) — les pages qui ont besoin de plus (Profile,
+            // navigation) - les pages qui ont besoin de plus (Profile,
             // Preferences) reçoivent déjà leur propre projection dédiée
             // depuis DashboardController.
             'auth' => [

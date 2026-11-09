@@ -175,7 +175,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <Head title="Créer un groupe — EquitAb" />
+    <Head title="Créer un groupe - EquitAb" />
     <DashboardLayout hide-verification-notice>
         <div class="owner-flow">
             <header>

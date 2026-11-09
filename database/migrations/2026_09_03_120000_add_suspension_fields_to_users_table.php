@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             // users.status ('active'|'suspended'|'banned') existe déjà mais
-            // rien ne permet de borner une suspension dans le temps — un
+            // rien ne permet de borner une suspension dans le temps - un
             // admin ne peut donc pas "suspendre 7 jours", seulement
             // suspendre indéfiniment. suspended_until comble ce manque ;
             // NULL = suspension indéfinie (ou compte non suspendu).

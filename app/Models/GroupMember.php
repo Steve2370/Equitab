@@ -19,7 +19,7 @@ class GroupMember extends Model
         // Ajoutées par les migrations add_stripe_subscription_fields_to_group_members_table
         // et add_stripe_item_id_to_group_members_table mais jamais reportées ici : Eloquent
         // rejette silencieusement (pas d'erreur) toute clé absente de $fillable lors d'un
-        // create()/update()/updateOrCreate() — stripe_subscription_id ne s'enregistrait donc
+        // create()/update()/updateOrCreate() - stripe_subscription_id ne s'enregistrait donc
         // JAMAIS sur le membre, même quand Stripe confirmait l'abonnement. C'est la cause
         // racine des membres bloqués "en attente" malgré un paiement Stripe réussi : le
         // webhook et la réconciliation cherchent le membre par stripe_subscription_id, qui

@@ -23,7 +23,7 @@ class ReconcilePendingPayments extends Command
 
             return self::FAILURE;
         }
-        $this->info(sprintf('%s — abonnements : %d ; annulations : %d ; remboursements/notifications : %d ; vérifications des accès : %d.',
+        $this->info(sprintf('%s - abonnements : %d ; annulations : %d ; remboursements/notifications : %d ; vérifications des accès : %d.',
             $this->option('dry-run') ? 'Intentions à vérifier (aucun appel Stripe)' : 'Intentions examinées',
             $result['subscriptions'], $result['cancellations'], $result['refunds'], $result['checks']));
         if ($result['errors'] > 0) {

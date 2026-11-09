@@ -76,6 +76,8 @@ function reset() {
     >
         <ServiceArtwork
             v-if="presentation === 'discovery'"
+            :title="name"
+            band
             :slug="slug"
             :scene="art.scene"
             :palette="art.palette"
@@ -91,7 +93,7 @@ function reset() {
             <div class="collection-card-title">
                 <div>
                     <p class="card-eyebrow">{{ eyebrow }}</p>
-                    <h3>{{ name }}</h3>
+                    <h3 :class="{ 'sr-only': presentation === 'discovery' }">{{ name }}</h3>
                 </div>
                 <span
                     v-if="status || available !== null"
@@ -139,7 +141,7 @@ function reset() {
                     ><Link
                         v-if="href"
                         :href="href"
-                        :aria-label="`${action} — ${name}`"
+                        :aria-label="`${action} - ${name}`"
                         >{{ action
                         }}<span class="eq-round-arrow"
                             ><ArrowUpRight
@@ -159,7 +161,7 @@ function reset() {
     gap: 16px;
     padding: 22px 22px 0;
     color: var(--color-eq-muted);
-    font-size: 9px;
+    font-size: 12px;
     letter-spacing: 0.07em;
 }
 .workspace-card-identity > span:last-child {
@@ -192,7 +194,7 @@ function reset() {
     gap: 12px;
 }
 .card-eyebrow {
-    font-size: 9px;
+    font-size: 12px;
     letter-spacing: 0.075em;
     color: #73767d;
     margin-bottom: 7px;
@@ -206,7 +208,7 @@ h3 {
 }
 .collection-card-status {
     flex: none;
-    font-size: 10px;
+    font-size: 12px;
     padding: 7px 9px;
     border-radius: 30px;
     background: #e7f3ed;
@@ -236,7 +238,7 @@ h3 {
 .collection-card-value span,
 small {
     color: #686b70;
-    font-size: 10px;
+    font-size: 12px;
 }
 .collection-card-value p {
     font-size: 30px;
@@ -285,7 +287,7 @@ small {
     display: flex;
     align-items: center;
     gap: 7px;
-    font-size: 10px;
+    font-size: 12px;
     color: #686b70;
     overflow-wrap: anywhere;
 }
@@ -297,7 +299,7 @@ small {
     display: inline-flex;
     align-items: center;
     gap: 9px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 500;
     min-height: 44px;
     flex: none;
@@ -317,6 +319,14 @@ small {
 @media (prefers-reduced-motion: reduce) {
     .collection-card {
         transition: none;
+    }
+}
+@media (prefers-reduced-motion: no-preference) {
+    .collection-card :deep(.scene-title) {
+        transition: translate 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+    .collection-card:hover :deep(.scene-title) {
+        translate: 0 -5px;
     }
 }
 </style>

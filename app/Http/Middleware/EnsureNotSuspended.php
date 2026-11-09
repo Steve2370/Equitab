@@ -10,7 +10,7 @@ class EnsureNotSuspended
 {
     /**
      * Un admin doit pouvoir suspendre un compte tout de suite, pas
-     * seulement empêcher sa prochaine connexion — sans ce middleware, un
+     * seulement empêcher sa prochaine connexion - sans ce middleware, un
      * utilisateur déjà connecté garderait l'accès jusqu'à expiration
      * naturelle de sa session.
      */

@@ -107,7 +107,7 @@ function deleteAccount(): void {
 </script>
 
 <template>
-    <Head title="Préférences — Equitab" />
+    <Head title="Préférences - Equitab" />
 
     <DashboardLayout>
         <div class="eq-page-heading">

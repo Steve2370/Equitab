@@ -1,6 +1,6 @@
 # Equitab
 
-> Plateforme de partage de coûts d'abonnements numériques — paiements sécurisés par Stripe, identifiants chiffrés, zéro argent transit par Equitab.
+> Plateforme de partage de coûts d'abonnements numériques - paiements sécurisés par Stripe, identifiants chiffrés, zéro argent transit par Equitab.
 
 ![Laravel](https://img.shields.io/badge/Laravel-13-FF2D20?style=flat&logo=laravel)
 ![Vue](https://img.shields.io/badge/Vue-3-4FC08D?style=flat&logo=vue.js)
@@ -33,7 +33,7 @@
 
 ## Aperçu
 
-Equitab permet à des particuliers canadiens de partager les frais de leurs abonnements numériques (Netflix, Spotify, Disney+, etc.) de façon sécurisée. Un propriétaire crée un groupe, des membres le rejoignent et paient leur quote-part directement via Stripe — Equitab ne détient jamais les fonds et prélève une commission de 5% via `application_fee_percent`.
+Equitab permet à des particuliers canadiens de partager les frais de leurs abonnements numériques (Netflix, Spotify, Disney+, etc.) de façon sécurisée. Un propriétaire crée un groupe, des membres le rejoignent et paient leur quote-part directement via Stripe - Equitab ne détient jamais les fonds et prélève une commission de 5% via `application_fee_percent`.
 
 **Modèle légal** : partage de frais entre particuliers, pas revente d'abonnements.
 
@@ -257,16 +257,16 @@ QUEUE_CONNECTION=database
 Les 4 terminaux à garder ouverts simultanément :
 
 ```bash
-# Terminal 1 — Frontend (Vite HMR)
+# Terminal 1 - Frontend (Vite HMR)
 npm run dev
 
-# Terminal 2 — WebSockets (Reverb)
+# Terminal 2 - WebSockets (Reverb)
 docker compose exec app php artisan reverb:start --host=0.0.0.0 --port=8080
 
-# Terminal 3 — Queue worker (jobs, remboursements automatiques)
+# Terminal 3 - Queue worker (jobs, remboursements automatiques)
 docker compose exec app php artisan queue:work --verbose
 
-# Terminal 4 — Webhooks Stripe (forwarding local)
+# Terminal 4 - Webhooks Stripe (forwarding local)
 stripe listen --forward-to localhost:8000/webhooks/stripe
 ```
 
@@ -389,7 +389,7 @@ equitab/
 ```
 Membre clique "S'abonner"
     ↓
-Stripe Elements — saisie carte (jamais transmise à Equitab)
+Stripe Elements - saisie carte (jamais transmise à Equitab)
     ↓
 createPaymentMethod() → paymentMethodId
     ↓
@@ -782,7 +782,7 @@ de références distingue les exigences du brief des choix créatifs proposés.
 Pour utiliser un autre port local : `EQUITAB_PREVIEW_PORT=4175 npm run preview:design`.
 Ce prototype doit être vérifié via cet aperçu, car `npm run build` ne l’inclut pas.
 
-#### Connexion et catalogue — direction collection
+#### Connexion et catalogue - direction collection
 
 Les pages réelles `/login` et `/services` utilisent désormais cette direction.
 La connexion conserve ses routes, ses champs, Google, la récupération du mot de
@@ -879,6 +879,15 @@ le nom du service. Un logo est une marque de commerce ; l’afficher pour promou
 EquitAb peut laisser croire à un partenariat. `scripts/test-service-presentation.mjs`
 échoue si un logo ou une référence à ce dossier réapparaît.
 
+Refonte de novembre 2026 : le nom du service s'affiche en grand sur l'illustration
+des cartes (bande plus basse sur téléphone), l'accueil explique le service et
+reprend les arguments de confiance (Stripe, identité vérifiée, remboursement sous
+48 h), et la page des groupes d'un service devient une liste compacte (responsable,
+places, part par mois). Les éléments marqués `.eq-reveal` apparaissent au défilement
+(`resources/js/utils/reveal.ts`) ; rien n'est masqué ni animé quand l'utilisateur
+demande de réduire les animations. Vérification : `node --experimental-strip-types
+--test scripts/test-design-refresh.mjs`.
+
 Les six écrans Admin partagent maintenant la même navigation et une présentation
 responsive : vue d’ensemble, utilisateurs, groupes, paiements, litiges, messagerie.
 Les listes deviennent des fiches étiquetées sur petit écran ; la pagination utilise
@@ -921,7 +930,7 @@ badge explicitement fictifs ; `/dashboard?empty=1` vérifie le premier usage.
 
 ## Licence
 
-Propriétaire — tous droits réservés © 2026 Equitab Inc.
+Propriétaire - tous droits réservés © 2026 Equitab Inc.
 
 ---
 

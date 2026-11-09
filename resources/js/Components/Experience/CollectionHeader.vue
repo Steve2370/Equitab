@@ -37,7 +37,7 @@ function close() {
 <template>
     <header class="collection-header" @keydown.esc="close">
         <div class="collection-nav">
-            <Link href="/" aria-label="Equitab — accueil"
+            <Link href="/" aria-label="Equitab - accueil"
                 ><EquitabWordmark
             /></Link>
             <nav aria-label="Navigation principale" class="desktop-navigation">

@@ -46,6 +46,12 @@ const identities: Record<string, ServiceBrand> = {
         deep: "#003f64",
         ink: "#002c46",
     },
+    illico: {
+        name: "illico+",
+        accent: "#ffd400",
+        deep: "#3d3300",
+        ink: "#1a1a1a",
+    },
     crunchyroll: {
         name: "Crunchyroll",
         accent: "#f47521",
@@ -179,6 +185,9 @@ const aliases: Record<string, string> = {
     "cyber-ghost": "cyberghost",
     "prime-video": "amazon-prime",
     "nord-vpn": "nordvpn",
+    "illico+": "illico",
+    "illico-plus": "illico",
+    illicoplus: "illico",
     dropbox: "dropbox-family",
     bitwarden: "bitwarden-families",
     nordpass: "nordpass-family",

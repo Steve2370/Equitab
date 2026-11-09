@@ -12,8 +12,10 @@ const props = withDefaults(
         palette?: string;
         motion?: boolean;
         slug?: string;
+        title?: string;
+        band?: boolean;
     }>(),
-    { index: "", palette: "", motion: true, slug: "" },
+    { index: "", palette: "", motion: true, slug: "", title: "", band: false },
 );
 const brand = computed(() => serviceBrand(props.slug));
 const brandStyle = computed(() =>
@@ -34,7 +36,7 @@ const brandStyle = computed(() =>
         :class="[
             'theme-' + scene,
             'palette-' + palette,
-            { 'motion-enabled': motion, 'service-branded': !!brand },
+            { 'motion-enabled': motion, 'service-branded': !!brand, 'is-band': band, 'has-title': !!title },
         ]"
     >
         <div class="card-scene">
@@ -155,8 +157,9 @@ const brandStyle = computed(() =>
                     <div class="book-sticker">✦</div></template
                 >
             </div>
-            <div class="scene-caption">
-                <span>{{ tagline }}</span
+            <div class="scene-caption" :class="{ 'has-title': title }">
+                <strong v-if="title" class="scene-title">{{ title }}</strong
+                ><span v-else>{{ tagline }}</span
                 ><span v-if="index" class="scene-index">{{ index }}</span>
             </div>
         </div>
@@ -874,6 +877,43 @@ const brandStyle = computed(() =>
     }
     .scene-object {
         transform: none !important;
+    }
+}
+/* Nom du service en vedette, lisible au-dessus de l'illustration (sans logo). */
+.scene-caption.has-title {
+    z-index: 3;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 56px 20px 16px;
+    background: linear-gradient(to top, rgb(0 0 0 / 0.7), rgb(0 0 0 / 0.35) 55%, rgb(0 0 0 / 0));
+    color: #fff;
+}
+.scene-title {
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -0.035em;
+    line-height: 1;
+    text-shadow: 0 2px 14px rgb(0 0 0 / 0.35);
+}
+.scene-topline > span:first-child {
+    font-size: 11px;
+}
+.artwork-host.has-title .scene-object {
+    translate: 0 -22px;
+    scale: 0.88;
+}
+@media (max-width: 639px) {
+    .artwork-host.is-band .card-scene {
+        height: 136px;
+    }
+    .artwork-host.is-band .scene-object {
+        scale: 0.46;
+        translate: 0 0;
+        transform-origin: 100% 0;
+        left: auto;
+        right: 34px;
+        top: 12px;
     }
 }
 </style>

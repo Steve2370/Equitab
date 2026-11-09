@@ -8,6 +8,7 @@ const brandGradients: Record<string, BrandGradient> = {
     'disney': { from: '#1132A8', to: '#0D2680' },
     'youtube-premium': { from: '#FF0000', to: '#CC0000' },
     crave: { from: '#00A8E0', to: '#0080B0' },
+    illico: { from: '#FFD400', to: '#E0B800' },
     crunchyroll: { from: '#F47521', to: '#D4611A' },
     'paramount': { from: '#0064FF', to: '#0050CC' },
     'canal-plus': { from: '#000000', to: '#000000' },

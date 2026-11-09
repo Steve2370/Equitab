@@ -60,7 +60,7 @@ const page = computed(() => {
 </script>
 
 <template>
-    <Head :title="`${status} — ${page.title}`" />
+    <Head :title="`${status} - ${page.title}`" />
 
     <div class="flex min-h-screen flex-col bg-gray-50">
         <div class="flex flex-1 flex-col items-center justify-center px-6 py-16 text-center">

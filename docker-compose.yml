@@ -58,7 +58,7 @@ services:
   # Même constat pour le planificateur : rien n'invoquait schedule:run,
   # donc les tâches de routes/console.php (rappels de renouvellement,
   # recalcul des scores de confiance, sitemap, et surtout
-  # equitab:reconcile-payments toutes les 15 min — le filet de sécurité
+  # equitab:reconcile-payments toutes les 15 min - le filet de sécurité
   # si un webhook Stripe est manqué) ne tournaient jamais non plus.
   scheduler:
     build:

@@ -234,7 +234,7 @@ const canadianProvinces = [
 </script>
 
 <template>
-    <Head title="Profil — Equitab" />
+    <Head title="Profil - Equitab" />
 
     <DashboardLayout>
         <div class="eq-page-heading">
@@ -339,7 +339,7 @@ const canadianProvinces = [
                                     >Téléphone</label
                                 >
                                 <p class="mt-1 font-medium text-equitab-navy">
-                                    {{ user.phone ?? "—" }}
+                                    {{ user.phone ?? "-" }}
                                 </p>
                             </div>
                             <div>
@@ -367,7 +367,7 @@ const canadianProvinces = [
                                     <p
                                         class="mt-1 font-medium text-equitab-navy"
                                     >
-                                        {{ addressSnapshot.address || "—" }}
+                                        {{ addressSnapshot.address || "-" }}
                                     </p>
                                 </div>
                                 <div>
@@ -377,7 +377,7 @@ const canadianProvinces = [
                                     <p
                                         class="mt-1 font-medium text-equitab-navy"
                                     >
-                                        {{ addressSnapshot.city || "—" }}
+                                        {{ addressSnapshot.city || "-" }}
                                     </p>
                                 </div>
                                 <div>
@@ -387,7 +387,7 @@ const canadianProvinces = [
                                     <p
                                         class="mt-1 font-medium text-equitab-navy"
                                     >
-                                        {{ addressSnapshot.province || "—" }}
+                                        {{ addressSnapshot.province || "-" }}
                                     </p>
                                 </div>
                                 <div>
@@ -397,7 +397,7 @@ const canadianProvinces = [
                                     <p
                                         class="mt-1 font-medium text-equitab-navy"
                                     >
-                                        {{ addressSnapshot.postal_code || "—" }}
+                                        {{ addressSnapshot.postal_code || "-" }}
                                     </p>
                                 </div>
                             </div>
@@ -489,7 +489,7 @@ const canadianProvinces = [
                                             :aria-invalid="!!profileErrors.province"
                                             class="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-equitab-emerald focus:outline-none"
                                         >
-                                            <option value="">—</option>
+                                            <option value="">-</option>
                                             <option
                                                 v-for="p in canadianProvinces"
                                                 :key="p.code"

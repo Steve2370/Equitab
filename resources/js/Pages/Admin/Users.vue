@@ -112,7 +112,7 @@ defineProps<{ users: AdminPage<User> }>();
 </script>
 
 <template>
-    <Head title="Utilisateurs — Admin" />
+    <Head title="Utilisateurs - Admin" />
     <AdminLayout>
         <AdminPageHeader
             title="Les membres, en confiance."

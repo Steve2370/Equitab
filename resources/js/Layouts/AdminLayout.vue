@@ -77,7 +77,7 @@ function closeMenu() {
             class="admin-sidebar"
             :class="{ 'is-open': opened }"
         >
-            <Link href="/" aria-label="EquitAb — accueil" class="admin-brand"
+            <Link href="/" aria-label="EquitAb - accueil" class="admin-brand"
                 ><EquitabWordmark
             /></Link>
             <div class="admin-space-label">

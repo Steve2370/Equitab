@@ -14,7 +14,7 @@ class ModelFillableTest extends TestCase
 
     /**
      * Colonnes gérées par Eloquent/Laravel lui-même (pas par nos
-     * create()/update() applicatifs) — jamais censées être dans $fillable.
+     * create()/update() applicatifs) - jamais censées être dans $fillable.
      */
     private const GLOBALLY_EXCLUDED_COLUMNS = [
         'id', 'created_at', 'updated_at', 'deleted_at',
@@ -36,7 +36,7 @@ class ModelFillableTest extends TestCase
      * la même erreur, à deux reprises : une migration ajoute une colonne à
      * une table, mais personne ne pense à l'ajouter au $fillable du
      * modèle Eloquent correspondant. Eloquent ignore alors silencieusement
-     * cette colonne à chaque create()/update()/updateOrCreate() — sans
+     * cette colonne à chaque create()/update()/updateOrCreate() - sans
      * erreur, sans warning. Ça a fait perdre stripe_subscription_id
      * (membres bloqués "en attente" malgré un paiement Stripe réussi) et
      * platform_fee_amount (gains Equitab affichés à 0$) pendant des
@@ -61,7 +61,7 @@ class ModelFillableTest extends TestCase
             $model = new $class;
 
             // Un modèle explicitement non protégé (guarded = []) autorise
-            // volontairement tout — rien à vérifier pour lui.
+            // volontairement tout - rien à vérifier pour lui.
             if ($model->getGuarded() === []) {
                 continue;
             }

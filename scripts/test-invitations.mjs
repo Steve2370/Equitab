@@ -106,7 +106,7 @@ test('owner preparation renders exactly two visibility choices in the existing f
     assert.ok(html.includes('value="public"'));
     assert.ok(html.includes('value="private"'));
     assert.ok(!html.includes('value="invite_only"'));
-    assert.ok(html.includes('Privé — sur invitation'));
+    assert.ok(html.includes('Privé - sur invitation'));
 });
 test('legacy draft visibility is normalized without losing its fields or becoming unsaved', async () => {
     const data = { ...drafts.emptyDraftData(), name: 'Saved legacy draft', visibility: 'invite_only' };
@@ -118,7 +118,7 @@ test('legacy draft visibility is normalized without losing its fields or becomin
     assert.equal(drafts.isDraftSaved(state), true);
     assert.equal(drafts.draftFingerprint(data), drafts.draftFingerprint({ ...data, visibility: 'private' }));
     const html = await render(preview, { data: state.data });
-    assert.ok(html.includes('Privé — sur invitation'));
+    assert.ok(html.includes('Privé - sur invitation'));
 });
 
 function renderConfirmation(status, form = { errors: {}, processing: false }) {

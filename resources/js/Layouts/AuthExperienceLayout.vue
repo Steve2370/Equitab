@@ -11,7 +11,7 @@ import EquitabStory from "@/Components/Experience/EquitabStory.vue";
                 <Link
                     href="/"
                     class="auth-mobile-brand"
-                    aria-label="Equitab — accueil"
+                    aria-label="Equitab - accueil"
                     ><EquitabWordmark
                 /></Link>
                 <Link href="/" class="eq-link mb-8 !font-normal !text-eq-muted"
@@ -32,7 +32,7 @@ import EquitabStory from "@/Components/Experience/EquitabStory.vue";
             </div>
         </main>
         <aside class="auth-story">
-            <Link href="/" aria-label="Equitab — accueil"
+            <Link href="/" aria-label="Equitab - accueil"
                 ><EquitabWordmark
             /></Link>
             <div class="auth-story-content">

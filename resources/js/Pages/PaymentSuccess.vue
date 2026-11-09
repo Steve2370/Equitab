@@ -36,7 +36,7 @@ const title = computed(() => confirmed.value ? 'Paiement confirmé'
 </script>
 
 <template>
-    <Head :title="title + ' — Equitab'" />
+    <Head :title="title + ' - Equitab'" />
     <div class="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
         <div class="w-full max-w-lg min-w-0">
             <div class="mb-6 flex flex-col items-center text-center" aria-live="polite">

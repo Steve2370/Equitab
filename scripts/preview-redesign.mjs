@@ -157,6 +157,8 @@ categories.push(
     },
 );
 const services = categories.flatMap((category) => category.subscriptions);
+// Les montants de l'aperçu ont une devise, comme en production.
+for (const s of services) s.currency ??= "CAD";
 const demoUser = {
     id: 1,
     name: "Camille Démo",
@@ -175,6 +177,7 @@ const demoGroups = featuredServices.map((s, index) => ({
     pricePerMember: [600, 300, 400][index],
     currentMembers: [3, 4, 4][index],
     maxMembers: s.max_members,
+    currency: "CAD",
 }));
 const profileUser = {
     ...demoUser,
@@ -308,6 +311,7 @@ function pageFor(url) {
                       ),
                       spotsAvailable: index === 2 ? 0 : index + 1,
                       maxMembers: service.max_members,
+                      currency: "CAD",
                       createdAt: "1 oct. 2026",
                   })),
         });
@@ -349,7 +353,7 @@ function pageFor(url) {
                 ? [
                       {
                           id: 1,
-                          groupName: "Spotify — groupe de démonstration",
+                          groupName: "Spotify - groupe de démonstration",
                           amount: 300,
                           status: "pending",
                           paidAt: null,
@@ -648,7 +652,7 @@ const server = createServer((req, res) => {
                 .replaceAll(">", "&gt;");
             const html = await vite.transformIndexHtml(
                 url.pathname,
-                `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Equitab — aperçu de la refonte</title><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet"></head><body><div id="app" data-page='${encoded}'></div><script type="module" src="/resources/js/design-preview.ts"></script></body></html>`,
+                `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Equitab - aperçu de la refonte</title><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet"></head><body><div id="app" data-page='${encoded}'></div><script type="module" src="/resources/js/design-preview.ts"></script></body></html>`,
             );
             res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
             res.end(html);
@@ -662,7 +666,7 @@ const server = createServer((req, res) => {
 });
 server.listen(port, "127.0.0.1", () =>
     console.log(
-        "Aperçu Equitab — données fictives, aucun paiement : " + origin,
+        "Aperçu Equitab - données fictives, aucun paiement : " + origin,
     ),
 );
 async function shutdown() {

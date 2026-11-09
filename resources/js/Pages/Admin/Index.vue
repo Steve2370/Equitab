@@ -28,7 +28,7 @@ defineProps<{
 }>();
 </script>
 <template>
-    <Head title="Vue d’ensemble — Admin EquitAb" />
+    <Head title="Vue d’ensemble - Admin EquitAb" />
     <AdminLayout>
         <AdminPageHeader
             title="Le partage, en perspective."

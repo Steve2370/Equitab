@@ -10,6 +10,9 @@ import {
     CircleDollarSign,
     Plus,
     X,
+    ShieldCheck,
+    BadgeCheck,
+    RotateCcw,
 } from "lucide-vue-next";
 import NavbarWithSearch from "@/Components/NavbarWithSearch.vue";
 import Footer from "@/Components/Footer.vue";
@@ -165,27 +168,34 @@ const faqs = [
         <main id="main-content">
             <section class="eq-container home-hero">
                 <div>
-                    <p class="eq-eyebrow">
+                    <p class="eq-eyebrow eq-reveal" style="--reveal-index: 0">
                         <span class="home-dot" /> LES BONNES CHOSES SE
                         PARTAGENT.
                     </p>
-                    <h1>
+                    <h1 class="eq-reveal" style="--reveal-index: 1">
                         Vos envies.<br />En meilleure<br class="hero-break" />
                         <em>compagnie.</em>
                     </h1>
-                    <p class="hero-description">
-                        Gardez ce que vous aimez. Partagez les frais.<br />Et
-                        faites de la place à un peu plus de vie.
+                    <p class="hero-description eq-reveal" style="--reveal-index: 2">
+                        Partagez le coût de vos abonnements entre proches.
+                        Chaque membre paie sa part automatiquement, chaque
+                        mois, et le responsable du groupe reçoit l'argent
+                        directement.
                     </p>
-                    <div class="hero-actions">
+                    <div class="hero-actions eq-reveal" style="--reveal-index: 3">
                         <a href="#collection" class="eq-button"
                             >Trouver mon groupe <ArrowUpRight :size="17" /></a
                         ><Link href="/dashboard/groups/create" class="eq-link"
                             >Partager le mien <Plus :size="16"
                         /></Link>
                     </div>
+                    <ul class="hero-trust eq-reveal" style="--reveal-index: 4">
+                        <li><ShieldCheck :size="17" aria-hidden="true" />Paiements sécurisés par Stripe</li>
+                        <li><BadgeCheck :size="17" aria-hidden="true" />Responsables à l'identité vérifiée</li>
+                        <li><RotateCcw :size="17" aria-hidden="true" />Remboursé si aucun accès sous 48 h</li>
+                    </ul>
                 </div>
-                <div class="hero-art" aria-hidden="true">
+                <div class="hero-art eq-reveal" style="--reveal-index: 2" aria-hidden="true">
                     <div class="hero-art-caption">
                         LA VIE EST MIEUX<br />QUAND ELLE SE PARTAGE.
                     </div>
@@ -212,7 +222,7 @@ const faqs = [
                 </div>
             </section>
             <section id="collection" class="eq-container home-catalog">
-                <div class="collection-top">
+                <div class="collection-top eq-reveal">
                     <div>
                         <p class="eq-eyebrow">LA COLLECTION / 001</p>
                         <h2>De quoi vous retrouver.</h2>
@@ -272,6 +282,8 @@ const faqs = [
                     <CollectionCard
                         v-for="(card, index) in filtered"
                         v-bind="card"
+                        class="eq-reveal"
+                        :style="{ '--reveal-index': index % 3 }"
                         :category="category(card.slug)"
                         :eyebrow="
                             openGroups.length
@@ -320,7 +332,7 @@ const faqs = [
                 </div>
             </section>
             <section class="eq-container home-principles">
-                <div>
+                <div class="eq-reveal">
                     <p class="eq-eyebrow">LE PLAISIR DE PARTAGER</p>
                     <h2>
                         De belles découvertes.<br /><span
@@ -333,7 +345,7 @@ const faqs = [
                     </p>
                 </div>
                 <article
-                    v-for="item in [
+                    v-for="(item, itemIndex) in [
                         {
                             icon: Sparkles,
                             title: 'À chacun son univers.',
@@ -351,6 +363,8 @@ const faqs = [
                         },
                     ]"
                     :key="item.title"
+                    class="eq-reveal"
+                    :style="{ '--reveal-index': itemIndex + 1 }"
                 >
                     <component :is="item.icon" :size="22" />
                     <h3>{{ item.title }}</h3>
@@ -359,7 +373,7 @@ const faqs = [
             </section>
             <section id="comment-ca-marche" class="home-how">
                 <div class="eq-container">
-                    <div class="collection-top">
+                    <div class="collection-top eq-reveal">
                         <div>
                             <p class="eq-eyebrow">
                                 UN PEU DE VOUS. UN PEU DES AUTRES.
@@ -388,6 +402,8 @@ const faqs = [
                         <article
                             v-for="(step, index) in steps"
                             :key="step.title"
+                            class="eq-reveal"
+                            :style="{ '--reveal-index': index }"
                         >
                             <span>0{{ index + 1 }}</span
                             ><component :is="step.icon" :size="22" />
@@ -407,7 +423,7 @@ const faqs = [
                 </div>
             </section>
             <section class="eq-container home-faq">
-                <div>
+                <div class="eq-reveal">
                     <p class="eq-eyebrow">ON VOUS EXPLIQUE</p>
                     <h2>Les bonnes questions.<br />Tout simplement.</h2>
                 </div>
@@ -420,7 +436,7 @@ const faqs = [
                     </details>
                 </div>
             </section>
-            <section class="eq-container home-finale">
+            <section class="eq-container home-finale eq-reveal">
                 <p class="eq-eyebrow">LA SUITE, C’EST ENSEMBLE.</p>
                 <h2>On se retrouve<br /><em>dans un groupe ?</em></h2>
                 <Link href="/services" class="eq-button"
@@ -443,7 +459,7 @@ const faqs = [
     min-width: 0;
 }
 .home-hero .eq-eyebrow {
-    font-size: 9px;
+    font-size: 11px;
     letter-spacing: 0.1em;
 }
 .home-dot {
@@ -469,9 +485,29 @@ h1 em,
     letter-spacing: -0.06em;
 }
 .hero-description {
+    font-size: 17px;
+    line-height: 1.65;
+    color: #555a5f;
+    max-width: 32em;
+}
+.hero-trust {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 22px;
+    margin-top: 30px;
+    padding-top: 22px;
+    border-top: 1px solid #dce5df;
     font-size: 13px;
-    line-height: 1.9;
-    color: #686b70;
+    color: #3f4a45;
+}
+.hero-trust li {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+.hero-trust svg {
+    color: #187a57;
+    flex: none;
 }
 .hero-actions {
     display: flex;
@@ -489,9 +525,10 @@ h1 em,
 }
 .hero-art-caption {
     position: absolute;
-    top: 33px;
-    left: 30%;
-    font-size: 9px;
+    top: 34px;
+    right: 9%;
+    text-align: right;
+    font-size: 11px;
     letter-spacing: 0.11em;
     line-height: 1.7;
 }
@@ -533,7 +570,46 @@ h1 em,
     position: absolute;
     bottom: 25px;
     right: 25px;
-    font-size: 10px;
+    font-size: 12px;
+}
+@keyframes eq-float {
+    0%,
+    100% {
+        translate: 0 0;
+    }
+    50% {
+        translate: 0 -12px;
+    }
+}
+@keyframes eq-breathe {
+    0%,
+    100% {
+        scale: 1;
+    }
+    50% {
+        scale: 1.07;
+    }
+}
+@media (prefers-reduced-motion: no-preference) {
+    .hero-art-first {
+        animation: eq-float 6s ease-in-out infinite;
+    }
+    .hero-art-second {
+        animation: eq-float 7s ease-in-out -2.5s infinite;
+    }
+    .hero-sticker {
+        animation: eq-breathe 4.5s ease-in-out infinite;
+    }
+    .hero-trust svg {
+        transition: scale 0.2s ease-out;
+    }
+    .hero-trust li:hover svg {
+        scale: 1.2;
+    }
+}
+/* Les légendes des cartes décoratives se superposaient aux objets. */
+.hero-art :deep(.scene-caption) {
+    display: none;
 }
 .home-catalog {
     border-top: 1px solid #dce5df;
@@ -793,6 +869,27 @@ h2 {
         top: 135px;
         right: 0;
         width: 62%;
+    }
+    /* Plus de textes superposés dans l'illustration sur téléphone. */
+    .hero-art-caption,
+    .hero-art > p {
+        display: none;
+    }
+    .hero-art-first {
+        top: 30px;
+    }
+    .hero-art-second {
+        top: 110px;
+    }
+    .hero-sticker {
+        top: 8px;
+        right: 8px;
+        left: auto;
+        bottom: auto;
+        z-index: 3;
+    }
+    .hero-description {
+        font-size: 16px;
     }
     .collection-controls {
         flex-direction: column;

@@ -77,7 +77,7 @@ function resetFilters() {
 }
 </script>
 <template>
-    <Head title="La collection — tous les services" />
+    <Head title="La collection - tous les services" />
     <div class="services-collection" :class="{ 'without-motion': !motion }">
         <a href="#catalog" class="catalog-skip">Aller aux services</a>
         <CollectionHeader />
@@ -189,8 +189,10 @@ function resetFilters() {
                 </div>
                 <div v-if="filteredServices.length" class="services-grid">
                     <CatalogServiceCard
-                        v-for="service in filteredServices"
+                        v-for="(service, serviceIndex) in filteredServices"
                         :key="service.id"
+                        class="eq-reveal"
+                        :style="{ '--reveal-index': serviceIndex % 3 }"
                         :name="service.name"
                         :slug="service.slug"
                         :category="service.category"
@@ -266,7 +268,7 @@ function resetFilters() {
         <footer class="catalog-footer">
             <div class="catalog-width">
                 <div class="catalog-footer-top">
-                    <Link href="/" aria-label="Equitab — accueil"
+                    <Link href="/" aria-label="Equitab - accueil"
                         ><EquitabWordmark light
                     /></Link>
                     <p>La suite se partage.</p>

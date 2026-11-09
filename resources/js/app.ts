@@ -6,6 +6,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createApp, h } from 'vue';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import FlashToastBridge from './Components/FlashToastBridge.vue';
+import { installReveal } from './utils/reveal';
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
 
@@ -23,6 +24,8 @@ import Pusher from 'pusher-js';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Equitab';
 
+installReveal();
+
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
     resolve: (name) =>
@@ -33,7 +36,7 @@ createInertiaApp({
     setup({ el, App, props, plugin }) {
         // FlashToastBridge est monté en frère de App (pas un wrapper autour),
         // pour exister sur toutes les pages sans dépendre d'un layout
-        // particulier — voir ce fichier pour le pourquoi.
+        // particulier - voir ce fichier pour le pourquoi.
         return createApp({ render: () => [h(App, props), h(FlashToastBridge)] })
             .use(plugin)
             .use(ZiggyVue)

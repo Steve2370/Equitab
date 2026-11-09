@@ -80,7 +80,7 @@ class PaymentController extends Controller
         abort_unless($this->access->canView($request->user(), $group)
             || $this->access->hasValidInvitation($group, $data['invite_token'] ?? null), 404);
         // $group->price_per_member n'est jamais renseigné (le prix réel
-        // vient de total_price / membres actifs) — calculatePricePerMemberIfJoined()
+        // vient de total_price / membres actifs) - calculatePricePerMemberIfJoined()
         // donne le prix tel qu'il sera pour quelqu'un qui n'a pas encore
         // rejoint, ce qui est le bon prix à afficher ici.
         $pricePerMember = $group->calculatePricePerMemberIfJoined();
@@ -161,7 +161,7 @@ class PaymentController extends Controller
                 'subscriptionName' => $group->subscription->name,
                 'subscriptionSlug' => $group->subscription->slug,
                 'ownerName' => $group->owner->name,
-                // group->price_per_member n'est jamais renseigné — le prix
+                // group->price_per_member n'est jamais renseigné - le prix
                 // réellement payé par ce membre est son share_amount (figé
                 // au moment de la souscription). On retombe sur le calcul
                 // dynamique seulement si le membre n'existe pas encore.
@@ -201,7 +201,7 @@ class PaymentController extends Controller
             'description' => $request->description,
         ]);
 
-        Log::warning("Nouvelle dispute #{$dispute->id} - paiement #{$payment->id} — raison: {$request->reason}");
+        Log::warning("Nouvelle dispute #{$dispute->id} - paiement #{$payment->id} - raison: {$request->reason}");
 
         return response()->json([
             'message' => 'Votre demande a été enregistrée. Nous la traiterons sous 48h.',

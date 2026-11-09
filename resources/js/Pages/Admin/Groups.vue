@@ -72,7 +72,7 @@ function initials(name: string): string {
 </script>
 
 <template>
-    <Head title="Groupes — Admin Equitab" />
+    <Head title="Groupes - Admin Equitab" />
 
     <AdminLayout>
         <AdminPageHeader

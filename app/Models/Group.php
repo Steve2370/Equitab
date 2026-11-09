@@ -124,7 +124,7 @@ class Group extends Model
     }
 
     /**
-     * Prix par membre tel qu'il sera APRÈS qu'un nouveau membre ait rejoint —
+     * Prix par membre tel qu'il sera APRÈS qu'un nouveau membre ait rejoint -
      * à utiliser pour tout affichage destiné à quelqu'un qui n'a pas encore
      * rejoint le groupe (page d'invitation, liste publique des groupes).
      * Ne pas confondre avec calculateCurrentPricePerMember(), qui reflète le

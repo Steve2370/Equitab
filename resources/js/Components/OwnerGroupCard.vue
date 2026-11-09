@@ -6,6 +6,7 @@ import StripeCardForm from "@/Components/StripeCardForm.vue";
 import CollectionCard from "@/Components/Experience/CollectionCard.vue";
 import ExperienceDialog from "@/Components/Experience/ExperienceDialog.vue";
 import { isPaymentQuote, type PaymentQuote } from "@/utils/paymentQuote";
+import { formatMoney } from "@/utils/money";
 interface Props {
     groupId: number;
     ownerName: string;
@@ -23,6 +24,7 @@ interface Props {
     description?: string | null;
     motion?: boolean;
     index?: number;
+    compact?: boolean;
 }
 const props = defineProps<Props>();
 const detailOpen = ref(false);
@@ -78,7 +80,36 @@ function onSuccess() {
 }
 </script>
 <template>
+    <!-- Ligne compacte : ce qui différencie les groupes passe en premier. -->
+    <article
+        v-if="compact"
+        :id="'group-' + groupId"
+        class="group-row eq-reveal"
+        :style="{ '--reveal-index': ((index ?? 1) - 1) % 6 }"
+    >
+        <div class="group-row-owner">
+            <span class="group-row-avatar" aria-hidden="true">{{ ownerName.charAt(0) }}</span>
+            <div>
+                <p class="group-row-title">Avec {{ ownerName }}</p>
+                <p class="group-row-meta" :class="{ verified: isVerified }">
+                    <ShieldCheck :size="15" aria-hidden="true" />{{ isVerified ? "Identité vérifiée" : "Identité non vérifiée" }}
+                </p>
+            </div>
+        </div>
+        <div class="group-row-places">
+            <strong :class="{ full: spotsAvailable === 0 }">{{ spotsAvailable === 0 ? "Complet" : spotsAvailable + (spotsAvailable > 1 ? " places libres" : " place libre") }}</strong>
+            <span>{{ maxMembers - spotsAvailable }} / {{ maxMembers }} membres</span>
+        </div>
+        <div class="group-row-price">
+            <strong>{{ formatMoney(pricePerMember, currency) }}</strong>
+            <span>votre part par mois</span>
+        </div>
+        <button type="button" class="eq-button group-row-action" :aria-label="'Découvrir le groupe de ' + ownerName" @click="detailOpen = true">
+            Découvrir <ArrowUpRight :size="17" aria-hidden="true" />
+        </button>
+    </article>
     <CollectionCard
+        v-else
         :id="'group-' + groupId"
         :name="subscriptionName"
         :slug="slug"
@@ -185,6 +216,103 @@ function onSuccess() {
     </ExperienceDialog>
 </template>
 <style scoped>
+.group-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 24px;
+    padding: 20px 24px;
+    background: #fff;
+    border: 1px solid #dededf;
+    border-radius: 20px;
+    box-shadow: 0 15px 34px -30px #15172170;
+}
+.group-row-owner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+.group-row-avatar {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    flex: none;
+    border-radius: 50%;
+    background: #dff3e9;
+    color: #187a57;
+    font-weight: 700;
+    font-size: 18px;
+}
+.group-row-title {
+    font-size: 17px;
+    font-weight: 650;
+}
+.group-row-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 3px;
+    font-size: 13px;
+    color: #6b6d77;
+}
+.group-row-meta.verified {
+    color: #187a57;
+}
+.group-row-places,
+.group-row-price {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.group-row-places strong {
+    font-size: 15px;
+    color: #187a57;
+}
+.group-row-places strong.full {
+    color: #8a5a00;
+}
+.group-row-places span,
+.group-row-price span {
+    font-size: 13px;
+    color: #6b6d77;
+}
+.group-row-price strong {
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.04em;
+}
+.group-row-action {
+    min-height: 46px;
+}
+@media (prefers-reduced-motion: no-preference) {
+    .group-row {
+        transition:
+            translate 0.25s ease-out,
+            box-shadow 0.25s ease-out,
+            border-color 0.25s ease-out;
+    }
+    .group-row:hover {
+        translate: 0 -3px;
+        border-color: #b9d9c8;
+        box-shadow: 0 22px 40px -28px #151721a0;
+    }
+}
+@media (max-width: 760px) {
+    .group-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        padding: 18px;
+    }
+    .group-row-owner {
+        grid-column: 1 / -1;
+    }
+    .group-row-action {
+        grid-column: 1 / -1;
+        justify-content: center;
+    }
+}
 .group-badges {
     display: flex;
     flex-wrap: wrap;

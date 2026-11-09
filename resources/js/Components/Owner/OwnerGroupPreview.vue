@@ -10,7 +10,7 @@ const confirmedPreview = computed(() => props.preview
     && props.preview.max_members === props.data.max_members
     && props.preview.currency === currency.value ? props.preview : null);
 const share = computed(() => confirmedPreview.value?.full_group_share ?? fullGroupShare(props.data));
-const visibility = computed(() => props.data.visibility === "public" ? "Public" : props.data.visibility ? "Privé — sur invitation" : "À préciser");
+const visibility = computed(() => props.data.visibility === "public" ? "Public" : props.data.visibility ? "Privé - sur invitation" : "À préciser");
 </script>
 
 <template>

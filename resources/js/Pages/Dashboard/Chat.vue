@@ -192,7 +192,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <Head title="Chat — Equitab" />
+    <Head title="Chat - Equitab" />
 
     <DashboardLayout>
         <div class="eq-page-heading">

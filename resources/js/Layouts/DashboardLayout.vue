@@ -116,7 +116,7 @@ function closeMenu() {
         >
             <Link
                 href="/"
-                aria-label="Equitab — accueil"
+                aria-label="Equitab - accueil"
                 class="hidden h-20 items-center border-b border-eq-line px-7 lg:flex"
                 ><EquitabWordmark
             /></Link>

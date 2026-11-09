@@ -86,7 +86,7 @@ function statusClass(status: string): string {
 </script>
 
 <template>
-    <Head title="Disputes — Admin Equitab" />
+    <Head title="Disputes - Admin Equitab" />
 
     <AdminLayout>
         <AdminPageHeader
@@ -226,8 +226,8 @@ function statusClass(status: string): string {
         >
             <template v-if="selectedDispute">
                 <p class="text-sm text-gray-500 mb-4">
-                    {{ selectedDispute.userName }} —
-                    {{ selectedDispute.groupName }} —
+                    {{ selectedDispute.userName }} -
+                    {{ selectedDispute.groupName }} -
                     {{ selectedDispute.amount === null || selectedDispute.currency === null ? 'Montant indisponible' : formatMoney(selectedDispute.amount, selectedDispute.currency) }}
                 </p>
 

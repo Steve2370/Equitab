@@ -79,7 +79,7 @@ function fixtures({ empty: isEmpty = false, long = false } = {}) {
         '/admin/groups': { component: 'Admin/Groups', props: { groups: page(groups) } },
         '/admin/disputes': { component: 'Admin/Disputes', props: { disputes: page(isEmpty ? [] : [
             { id: 1, userName: 'Membre fictif', userEmail: 'membre@example.test', groupName: 'Groupe archivé', subscriptionName: 'Netflix', reason: 'no_access', description: 'Données fictives', status: 'open', amount, currency: 'EUR', adminNotes: null, createdAt: '07 oct. 2026' },
-            { id: 2, userName: 'Utilisateur supprimé', userEmail: '—', groupName: 'Groupe indisponible', subscriptionName: 'Service indisponible', reason: 'other', description: '', status: 'under_review', amount: null, currency: null, adminNotes: null, createdAt: '07 oct. 2026' },
+            { id: 2, userName: 'Utilisateur supprimé', userEmail: '-', groupName: 'Groupe indisponible', subscriptionName: 'Service indisponible', reason: 'other', description: '', status: 'under_review', amount: null, currency: null, adminNotes: null, createdAt: '07 oct. 2026' },
         ]) } },
         '/dashboard': { component: 'Dashboard/Index', props: {
             userName: 'Camille Démo', activeSubscriptionsCount: payments.length,

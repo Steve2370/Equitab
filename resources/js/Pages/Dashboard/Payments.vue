@@ -138,7 +138,7 @@ const filters: {
 </script>
 
 <template>
-    <Head title="Paiements — Equitab" />
+    <Head title="Paiements - Equitab" />
 
     <DashboardLayout>
         <div class="eq-page-heading">

@@ -189,7 +189,7 @@ test('payment SSR preserves CAD/EUR amounts but cannot claim success or reveal a
         for (const [serviceAccess, expectedTitle] of states) {
             const html = await render('Pages/PaymentSuccess.vue', { group: { ...group, currency, memberStatus: 'active' }, credentials, serviceAccess });
             assert.ok(html.includes(`7,89 ${currency}`));
-            assert.match(html, new RegExp(`<title>${expectedTitle} — Equitab</title>`));
+            assert.match(html, new RegExp(`<title>${expectedTitle} - Equitab</title>`));
             assert.match(html, new RegExp(`<h1[^>]*>${expectedTitle}</h1>`));
             assert.doesNotMatch(html, /Paiement confirmé|réalisé avec succès|Votre abonnement est actif/);
             for (const secret of [...Object.values(credentials), invitation.url]) {

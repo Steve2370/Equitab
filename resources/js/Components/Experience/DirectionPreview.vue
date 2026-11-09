@@ -147,7 +147,7 @@ function price(cents: number) {
 </script>
 
 <template>
-    <Head title="Collection — direction créative" />
+    <Head title="Collection - direction créative" />
     <div
         class="eq-direction"
         :class="{ 'motion-on': motion, 'motion-off': !motion }"
@@ -157,7 +157,7 @@ function price(cents: number) {
             <a
                 href="/direction"
                 class="direction-logo"
-                aria-label="EquitAb — aperçu de la nouvelle direction"
+                aria-label="EquitAb - aperçu de la nouvelle direction"
                 ><span class="logo-symbol" aria-hidden="true"
                     ><i /><i /><i /><i /></span
                 >equit<span>ab</span></a
@@ -342,7 +342,7 @@ function price(cents: number) {
                         personnes et groupes fictifs. Favoris conservés
                         seulement dans cet aperçu.
                     </p>
-                    <span>01 — 03 / ÉDITION EXPLORATOIRE</span>
+                    <span>01 - 03 / ÉDITION EXPLORATOIRE</span>
                 </div>
             </section>
 

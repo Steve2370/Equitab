@@ -45,13 +45,13 @@ function onSuccess(): void {
 </script>
 
 <template>
-    <Head :title="`Invitation — ${group.subscriptionName} — Equitab`" />
+    <Head :title="`Invitation - ${group.subscriptionName} - Equitab`" />
 
     <div class="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
         <div class="w-full max-w-md">
 
             <div class="text-center mb-8">
-                <Link href="/" aria-label="EquitAb — accueil"><EquitabWordmark /></Link>
+                <Link href="/" aria-label="EquitAb - accueil"><EquitabWordmark /></Link>
                 <p class="mt-1 text-sm text-gray-500">Vous avez reçu une invitation privée</p>
             </div>
 
